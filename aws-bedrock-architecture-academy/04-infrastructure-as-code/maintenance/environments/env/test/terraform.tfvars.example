@@ -1,0 +1,21 @@
+# test — copy to env/test/terraform.tfvars (git-ignored) and replace the placeholders.
+
+environment         = "test"
+account_id          = "444455556666"
+region              = "us-east-1"
+deployment_role_arn = "arn:aws:iam::444455556666:role/example-terraform-deploy-test"
+
+foundation_model_ids  = ["amazon.nova-2-lite-v1:0"]
+inference_profile_ids = ["us.amazon.nova-2-lite-v1:0"]
+model_regions         = ["us-east-1", "us-east-2", "us-west-2"]
+
+# test enforces the guardrail but may still use the working draft.
+guardrail_arn     = "arn:aws:bedrock:us-east-1:444455556666:guardrail/replaceguardrailid"
+guardrail_version = "DRAFT"
+require_guardrail = true
+
+max_output_tokens = 1024
+
+tags = {
+  CostCenter = "example-genai-test"
+}

@@ -1,0 +1,24 @@
+# staging — copy to env/staging/terraform.tfvars (git-ignored) and replace the placeholders.
+# staging must match prod in everything except the account: it is the dress rehearsal.
+
+environment         = "staging"
+account_id          = "777788889999"
+region              = "us-east-1"
+deployment_role_arn = "arn:aws:iam::777788889999:role/example-terraform-deploy-staging"
+
+foundation_model_ids  = ["amazon.nova-2-lite-v1:0"]
+inference_profile_ids = ["us.amazon.nova-2-lite-v1:0"]
+model_regions         = ["us-east-1", "us-east-2", "us-west-2"]
+
+# A published, immutable guardrail version — the one prod will receive next.
+guardrail_arn     = "arn:aws:bedrock:us-east-1:777788889999:guardrail/replaceguardrailid"
+guardrail_version = "3"
+require_guardrail = true
+
+max_output_tokens = 1024
+
+permissions_boundary_arn = "arn:aws:iam::777788889999:policy/example-workload-boundary"
+
+tags = {
+  CostCenter = "example-genai-staging"
+}

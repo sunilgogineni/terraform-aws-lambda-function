@@ -10,6 +10,9 @@ key        = "chat/bedrock-invocation-role/terraform.tfstate"
 region     = "us-east-1"
 kms_key_id = "arn:aws:kms:us-east-1:777788889999:key/1234abcd-12ab-34cd-56ef-1234567890ab"
 
+# Refuse to touch state with credentials for any other account.
+allowed_account_ids = ["777788889999"]
+
 # Role in the staging account that may read and write this state object only.
 assume_role = {
   role_arn     = "arn:aws:iam::777788889999:role/example-terraform-state-staging"

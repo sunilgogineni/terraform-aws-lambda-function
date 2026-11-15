@@ -130,10 +130,10 @@ flowchart LR
 
 1. The client sends an HTTPS request with a token.
 2. AWS WAF inspects it at the edge and applies rate-based rules.
-3. CloudFront routes by path: (a) REST API, (b) ALB, (c) function URL signed by origin access control.
-4. (a) API Gateway authorises with Cognito and invokes the function in streaming mode; (b) the ALB authenticates the user and forwards claims to a task; (c) Lambda checks the OAC signature and invokes the function.
+3. CloudFront routes by path to the REST API, the ALB, or the function URL (signed by OAC).
+4. API Gateway authorises with Cognito and streams from the function; the ALB authenticates the user and forwards claims; Lambda checks the OAC signature.
 5. Each backend calls `ConverseStream` with its own role, within the model's quota.
-6. –9. On the ALB path, token events flow back as chunks; each hop only needs data inside its idle or per-packet timeout.
+6. –9. Token events flow back as chunks; each hop needs data only within its idle or per-packet timeout.
 
 **Legend** — solid: request · dashed: response or control · red: security control · boxes: trust boundaries. **Variations:** an HTTP API cannot stream, so a 30-second answer is its ceiling; WebSocket APIs suit two-way chat but cap connections at 2 hours; ALB Lambda targets cannot stream past 1 MB.
 
@@ -183,12 +183,12 @@ flowchart TD
 
 ## Implementation details
 
-1. **Pick the front door** from the flowchart; prefer streaming over raising buffered timeouts for interactive chat.
-2. **Authenticate at the door.** Cognito or JWT authorizers, or the ALB authenticate action; never API keys alone.
-3. **Align timeouts outward-in:** CloudFront response timeout ≥ API or ALB idle timeout ≥ backend timeout ≥ SDK read timeout.
-4. **Throttle to the Bedrock quota.** Derive stage limits from the model's tokens per minute divided by tokens per request; add reserved concurrency as the hard stop.
-5. **Attach AWS WAF** to the REST API stage, ALB or CloudFront distribution; HTTP APIs need CloudFront in front for WAF.
-6. **Disable what streaming cannot use** — caching, compression and VTL on streamed methods.
+1. **Pick the door** from the flowchart; for interactive chat prefer streaming to longer buffered timeouts.
+2. **Authenticate at the door** with Cognito, JWT or the ALB authenticate action — never API keys alone.
+3. **Align timeouts outward-in:** CloudFront ≥ API or ALB idle timeout ≥ backend timeout ≥ SDK read timeout.
+4. **Throttle to the Bedrock quota:** stage limit ≈ tokens per minute ÷ tokens per request ÷ 60; reserved concurrency is the hard stop.
+5. **Attach AWS WAF** to the REST stage, ALB or distribution (HTTP APIs need CloudFront for WAF).
+6. **Leave caching, compression and VTL off** streamed methods.
 
 > [!TIP]
 > **Academy recommendation** — For a public chat UI, use CloudFront with AWS WAF in front of a Regional REST API in `STREAM` mode. You get edge protection, Cognito authorization, per-client limits and a 15-minute stream, and you stay on serverless pricing.
@@ -435,7 +435,7 @@ The integration's `uri` uses the function's response-streaming invoke ARN, as in
 ## Security considerations
 
 - **Authenticate before you spend.** Unauthenticated routes to a model are a direct path to your bill; see [AWS WAF and AWS Shield](../security/03-waf-and-shield.md).
-- **Validate and size-limit prompts in the backend.** API Gateway forwards what it receives; streaming methods cannot use VTL to reshape it.
+- **Validate and size-limit prompts in the backend**; proxy integrations pass requests through unchanged.
 - **Lock origins.** Use OAC for function URLs and restrict ALBs to CloudFront where CloudFront is the intended door.
 - **Agents have doors too.** AgentCore Gateway can be protected by AWS WAF like any other front door.
 

@@ -189,7 +189,7 @@ JWT claims are always string tags (arrays become JSON text, so match scopes with
 | `ENFORCE` | Evaluated and enforced | Evaluated and logged; other active policies still enforce |
 | `LOG_ONLY` | Evaluated and logged only | Evaluated and logged only |
 
-The engine mode takes precedence. Policy-level `LOG_ONLY` shadow-tests one new rule on production traffic; its result is "never combined into the enforced decision". Promote it with `UpdatePolicy` (`enforcementMode` `ACTIVE`). Source: [Policy enforcement modes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-enforcement-modes.html), [Test a policy in LOG_ONLY mode](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-test-a-policy.html).
+The engine mode takes precedence. Policy-level `LOG_ONLY` shadow-tests one new rule on production traffic; its result is "never combined into the enforced decision". Promote it with `UpdatePolicy` (`enforcementMode` `ACTIVE`). Sources: [Policy enforcement modes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-enforcement-modes.html), [Test a policy in LOG_ONLY mode](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-test-a-policy.html).
 
 ### Natural-language authoring and validation
 
@@ -253,9 +253,9 @@ sequenceDiagram
     end
 ```
 
-- **Steps 1–5.** Listing has no arguments, so the refund tool is listed for anyone with the refund scope.
-- **Steps 6–11.** The real call carries arguments and the cap's `forbid` matches. Without a session header, an engine with temporal policies returns a validation error.
-- **Steps 12–16.** The documented denial reads `AuthorizeActionException - Tool Execution Denied: … [No policy applies to the request (denied by default).]` or names the determining policy. A gateway role without the Policy permissions produces `InternalServerException - Policy evaluation failed`, and calls are denied.
+- **Steps 1–4.** Listing has no arguments, so the refund tool is listed for anyone with the refund scope.
+- **Steps 5–10.** The real call carries arguments and the cap's `forbid` matches. Without a session header, an engine with temporal policies returns a validation error.
+- **Steps 11–14.** The documented denial reads `AuthorizeActionException - Tool Execution Denied: … [No policy applies to the request (denied by default).]` or names the determining policy. A gateway role without the Policy permissions produces `InternalServerException - Policy evaluation failed`, and calls are denied.
 
 ## 7. Dependencies
 

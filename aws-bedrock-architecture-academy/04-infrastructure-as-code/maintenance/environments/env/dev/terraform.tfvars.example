@@ -1,0 +1,24 @@
+# dev — copy to env/dev/terraform.tfvars (git-ignored) and replace the placeholders.
+# Used as: terraform plan -var-file=env/dev/terraform.tfvars -out=dev.tfplan
+
+environment         = "dev"
+account_id          = "111122223333"
+region              = "us-east-1"
+deployment_role_arn = "arn:aws:iam::111122223333:role/example-terraform-deploy-dev"
+
+# Model choice is configuration (ADR-010). Confirm the IDs in the model catalog.
+# From us-east-1 the US Geo profile routes to us-east-1, us-east-2 and us-west-2.
+foundation_model_ids  = ["amazon.nova-2-lite-v1:0"]
+inference_profile_ids = ["us.amazon.nova-2-lite-v1:0"]
+model_regions         = ["us-east-1", "us-east-2", "us-west-2"]
+
+# dev may iterate on the guardrail's working draft and does not enforce it.
+guardrail_arn     = "arn:aws:bedrock:us-east-1:111122223333:guardrail/replaceguardrailid"
+guardrail_version = "DRAFT"
+require_guardrail = false
+
+max_output_tokens = 512
+
+tags = {
+  CostCenter = "example-genai-dev"
+}

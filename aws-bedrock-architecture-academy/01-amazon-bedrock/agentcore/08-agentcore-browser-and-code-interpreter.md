@@ -210,9 +210,9 @@ sequenceDiagram
     DP->>S: Terminate microVM and sanitise memory
 ```
 
-- **Steps 1–4.** The caller needs `bedrock-agentcore:StartCodeInterpreterSession` on the interpreter. `clientToken` makes a retried start idempotent. A request that would exceed a quota returns `ServiceQuotaExceededException` (HTTP 402); one above the rate limit returns `ThrottlingException` (429); retry those with backoff.
-- **Steps 5–13.** A call on an expired or stopped session fails. `isError` marks failed code, not an API error. Synchronous requests stop at 15 minutes; use `startCommandExecution` and `getTask` for longer work.
-- **Steps 14–15.** Billing runs until the session ends, so stop it explicitly.
+- **Steps 1–3.** The caller needs `bedrock-agentcore:StartCodeInterpreterSession` on the interpreter. `clientToken` makes a retried start idempotent. A request that would exceed a quota returns `ServiceQuotaExceededException` (HTTP 402); one above the rate limit returns `ThrottlingException` (429); retry those with backoff.
+- **Steps 4–12.** A call on an expired or stopped session fails. `isError` marks failed code, not an API error. Synchronous requests stop at 15 minutes; use `startCommandExecution` and `getTask` for longer work.
+- **Steps 13–14.** Billing runs until the session ends, so stop it explicitly.
 
 ```mermaid
 ---
@@ -247,11 +247,11 @@ sequenceDiagram
     A->>DP: StopBrowserSession
 ```
 
-- **Steps 1–5.** The Python SDK's `browser_session()` and `generate_ws_headers()` start the session and sign the WebSocket URL; Playwright connects with `connect_over_cdp` ([Playwright quickstart](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-quickstart-playwright.html)).
-- **Steps 6–9.** Page content is untrusted model input.
-- **Steps 10–11.** `InvokeBrowser` has a lower rate quota (5 TPS).
-- **Steps 12–14.** Live view is a separate IAM action.
-- **Step 15.** Profiles save only from an active session, and a save overwrites the previous profile.
+- **Steps 1–4.** The Python SDK's `browser_session()` and `generate_ws_headers()` start the session and sign the WebSocket URL; Playwright connects with `connect_over_cdp` ([Playwright quickstart](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-quickstart-playwright.html)).
+- **Steps 5–8.** Page content is untrusted model input.
+- **Steps 9–10.** `InvokeBrowser` has a lower rate quota (5 TPS).
+- **Steps 11–13.** Live view is a separate IAM action.
+- **Steps 14–15.** Profiles save only from an active session, and a save overwrites the previous profile.
 
 ## 7. Dependencies
 

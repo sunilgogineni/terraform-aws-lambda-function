@@ -1,0 +1,24 @@
+# prod — copy to env/prod/terraform.tfvars (git-ignored) and replace the placeholders.
+# Change this file only through a reviewed pull request; the pipeline applies it
+# after the same commit has passed staging and a human has approved the plan.
+
+environment         = "prod"
+account_id          = "999999999999"
+region              = "us-east-1"
+deployment_role_arn = "arn:aws:iam::999999999999:role/example-terraform-deploy-prod"
+
+foundation_model_ids  = ["amazon.nova-2-lite-v1:0"]
+inference_profile_ids = ["us.amazon.nova-2-lite-v1:0"]
+model_regions         = ["us-east-1", "us-east-2", "us-west-2"]
+
+guardrail_arn     = "arn:aws:bedrock:us-east-1:999999999999:guardrail/replaceguardrailid"
+guardrail_version = "3"
+require_guardrail = true
+
+max_output_tokens = 1024
+
+permissions_boundary_arn = "arn:aws:iam::999999999999:policy/example-workload-boundary"
+
+tags = {
+  CostCenter = "example-genai-prod"
+}

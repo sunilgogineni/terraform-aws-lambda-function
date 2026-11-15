@@ -62,7 +62,7 @@ locals {
     blocked_input_messaging   = var.blocked_input_messaging
     blocked_outputs_messaging = var.blocked_outputs_messaging
     safeguard_tier            = var.safeguard_tier
-    cross_region_profile      = var.cross_region_guardrail_profile
+    cross_region_profile      = var.cross_region_guardrail_profile_arn
     content_filters           = local.all_content_filters
     denied_topics             = var.denied_topics
     blocked_words             = var.blocked_words
@@ -83,7 +83,7 @@ resource "aws_bedrock_guardrail" "this" {
   tags                      = var.tags
 
   dynamic "cross_region_config" {
-    for_each = var.cross_region_guardrail_profile == null ? [] : [var.cross_region_guardrail_profile]
+    for_each = var.cross_region_guardrail_profile_arn == null ? [] : [var.cross_region_guardrail_profile_arn]
 
     content {
       guardrail_profile_identifier = cross_region_config.value

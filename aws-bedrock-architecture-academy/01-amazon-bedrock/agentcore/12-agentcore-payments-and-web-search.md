@@ -67,7 +67,7 @@ The account field of the tool ARN is the literal `aws`. Sources: [Web Search Too
 
 ## 2. Why it exists
 
-Paid APIs and content increasingly charge per call, often cents or less, where card fees make no sense and per-vendor billing accounts do not scale. Payments replaces wallet integration, protocol handling, credential storage, budget enforcement and payment observability that you would otherwise build. Web Search and Web Answer replace a third-party search contract, its API keys, result parsing, page fetching, snippet extraction and — for Web Answer — the synthesis and citation pipeline.
+Paid APIs increasingly charge cents per call, where card fees make no sense and per-vendor billing does not scale. Payments replaces the wallet integration, protocol handling, credential storage, budget enforcement and observability you would otherwise build. Web Search and Web Answer replace a search vendor contract, its keys, result parsing, page fetching and — for Web Answer — the synthesis and citation pipeline.
 
 ## 3. When to use it
 
@@ -144,7 +144,7 @@ flowchart LR
     classDef external fill:#F1F3F4,stroke:#5F6368,color:#202124,stroke-dasharray:4 3
 ```
 
-**What this shows** — AgentCore never holds funds: the wallet sits with the provider and settlement happens on a public blockchain between wallet and merchant. AgentCore holds the budget, the credentials and the signing orchestration. The two roles on the left are the separation the documentation insists on. Academy diagram, not an official AWS reference architecture.
+**What this shows** — **Our reading:** AgentCore does not hold the money. The instrument is an embedded wallet backed by the provider and managed by the end user, and the merchant settles on-chain. AgentCore holds the budget, the credentials and the signing orchestration. The two roles on the left are the separation the documentation insists on. Academy diagram, not an official AWS reference architecture.
 
 0. The end user funds the instrument and grants the agent signing permission at the provider's wallet hub. 1. Deterministic backend code opens a capped session. 2–4. The agent finds a paid endpoint and receives a `402`. 5–8. `ProcessPayment` checks and reserves budget, fetches a short-lived token through Identity and has the provider sign. 9–11. The agent retries with the proof; the merchant settles on-chain and returns the content.
 
@@ -226,10 +226,10 @@ sequenceDiagram
     end
 ```
 
-- **Steps 1–3.** The session is created by deterministic code under a role that cannot pay; the agent only receives IDs. The agent cannot extend its session.
-- **Step 6.** The payee check is our addition (see section 8); AWS's guidance is never to let the model generate `payTo` addresses.
+- **Steps 1–3.** Deterministic code under a role that cannot pay creates the session; the agent only receives IDs and cannot extend it.
+- **Step 6.** The payee check is our addition; AWS's guidance is never to let the model generate `payTo` addresses.
 - **Steps 7–13.** The budget check is deterministic and runs at the infrastructure layer before any signing. For `upto`, an optional `permit2AllowanceLimit` makes AgentCore submit an on-chain `approve` transaction first, which costs gas from the wallet's native token balance.
-- **Steps 14–15.** Settlement happens between merchant and blockchain. The API retries are your agent's; supply a `clientToken` so a retried `ProcessPayment` is idempotent.
+- **Steps 14–15.** Settlement happens between merchant and blockchain. Retries of the merchant request are your agent's job; pass a `clientToken` on `ProcessPayment`, as the documented examples do. The session-cap behaviour is described in the [GA blog post](https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-agentcore-payments-is-now-generally-available-enabling-agents-to-transact-safely-and-autonomously-at-scale/) and the [technical deep dive](https://aws.amazon.com/blogs/machine-learning/technical-deep-dive-agentcore-payments-and-innovation-in-agentic-commerce/).
 
 ```mermaid
 ---
@@ -242,7 +242,7 @@ sequenceDiagram
     participant G as AgentCore Gateway
     participant WA as Web Answer (AWS-owned)
     C->>WS: InvokeWebSearch (web-search.v1, searchQuery, domainFilter, publishedAfter)
-    Note over C,WS: SigV4; caller needs bedrock-agentcore:InvokeWebSearch on the tool ARN
+    Note over C,WS: SigV4 · caller needs bedrock-agentcore:InvokeWebSearch on the tool ARN
     WS-->>C: results (text, title, url, publishedAt)
     C->>G: tools/call web-answer___WebAnswer (query, filters, userLocation)
     Note over C,G: Inbound JWT or SigV4 (bedrock-agentcore:InvokeGateway)
@@ -321,7 +321,7 @@ Source: [Quotas](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/b
 | Tool | Support | Resource / construct | Notes |
 |:--|:-:|:--|:--|
 | Terraform (`hashicorp/aws` 6.73.0) | ❌ Payments · ✅ web connectors | `aws_bedrockagentcore_gateway_target` with `mcp.connector` (`connector_id` `web-search` or `web-answer`) | No Payments resource exists in 6.73.0 (checked against the provider schema). The Web Search API needs no resource |
-| CloudFormation | ✅ | `AWS::BedrockAgentCore::PaymentManager`, `PaymentConnector`, `PaymentCredentialProvider`; connectors on `AWS::BedrockAgentCore::GatewayTarget` | The AgentCore CLI deploys payment managers and connectors through CloudFormation |
+| CloudFormation | ✅ | `AWS::BedrockAgentCore::PaymentManager`, `PaymentConnector`, `PaymentCredentialProvider`; web connector targets are `AWS::BedrockAgentCore::GatewayTarget` resources | The AgentCore CLI deploys payment managers and connectors through CloudFormation |
 | AWS CDK (`aws-cdk-lib` 2.277.0) | L1 | `CfnPaymentManager`, `CfnPaymentConnector`, `CfnPaymentCredentialProvider` | No L2 for Payments |
 
 Verified alternatives for Terraform users: deploy Payments with the CloudFormation template below (for example through `aws_cloudformation_stack`), or with the AgentCore CLI. Instruments and sessions are per-user, per-task runtime objects — create them from code, never from IaC.
@@ -618,7 +618,7 @@ output "gateway_arn" {
 }
 ```
 
-The connector shape (`WebSearch` and `WebAnswer` configuration names, the gateway service role as outbound credential, `parameterValues` with `domainFilter`) follows the AWS documentation and the AWS samples linked in section 14. Every search and answer is billed; run `terraform destroy` in your sandbox when you finish.
+The connector shape — configuration names matching the `WebSearch` and `WebAnswer` tools, the gateway service role (`GATEWAY_IAM_ROLE`) as outbound credential, `parameterValues` with `domainFilter` — follows the Web Search Tool page and the `create_gateway_target` example in the Web Answer getting-started post; both are linked in section 14. Every search and answer is billed; run `terraform destroy` in your sandbox when you finish.
 
 ### Web Search API from your own code
 
@@ -690,11 +690,10 @@ def search_trusted(client, query: str, domains: list[str], max_results: int = 5)
 - [AgentCore payments overview](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html), [Core concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-concepts.html), [How it works](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-how-it-works.html) — resources, protocols, flow.
 - [Get started](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-getting-started.html), [Create a payment manager and connector](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-create-manager.html), [Create a payment instrument](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-create-instrument.html), [Create a payment session](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-create-session.html), [Process a payment](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-process-payment.html).
 - [Security in AgentCore payments](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-security-best-practices.html), [IAM roles for AgentCore payments](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-iam-roles.html), [Prerequisites](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-prerequisites.html).
-- [AgentCore payments GA announcement](https://aws.amazon.com/about-aws/whats-new/2026/08/bedrock-agentcore-payments-ga/) and [AgentCore payments is now generally available](https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-agentcore-payments-is-now-generally-available-enabling-agents-to-transact-safely-and-autonomously-at-scale/).
+- [AgentCore payments GA announcement](https://aws.amazon.com/about-aws/whats-new/2026/08/bedrock-agentcore-payments-ga/), [AgentCore payments is now generally available](https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-agentcore-payments-is-now-generally-available-enabling-agents-to-transact-safely-and-autonomously-at-scale/) and [Technical deep dive: AgentCore Payments](https://aws.amazon.com/blogs/machine-learning/technical-deep-dive-agentcore-payments-and-innovation-in-agentic-commerce/) — GA scope, session caps, wallet funding.
 - [Web Search Tool](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-connector-web-search-tool.html) — connector, index, filters, input schema.
 - [Search the web using AgentCore Web Search](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/web-search-api.html), [Get started](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/web-search-api-get-started.html), [Request and response](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/web-search-api-reference.html), [Troubleshoot](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/web-search-api-troubleshooting.html), [invoke-web-search CLI reference](https://docs.aws.amazon.com/cli/latest/reference/bedrock-agentcore/invoke-web-search.html).
 - [Web Answer](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-connector-web-answer-tool.html) and [Getting started with Web Answer](https://aws.amazon.com/blogs/machine-learning/getting-started-with-web-answer-on-amazon-bedrock-agentcore/) — schema, citations, gateway role permission.
 - [Web Search API launch](https://aws.amazon.com/about-aws/whats-new/2026/11/amazon-bedrock-agentcore-web-search-api/) and [Introducing the Web Search API](https://aws.amazon.com/blogs/machine-learning/introducing-the-web-search-api-on-amazon-bedrock-agentcore/).
-- [AgentCore getting-started workshop: Web Search lab](https://catalog.workshops.aws/agentcore-getting-started/en-US/88-lab10-websearch/) — connector target with `WebSearch` configuration and version pinning.
 - [Interface VPC endpoints](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/vpc-interface-endpoints.html), [Quotas](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/bedrock-agentcore-limits.html), [Supported AWS Regions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agentcore-regions.html), [Release notes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html), [AgentCore pricing](https://aws.amazon.com/bedrock/agentcore/pricing/).
 - Terraform provider documentation (source): [`aws_bedrockagentcore_gateway_target`](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrockagentcore_gateway_target.html.markdown) — the `mcp.connector` block.

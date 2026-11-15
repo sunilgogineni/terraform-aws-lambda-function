@@ -106,12 +106,12 @@ check, because no single tool covers every Bedrock and AgentCore resource.
 
 **Walkthrough**
 
-1–2. An existing Terraform estate is the strongest single signal; keep it.
-3–4. Without one, other platforms in the same code favour Pulumi (or Terraform); AWS-only work continues down the tree.
-5–6. OpenTofu is the documented drop-in for organisations that cannot accept the BUSL.
-7–8. One team's serverless application fits AWS SAM.
-9–10. Teams that want classes, loops and unit tests choose AWS CDK; others write CloudFormation with modules.
-11–12. Check the [verification matrix](../../FEATURE-VERIFICATION.md); fill a gap with a second tool under the rules below.
+1. **Edges 1–2** — An existing Terraform estate is the strongest single signal; keep it.
+2. **Edges 3–4** — Without one, other platforms in the same code favour Pulumi (Terraform also fits); AWS-only work continues down the tree.
+3. **Edges 5–6** — OpenTofu is the drop-in fork for organisations that cannot accept the BUSL.
+4. **Edges 7–8** — One team's serverless application fits AWS SAM.
+5. **Edges 9–10** — Teams that want classes, loops and unit tests choose AWS CDK; others write CloudFormation with modules.
+6. **Edges 11–12** — Check the [verification matrix](../../FEATURE-VERIFICATION.md); fill a gap with a second tool under the rules below.
 
 | Legend | Meaning |
 |:--|:--|
@@ -170,8 +170,8 @@ application template from declaring a platform-owned type.
 5. An account-level enforced guardrail, owned by the platform, applies on top.
 6. The API invokes the function.
 
-**Variations** — The contract can be stack outputs, Parameter Store or a Pulumi stack
-reference; Parameter Store works across all five tools. Enforced guardrails are covered in
+**Variations** — The contract can also be CloudFormation stack outputs. **Our reading:**
+Parameter Store is the one contract every tool here can both write and read. Enforced guardrails are covered in
 [Automated Reasoning checks and guardrail enforcement](../../01-amazon-bedrock/guardrails/02-automated-reasoning-and-enforcement.md).
 
 ## Implementation details
@@ -184,7 +184,7 @@ reference; Parameter Store works across all five tools. Enforced guardrails are 
 
 | Scenario | Recommendation | Why | Watch out for |
 |:--|:--|:--|:--|
-| Existing Terraform estate | Terraform; OpenTofu if the licence is a problem | State, modules, pipelines and skills already exist; 45 Bedrock-family and 21 AgentCore resource types | Router, Automated Reasoning, flow and prompt versions, mantle Projects, AgentCore Optimization and Payments are missing |
+| Existing Terraform estate | Terraform; OpenTofu if the licence is a problem | State, modules, pipelines and skills already exist; 45 Bedrock-family resource types, 21 of them AgentCore | Router, Automated Reasoning, flow and prompt versions, mantle Projects, AgentCore Optimization and Payments are missing |
 | AWS-only team that writes TypeScript or Python | AWS CDK | Stable AgentCore L2 constructs, assertion tests, automatic rollback | Guardrail, knowledge base and agent L2s are alpha; Provisioned Throughput and batch jobs are not CloudFormation types |
 | Serverless application owned by one team | AWS SAM | Shorthand for functions, APIs and events; `sam local invoke`; `sam sync` for development | No Bedrock types or policy templates; inline IAM ([SAM chapter](../aws-sam/01-aws-sam.md)) |
 | Multi-cloud or SaaS alongside AWS | Terraform, OpenTofu or Pulumi | Provider ecosystems beyond AWS | You operate state; Bedrock gaps as in the first row |
@@ -200,7 +200,7 @@ reference; Parameter Store works across all five tools. Enforced guardrails are 
 | Terraform → OpenTofu | Replace the binary; keep providers and state | The OpenTofu FAQ promises state compatibility up to Terraform 1.5.x; Terraform policy and Stacks are HashiCorp-only |
 | Terraform → Pulumi | `pulumi import` per resource; Pulumi can also run HCL programs (`runtime: hcl`) | State is not shared; do not let both tools own a resource during the cut-over |
 | CloudFormation → CDK | `cdk migrate` (experimental), or wrap templates | Logical IDs must not change, or resources are replaced |
-| AWS SAM ↔ AWS CDK | Both deploy CloudFormation stacks; the SAM CLI can test CDK functions locally | Moving resources between stacks needs stack refactoring |
+| AWS SAM ↔ AWS CDK | Both deploy CloudFormation stacks; the SAM CLI can test CDK functions locally | Move resources between stacks with CloudFormation stack refactoring |
 
 ### Rules for mixing tools safely
 
@@ -332,6 +332,11 @@ direction starts with `removed { from = aws_bedrock_guardrail.chat  lifecycle { 
 
 - Hand-offs change who can modify a resource. Update deployment-role policies in both tools in
   the same change, so the old owner loses write access.
+- Cross-layer permissions must line up. AWS documents that once an account- or
+  organization-level enforced guardrail exists, Invoke and Converse callers without permission
+  to apply that guardrail fail with `AccessDenied`, so the application's execution role needs
+  `bedrock:ApplyGuardrail` on a guardrail the platform layer owns
+  ([guardrail resource-based policies](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-resource-based-policies.html)).
 - Parameter Store contracts hold identifiers, not secrets; if a value is sensitive, use
   `SecureString` or Secrets Manager and dynamic references.
 - A second tool is a second supply chain: pin its versions and pipeline Actions by commit SHA
@@ -373,4 +378,5 @@ Official sources opened while writing this chapter:
 - [DeletionPolicy attribute](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-attribute-deletionpolicy.html) · [Import AWS resources into a stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/import-resources.html) · [Dynamic references](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/dynamic-references.html)
 - [CDK CLI README](https://raw.githubusercontent.com/aws/aws-cdk-cli/main/packages/aws-cdk/README.md) — `cdk import`, `cdk migrate`, `cdk refactor`.
 - [What is AWS SAM?](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) — when to use SAM; SAM with CDK.
+- [Resource-based policies for guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-resource-based-policies.html) — enforced guardrails and `AccessDenied`.
 - [AWS Cloud Control provider for Pulumi](https://www.pulumi.com/registry/packages/aws-native/) · [Pulumi projects](https://www.pulumi.com/docs/iac/concepts/projects/) — runtimes including `hcl`.

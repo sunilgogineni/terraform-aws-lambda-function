@@ -53,7 +53,7 @@ variable "kms_key_arn" {
 }
 
 variable "safeguard_tier" {
-  description = "Safeguard tier for the content filters and denied topics: CLASSIC or STANDARD. STANDARD uses cross-Region inference and needs cross_region_guardrail_profile."
+  description = "Safeguard tier for the content filters and denied topics: CLASSIC or STANDARD. STANDARD uses cross-Region inference and needs cross_region_guardrail_profile_arn."
   type        = string
   default     = "CLASSIC"
 
@@ -63,15 +63,20 @@ variable "safeguard_tier" {
   }
 
   validation {
-    condition     = var.safeguard_tier == "CLASSIC" || var.cross_region_guardrail_profile != null
-    error_message = "The STANDARD tier requires cross_region_guardrail_profile (a guardrail profile ID or ARN)."
+    condition     = var.safeguard_tier == "CLASSIC" || var.cross_region_guardrail_profile_arn != null
+    error_message = "The STANDARD tier requires cross_region_guardrail_profile_arn."
   }
 }
 
-variable "cross_region_guardrail_profile" {
-  description = "Optional system-defined guardrail profile (ID or ARN) that enables cross-Region guardrail inference. Prompts and responses may then be processed in other Regions of the same geography."
+variable "cross_region_guardrail_profile_arn" {
+  description = "Optional ARN of a system-defined guardrail profile, for example arn:aws:bedrock:us-east-1:111122223333:guardrail-profile/us.guardrail.v1:0. It enables cross-Region guardrail inference: prompts and responses may then be processed in other Regions of the same geography."
   type        = string
   default     = null
+
+  validation {
+    condition     = var.cross_region_guardrail_profile_arn == null ? true : can(regex("^arn:aws[a-z-]*:bedrock:[a-z0-9-]+:[0-9]{12}:guardrail-profile/[a-z-]+\\.guardrail\\.v[0-9]+:[0-9]+$", var.cross_region_guardrail_profile_arn))
+    error_message = "cross_region_guardrail_profile_arn must be a guardrail profile ARN (arn:<partition>:bedrock:<region>:<account>:guardrail-profile/<geo>.guardrail.v1:0)."
+  }
 }
 
 variable "content_filters" {
