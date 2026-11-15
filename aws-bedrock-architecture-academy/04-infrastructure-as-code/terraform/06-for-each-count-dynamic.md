@@ -53,7 +53,7 @@ A **dynamic block** is different: it does not repeat whole resources, it repeats
 
 ### What a removal really does
 
-The following plan was produced locally with the built-in `terraform_data` resource (no provider, no AWS). `triggers_replace` stands in for an argument that forces replacement — as every argument of an application inference profile does, because the Bedrock API has `CreateInferenceProfile` and `DeleteInferenceProfile` but no update operation. Three profiles, `["chat", "search", "summarise"]`, were applied; then `"search"` was removed:
+The following plan was produced locally with the built-in `terraform_data` resource (no provider, no AWS). `triggers_replace` stands in for an argument that forces replacement — as every argument of an application inference profile except its tags does, because the Bedrock API has `CreateInferenceProfile` and `DeleteInferenceProfile` but no update operation. Three profiles, `["chat", "search", "summarise"]`, were applied; then `"search"` was removed:
 
 ```text
   # terraform_data.by_index[1] must be replaced
@@ -159,7 +159,7 @@ One application inference profile and one invocation role per enabled applicatio
 
 > **Code status:** validated with `terraform validate` (Terraform 1.17.2, provider 6.73.0) and TFLint 0.66 (`recommended` preset) · mock-tested: `terraform test`, 4 runs pass with a mock provider · **never planned or applied against AWS** · never deployed
 
-`versions.tf` is the academy standard (`required_version = ">= 1.11.0"`, `hashicorp/aws` `~> 6.73`). Model IDs and ARNs are inputs; confirm current values in the Bedrock console.
+`versions.tf` is the academy standard (`required_version = ">= 1.11.0"`, `hashicorp/aws` `~> 6.73`). The module `source` path assumes the configuration sits in a project folder such as `05-practical-projects/<project>/`. Model IDs and ARNs are inputs; confirm current values in the Bedrock console.
 
 ```hcl
 # variables.tf

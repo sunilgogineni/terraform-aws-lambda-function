@@ -1,0 +1,118 @@
+@startuml
+' =============================================================================
+' Agentic retrieval — AgenticRetrieveStream in each maxAgentIteration mode — UML sequence diagram
+'
+' Mermaid source set : diagrams/mermaid/09-agentic-retrieval.md (view C)
+' Chapter            : 01-amazon-bedrock/agentic-retrieval/01-agentic-retrieval.md
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      AWS documents the steps and the events, not the implementation.
+'                      No AWS icons; nothing is included from the network.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-agentic-retrieve.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_AgenticRetrieveStream.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_AgenticRetrieveConfiguration.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-agentic-retrieve-instruction.html
+'   https://aws.amazon.com/blogs/machine-learning/single-shot-and-agentic-retrieval-with-amazon-bedrock-managed-knowledge-base/
+'   https://aws.amazon.com/blogs/machine-learning/agentic-retrieval-for-amazon-bedrock-managed-knowledge-base/
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-observability.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-quotas.html
+'
+' What UML adds over the Mermaid view: trust boundaries as boxes, and the three
+' modes as one alt fragment so the cost of each mode can be read as message count.
+' =============================================================================
+!pragma layout smetana
+title AgenticRetrieveStream — one request in each maxAgentIteration mode (UML sequence)
+
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+skinparam ArrowColor #333333
+skinparam sequenceLifeLineBorderColor #888888
+skinparam sequenceGroupBorderColor #666666
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+
+autonumber
+box "Your AWS account 111122223333 · one Region with managed knowledge bases" #FFFBF5
+  participant "Your application\nIAM role: AgenticRetrieveStream · Retrieve\nGetDocumentContent · InvokeModelWithResponseStream" as App #FDEBD0
+  database "Amazon Bedrock AgentCore Memory\noptional · same account" as MEM #EDE7F6
+end box
+box "AWS-managed boundary · Amazon Bedrock" #F5FBF6
+  participant "Amazon Bedrock runtime API\nbedrock-agent-runtime\nquota 300 requests per minute per account" as RT #E6F4EA
+  participant "Planner and answer model\nMANAGED · or your CUSTOM model,\ninvoked with your credentials and quotas" as FM #E6F4EA
+  database "Managed knowledge bases\n1 to 5 retrievers" as KB #EDE7F6
+end box
+
+App -> RT : AgenticRetrieveStream (messages, retrievers, agenticRetrieveConfiguration)
+note over App, RT : TLS and SigV4 · the caller's role needs every permission the run uses
+RT -> RT : Validate instruction, guardrail type, memory fields and mode
+opt memoryConfiguration with sessionBinding
+  RT -> MEM : ListEvents for actorId and sessionId
+  MEM --> RT : USER and ASSISTANT events
+  RT --> App : traceEvent (session history load)
+end
+
+alt maxAgentIteration 0 with generateResponse false
+  RT -> KB : One retrieval
+  KB --> RT : Passages
+  RT --> App : result with passages only (no score, no location)
+else maxAgentIteration 1 — single-shot RAG
+  RT -> KB : One retrieval
+  KB --> RT : Passages
+  RT -> FM : Generate the answer from the passages
+  FM --> RT : Answer and citations
+  RT --> App : responseEvent chunks, then result
+else maxAgentIteration 2 to 5 — agentic
+  RT -> KB : Speculative retrieval (raw query or routing probe)
+  KB --> RT : Candidate passages
+  RT --> App : traceEvent SpeculativeRetrieval
+  loop Up to n minus 1 planning rounds; stops early when evidence is sufficient
+    RT -> FM : Plan sub-queries and judge sufficiency
+    FM --> RT : retrieve actions, or a memoryRetrieve action
+    RT --> App : traceEvent Planning
+    RT -> KB : Retrieve for each sub-query
+    KB --> RT : Passages
+    opt Planner chose memoryRetrieve
+      RT -> MEM : RetrieveMemoryRecords in the configured namespace
+      MEM --> RT : Memory records
+    end
+    opt A passage is not enough context
+      RT -> KB : GetDocumentContent
+      KB --> RT : Full document
+    end
+    RT --> App : traceEvent Retrieval or FullDocumentExpansion
+  end
+  RT -> FM : Generate the answer from all collected results
+  FM --> RT : Answer and citations
+  RT --> App : responseEvent chunks
+  RT --> App : result with deduplicated results, answer and citations
+end
+
+note over RT, FM : With policyConfiguration (CUSTOM model type only) the guardrail\nis applied during the run and can only BLOCK
+opt sessionBinding with persistenceMode DEFAULT
+  RT -> MEM : CreateEvent with the question and the generated answer
+end
+
+note across
+  One iteration is one foundation model call; the last iteration is reserved for writing the answer,
+  so maxAgentIteration n allows up to n − 1 planning rounds. The speculative retrieval does not count as an iteration.
+  Exceptions arrive as events in the stream: validationException and serviceQuotaExceededException (400), accessDeniedException (403),
+  resourceNotFoundException (404), conflictException (409), dependencyFailedException (424), throttlingException (429),
+  internalServerException (500), badGatewayException (502).
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | solid arrow | request or call |
+  | dashed arrow | response, or an event on the open stream |
+  | alt / loop / opt | mode, planning rounds, optional step |
+  |<#FDEBD0> orange | your compute |
+  |<#E6F4EA> green | Amazon Bedrock |
+  |<#EDE7F6> purple | data at rest |
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

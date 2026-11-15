@@ -179,7 +179,8 @@ application (for example as Lambda environment variables) and send them in `guar
   non-empty, so the plan never contains an empty policy.
 - **No IAM in this module.** Callers get `bedrock:ApplyGuardrail` from
   [`bedrock-invocation-role`](../bedrock-invocation-role/README.md), which can also deny any
-  inference call that does not use this guardrail.
+  inference call that does not use this guardrail. With the `STANDARD` tier, add the
+  guardrail-profile ARN of every destination Region to that module's `guardrail_arns`.
 
 > [!TIP]
 > **Academy recommendation** — Start from the strict defaults (`HIGH` and `BLOCK`), run your
@@ -190,7 +191,7 @@ application (for example as Lambda environment variables) and send them in `guar
 > [!WARNING]
 > **Common mistake** — Calling `InvokeModel` without input tags and assuming prompt attacks are
 > filtered. The documentation says that without tags, prompt attacks are not filtered for those
-> calls. Converse and `ApplyGuardrail` have their own ways to mark user content.
+> calls.
 
 > [!CAUTION]
 > **Data residency** — `safeguard_tier = "STANDARD"` requires cross-Region inference: prompts and

@@ -75,7 +75,7 @@ Two v6 changes touch Bedrock code: the nested blocks of `aws_bedrock_model_invoc
 **Ephemeral values and write-only arguments at a glance.** Ephemeral resources (Terraform 1.10) never reach plan or state and may only feed ephemeral contexts — `locals`, provider configuration, ephemeral variables and outputs, and **write-only arguments** (Terraform 1.11). A write-only argument passes a value to the provider and discards it; its stored companion `*_wo_version` tells Terraform when to send a new one ([Ephemeral values in resources](https://developer.hashicorp.com/terraform/language/resources/ephemeral), [write-only arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only), [Terraform 1.10](https://raw.githubusercontent.com/hashicorp/terraform/v1.10/CHANGELOG.md) and [1.11](https://raw.githubusercontent.com/hashicorp/terraform/v1.11/CHANGELOG.md) changelogs). Full treatment: [Secrets management and policy as code](../maintenance/04-secrets-and-policy-as-code.md).
 
 > [!CAUTION]
-> **Security hazard** — `aws_bedrockagentcore_api_key_credential_provider.api_key` is "stored in plain text in the Terraform state"; the provider documentation recommends `api_key_wo` instead ([resource documentation](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/v6.73.0/website/docs/r/bedrockagentcore_api_key_credential_provider.html.markdown)). The same pattern — a plain argument and a `_wo` twin — exists on 17 top-level resource arguments in the provider 6.73.0 schema (more sit inside nested blocks), including `aws_secretsmanager_secret_version.secret_string_wo` and `aws_db_instance.password_wo`.
+> **Security hazard** — `aws_bedrockagentcore_api_key_credential_provider.api_key` is "stored in plain text in the Terraform state"; the provider documentation recommends `api_key_wo` instead ([resource documentation](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/v6.73.0/website/docs/r/bedrockagentcore_api_key_credential_provider.html.markdown)). The provider 6.73.0 schema marks 17 top-level resource arguments as write-only (more sit inside nested blocks), including `aws_secretsmanager_secret_version.secret_string_wo` and `aws_db_instance.password_wo`.
 
 ## Architecture diagram
 
@@ -139,7 +139,7 @@ flowchart LR
 | Dashed grey box | Outside your control (public registry) |
 | Nested boxes | Trust boundaries: your build environment, your AWS account |
 
-**Variations** — With HCP Terraform remote runs, boxes 2–3 run on HashiCorp-managed workers and state lives in HCP Terraform ([State, remote backends and state locking](04-state-backends-locking.md)). With a provider mirror (as in this academy's offline validation), step 1 reads a local directory instead of the registry.
+**Variations** — With HCP Terraform remote runs, steps 2–10 run on HashiCorp-managed workers and state lives in HCP Terraform ([State, remote backends and state locking](04-state-backends-locking.md)). With a provider mirror (as in this academy's offline validation), step 1 reads a local directory instead of the registry.
 
 ### The dependency graph of the example
 
@@ -155,7 +155,7 @@ flowchart LR
         fm2["data.aws_bedrock_foundation_model.chat_secondary<br/>region = var.secondary_region"]:::ai
         ip["data.aws_bedrock_inference_profiles.system"]:::ai
     end
-    subgraph writes["Created during apply"]
+    subgraph writes["Created during apply — plus the module's partition lookup"]
         gr["aws_bedrock_guardrail.chat"]:::security
         gv["aws_bedrock_guardrail_version.chat"]:::security
         subgraph roleModule["module.invoke_role"]

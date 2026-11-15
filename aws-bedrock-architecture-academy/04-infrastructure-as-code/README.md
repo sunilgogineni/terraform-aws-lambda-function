@@ -71,6 +71,7 @@ CloudFormation — change sets, drift, hooks, rollback — applies to them too.
 |:--|:--|:--|
 | [`terraform/modules/`](terraform/modules/) | Reusable Terraform modules for Bedrock building blocks | `terraform validate`, `terraform test` with mock providers |
 | [`aws-cdk/construct-library/`](aws-cdk/construct-library/) | A small TypeScript construct library | `tsc`, Jest assertions |
+| [`aws-cdk/examples/`](aws-cdk/examples/README.md) | Worked CDK app used by the CDK chapters: Bedrock stacks, a custom Aspect, cdk-nag 3 wiring, CDK Pipelines | `tsc`, Jest (incl. a snapshot), `cdk synth`, `cfn-lint` |
 | [`cloudformation/templates/`](cloudformation/templates/) | Example CloudFormation templates | `cfn-lint` |
 | [`maintenance/environments/`](maintenance/environments/) | Development, test, staging and production configuration with isolated state | `terraform validate` |
 
