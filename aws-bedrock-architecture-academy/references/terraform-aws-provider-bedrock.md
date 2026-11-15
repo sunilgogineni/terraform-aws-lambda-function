@@ -11,10 +11,10 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 
 | Kind | Bedrock-related types |
 |:--|--:|
-| Resources | 55 |
-| Data sources | 17 |
+| Resources | 56 |
+| Data sources | 18 |
 | Ephemeral resources | 1 |
-| List resources (for `terraform query`) | 22 |
+| List resources (for `terraform query`) | 23 |
 | Actions | 0 |
 
 ## Resources
@@ -71,7 +71,7 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 | `aws_bedrockagentcore_online_evaluation_config` | `enable_on_create`, `evaluation_execution_role_arn`, `online_evaluation_config_name` | `description`, `execution_status`, `region`, `tags` | `data_source_config`, `evaluator`, `rule`, `timeouts` |
 | `aws_bedrockagentcore_policy` | `name`, `policy_engine_id` | `description`, `region`, `validation_mode` | `definition`, `timeouts` |
 | `aws_bedrockagentcore_policy_engine` | `name` | `description`, `encryption_key_arn`, `region`, `tags` | `timeouts` |
-| `aws_bedrockagentcore_registry` | `name` | `approval_configuration`, `authorizer_type`, `description`, `region` | `authorizer_configuration`, `timeouts` |
+| `aws_bedrockagentcore_registry` ⚠️ **deprecated** | `name` | `approval_configuration`, `authorizer_type`, `description`, `region` | `authorizer_configuration`, `timeouts` |
 | `aws_bedrockagentcore_resource_policy` | `policy`, `resource_arn` | `region` | — |
 | `aws_bedrockagentcore_token_vault_cmk` | — | `region`, `token_vault_id` | `kms_configuration` |
 | `aws_bedrockagentcore_workload_identity` | `name` | `allowed_resource_oauth2_return_urls`, `region`, `tags` | — |
@@ -83,6 +83,12 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 | `aws_bedrockdataautomation_blueprint` | `name`, `schema`, `type` | `region`, `tags` | `encryption_configuration` |
 | `aws_bedrockdataautomation_library` | `name` | `description`, `region`, `tags` | `encryption_configuration`, `timeouts` |
 | `aws_bedrockdataautomation_project` | `name` | `description`, `region`, `tags`, `type` | `custom_output_configuration`, `data_automation_library_configuration`, `encryption_configuration`, `override_configuration`, `standard_output_configuration`, `timeouts` |
+
+### AWS Agent Registry (`agent-registry-control`)
+
+| Type | Required arguments | Optional arguments | Nested blocks |
+|:--|:--|:--|:--|
+| `aws_agentregistry_registry` | `name` | `description`, `region`, `tags` | `approval_configuration`, `auto_detection_configuration`, `discovery_configuration`, `encryption_configuration`, `timeouts` |
 
 ### Amazon S3 Vectors (vector store for Knowledge Bases)
 
@@ -124,6 +130,12 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 | Type | Required arguments | Optional arguments | Nested blocks |
 |:--|:--|:--|:--|
 | `aws_bedrockagent_agent_versions` | `agent_id` | `region` | `agent_version_summaries` |
+
+### AWS Agent Registry (`agent-registry-control`)
+
+| Type | Required arguments | Optional arguments | Nested blocks |
+|:--|:--|:--|:--|
+| `aws_agentregistry_registry` | `registry_id` | `region` | — |
 
 ### Amazon OpenSearch Serverless (vector store for Knowledge Bases)
 
@@ -167,7 +179,7 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 | `aws_bedrockagentcore_online_evaluation_config` | — | `region` | — |
 | `aws_bedrockagentcore_policy` | `policy_engine_id` | `region` | — |
 | `aws_bedrockagentcore_policy_engine` | — | `region` | — |
-| `aws_bedrockagentcore_registry` | — | `region` | — |
+| `aws_bedrockagentcore_registry` ⚠️ **deprecated** | — | `region` | — |
 | `aws_bedrockagentcore_resource_policy` | — | `region` | — |
 
 ### Amazon Bedrock Data Automation
@@ -177,6 +189,12 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 | `aws_bedrockdataautomation_blueprint` | — | `region` | — |
 | `aws_bedrockdataautomation_library` | — | `region` | — |
 | `aws_bedrockdataautomation_project` | — | `region` | — |
+
+### AWS Agent Registry (`agent-registry-control`)
+
+| Type | Required arguments | Optional arguments | Nested blocks |
+|:--|:--|:--|:--|
+| `aws_agentregistry_registry` | — | `region` | — |
 
 ### Amazon OpenSearch Serverless (vector store for Knowledge Bases)
 
@@ -196,3 +214,4 @@ Related chapters: [Terraform coverage for Amazon Bedrock](../04-infrastructure-a
 - A **nested block** such as `knowledge_base_configuration` has its own arguments; look it up in the JSON file.
 - The schema says what Terraform accepts, not what the AWS API accepts in every Region or for every model. Always pair it with the AWS documentation for the feature.
 - **List resources** are used with `terraform query` (Terraform 1.14+) to discover existing resources for import.
+- ⚠️ **deprecated** means the provider schema itself flags the resource as deprecated; prefer its replacement.

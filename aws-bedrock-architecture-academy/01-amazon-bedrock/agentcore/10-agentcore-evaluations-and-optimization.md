@@ -47,7 +47,12 @@ Names are checked against the [generated API reference](../../references/bedrock
 
 AWS described **13 built-in evaluators** at GA: `Builtin.GoalSuccessRate`, the ten trace-level judges and the two tool-selection and tool-parameter judges. The two skill evaluators arrived in August 2026 and `Builtin.FailureAnalysis` (an insight evaluator, batch evaluation only) in October 2026; the trajectory checks are scored programmatically and need ground truth. Built-in evaluators cannot be modified. Call `ListEvaluators` for the current catalogue — it also returns managed third-party evaluators from the DeepEval and AutoEval libraries. Sources: [Built-in evaluators](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/built-in-evaluators-overview.html), [Prompt templates](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/prompt-templates-builtin.html), [Ground truth evaluations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/ground-truth-evaluations.html), [Release notes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html).
 
-**Custom evaluators** come in two kinds. An **LLM-as-a-judge** evaluator has your instructions (with placeholders such as `{context}` and `{assistant_turn}`), a Bedrock model you choose and a numerical or categorical rating scale; since October 2026 one judge call can rate several named dimensions. A **code-based** evaluator is your AWS Lambda function: it receives the session spans (up to 6 MB, timeout up to 300 s) and returns a `label`, optional `value` and optional `explanation`. Sources: [Custom evaluators](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/custom-evaluators.html), [Code-based evaluators](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-based-evaluators.html).
+| Custom evaluator | You provide | Returns |
+|:--|:--|:--|
+| **LLM-as-a-judge** | Instructions with level-specific placeholders (`{context}`, `{assistant_turn}`, `{available_tools}` …), a Bedrock model or inference profile, a numerical or categorical rating scale. Since October 2026 one judge call can rate several named dimensions | Score, label and explanation per dimension |
+| **Code-based** | An AWS Lambda function in the same Region; it receives the session spans (input up to 6 MB, timeout up to 300 s) | `label`, optional `value` and `explanation`, or `errorCode` and `errorMessage` |
+
+Sources: [Custom evaluators](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/custom-evaluators.html), [Code-based evaluators](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-based-evaluators.html).
 
 ### Three ways to run them
 
@@ -70,7 +75,7 @@ Sources: [Evaluation types](https://docs.aws.amazon.com/bedrock-agentcore/latest
 | Capability | Status | What it does |
 |:--|:--|:--|
 | **Recommendations** | GA | `StartRecommendation` with type `SYSTEM_PROMPT_RECOMMENDATION` or `TOOL_DESCRIPTION_RECOMMENDATION`, a target evaluator as the reward signal, and traces from CloudWatch, inline spans, a batch evaluation or an online evaluation. The current configuration is inline text or a configuration bundle version; with a bundle, the result is written back as a new version |
-| **Configuration bundles** | GA | Versioned, immutable snapshots of runtime configuration (system prompt, model ID, tool descriptions, any key-value pairs), keyed by the resource ARN they configure, with branches and parent versions like commits |
+| **Configuration bundles** | Available; no separate status entry (used by the GA A/B tests) | Versioned, immutable snapshots of runtime configuration (system prompt, model ID, tool descriptions, any key-value pairs), keyed by the resource ARN they configure, with branches and parent versions like commits |
 | **A/B tests** | GA | `CreateABTest` on an existing gateway: two variants (bundle versions on one runtime, or two gateway targets), traffic weights, and online evaluation configurations that score each session. The service reports mean, change, p-value and confidence interval per evaluator |
 | **Insights** | Preview, redesign in progress | Clustered failure, user-intent and execution-summary reports. New jobs stopped on 2026-10-16; use `Builtin.FailureAnalysis` in batch evaluation for failure patterns with root causes and suggested fixes |
 

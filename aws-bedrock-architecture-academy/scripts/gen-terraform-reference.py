@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PROVIDER = "registry.terraform.io/hashicorp/aws"
-MATCH = re.compile(r"^aws_(bedrock|bedrockagent|bedrockagentcore|bedrockdataautomation|bedrockruntime|s3vectors|opensearchserverless)_")
+MATCH = re.compile(r"^aws_(bedrock|bedrockagent|bedrockagentcore|bedrockdataautomation|bedrockruntime|agentregistry|s3vectors|opensearchserverless)_")
 KINDS = [
     ("resource_schemas", "Resources", "resource"),
     ("data_source_schemas", "Data sources", "data source"),
@@ -36,6 +36,7 @@ FAMILIES = [
     ("aws_bedrockagentcore_", "Amazon Bedrock AgentCore (`bedrock-agentcore-control`)"),
     ("aws_bedrockdataautomation_", "Amazon Bedrock Data Automation"),
     ("aws_bedrockruntime_", "Bedrock Runtime"),
+    ("aws_agentregistry_", "AWS Agent Registry (`agent-registry-control`)"),
     ("aws_s3vectors_", "Amazon S3 Vectors (vector store for Knowledge Bases)"),
     ("aws_opensearchserverless_", "Amazon OpenSearch Serverless (vector store for Knowledge Bases)"),
 ]
@@ -44,6 +45,8 @@ FAMILIES = [
 def compact_block(block: dict) -> dict:
     """Reduce a schema block to names, requiredness and nesting."""
     out: dict = {"attributes": {}, "blocks": {}}
+    if block.get("deprecated"):
+        out["deprecated"] = True
     for name, attr in sorted((block.get("attributes") or {}).items()):
         flags = []
         if attr.get("required"):
@@ -130,7 +133,8 @@ def main(argv: list[str]) -> int:
             for name in names:
                 required, optional, blocks = summarize(entries[name])
                 fmt = lambda xs: ", ".join(f"`{x}`" for x in xs) if xs else "—"  # noqa: E731
-                md.append(f"| `{name}` | {fmt(required)} | {fmt(optional)} | {fmt(blocks)} |")
+                label = f"`{name}` ⚠️ **deprecated**" if entries[name].get("deprecated") else f"`{name}`"
+                md.append(f"| {label} | {fmt(required)} | {fmt(optional)} | {fmt(blocks)} |")
             md.append("")
 
     md += [
@@ -141,6 +145,7 @@ def main(argv: list[str]) -> int:
         "- The schema says what Terraform accepts, not what the AWS API accepts in every Region or for every model. "
         "Always pair it with the AWS documentation for the feature.",
         "- **List resources** are used with `terraform query` (Terraform 1.14+) to discover existing resources for import.",
+        "- ⚠️ **deprecated** means the provider schema itself flags the resource as deprecated; prefer its replacement.",
         "",
     ]
 

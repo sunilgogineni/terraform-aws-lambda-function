@@ -1,6 +1,23 @@
 {
  "action_schemas": {},
  "data_source_schemas": {
+  "aws_agentregistry_registry": {
+   "attributes": {
+    "approval_configuration": "computed",
+    "created_at": "computed",
+    "description": "computed",
+    "discovery_configuration": "computed",
+    "encryption_configuration": "computed",
+    "name": "computed",
+    "region": "optional,computed",
+    "registry_arn": "computed",
+    "registry_id": "required",
+    "status": "computed",
+    "tags": "computed",
+    "updated_at": "computed"
+   },
+   "blocks": {}
+  },
   "aws_bedrock_custom_model": {
    "attributes": {
     "base_model_arn": "computed",
@@ -297,6 +314,12 @@
  },
  "generated": "2026-11-15",
  "list_resource_schemas": {
+  "aws_agentregistry_registry": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
   "aws_bedrock_evaluation_job": {
    "attributes": {
     "region": "optional"
@@ -363,7 +386,8 @@
    "attributes": {
     "region": "optional"
    },
-   "blocks": {}
+   "blocks": {},
+   "deprecated": true
   },
   "aws_bedrockagentcore_resource_policy": {
    "attributes": {
@@ -438,6 +462,158 @@
  },
  "provider": "hashicorp/aws",
  "resource_schemas": {
+  "aws_agentregistry_registry": {
+   "attributes": {
+    "description": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "registry_arn": "computed",
+    "registry_id": "computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "approval_configuration": {
+     "attributes": {
+      "auto_approval_rules": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "auto_detection_configuration": {
+     "attributes": {
+      "enabled": "required",
+      "scope": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "discovery_configuration": {
+     "attributes": {
+      "authorizer_type": "required"
+     },
+     "blocks": {
+      "authorizer_configuration": {
+       "attributes": {},
+       "blocks": {
+        "custom_jwt_authorizer": {
+         "attributes": {
+          "allowed_audience": "optional",
+          "allowed_clients": "optional",
+          "allowed_scopes": "optional",
+          "discovery_url": "required"
+         },
+         "blocks": {
+          "custom_claim": {
+           "attributes": {
+            "inbound_token_claim_name": "required",
+            "inbound_token_claim_value_type": "required"
+           },
+           "blocks": {
+            "authorizing_claim_match_value": {
+             "attributes": {
+              "claim_match_operator": "required"
+             },
+             "blocks": {
+              "claim_match_value": {
+               "attributes": {
+                "match_value_string": "optional",
+                "match_value_string_list": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "set"
+          },
+          "private_endpoint": {
+           "attributes": {},
+           "blocks": {
+            "managed_vpc_resource": {
+             "attributes": {
+              "endpoint_ip_address_type": "required",
+              "routing_domain": "optional",
+              "security_group_ids": "optional",
+              "subnet_ids": "required",
+              "tags": "optional",
+              "vpc_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "self_managed_lattice_resource": {
+             "attributes": {
+              "resource_configuration_identifier": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "private_endpoint_override": {
+           "attributes": {
+            "domain": "required"
+           },
+           "blocks": {
+            "private_endpoint": {
+             "attributes": {},
+             "blocks": {
+              "managed_vpc_resource": {
+               "attributes": {
+                "endpoint_ip_address_type": "required",
+                "routing_domain": "optional",
+                "security_group_ids": "optional",
+                "subnet_ids": "required",
+                "tags": "optional",
+                "vpc_identifier": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "self_managed_lattice_resource": {
+               "attributes": {
+                "resource_configuration_identifier": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "encryption_configuration": {
+     "attributes": {
+      "kms_key_arn": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
   "aws_bedrock_custom_model": {
    "attributes": {
     "base_model_identifier": "required",
@@ -5723,7 +5899,8 @@
      "blocks": {},
      "nesting_mode": "single"
     }
-   }
+   },
+   "deprecated": true
   },
   "aws_bedrockagentcore_resource_policy": {
    "attributes": {

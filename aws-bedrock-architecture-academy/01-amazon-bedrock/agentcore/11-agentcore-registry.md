@@ -38,7 +38,13 @@ AWS Agent Registry is a private, governed catalog of the agents, MCP servers, ag
 
 ### Two SDK namespaces — and a legacy one
 
-The AWS SDK has two clients for the registry: **`agent-registry-control`** (management) and **`agent-registry`** (discovery), both API version 2025-12-01 and signed as `agent-registry`. The SDK models also still contain the preview operations under AgentCore — `CreateRegistry` on `bedrock-agentcore-control` and `SearchRegistryRecords` on `bedrock-agentcore`. Those belong to the namespace that shut down on 2026-10-30; the migration guide lists every surface that changed (endpoints, IAM prefix, ARNs, EventBridge source `aws.agent-registry`, CloudWatch namespace `AWS/AgentRegistry`, Service Quotas code) and the breaking schema changes. Workload identities and credential providers used for URL synchronization stay in `bedrock-agentcore`. Source: [Comprehensive registry migration guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-faq.html).
+| SDK client | Plane | Status |
+|:--|:--|:--|
+| `agent-registry-control` (API version 2025-12-01) | Registries, records, approval | Current |
+| `agent-registry` (API version 2025-12-01) | Search, list, batch-get | Current |
+| `bedrock-agentcore-control` (`CreateRegistry` …) and `bedrock-agentcore` (`SearchRegistryRecords`) | Preview operations still present in the SDK models | Namespace shut down on 2026-10-30 |
+
+The migration guide lists every surface that changed — endpoints, IAM prefix, ARNs, EventBridge source `aws.agent-registry`, CloudWatch namespace `AWS/AgentRegistry`, Service Quotas code — and the breaking schema changes. Workload identities and credential providers for URL synchronization stay in `bedrock-agentcore`. Source: [Comprehensive registry migration guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-faq.html).
 
 ### Record lifecycle and approval
 
@@ -68,7 +74,16 @@ stateDiagram-v2
 
 ### Discovery and hybrid search
 
-`SearchDiscoverableRegistryRecords` takes a natural-language `searchQuery` (up to 256 characters), exactly one registry in `registryIds`, `maxResults` 1–20 (default 10) and optional metadata `filters` with `$eq`, `$ne`, `$in`, `$and` and `$or` on `name`, `recordType`, `recordVersion` and `customMetadata.<field>`. Semantic and keyword search run in parallel on every query and are merged; filters narrow the candidates before ranking. In keyword matching the record name weighs most, then description and descriptor content. Indexing is eventually consistent: an approved record usually appears within seconds, sometimes minutes. `ListDiscoverableRegistryRecords` and `BatchGetDiscoverableRegistryRecord` browse without a query. The same three operations are exposed as MCP tools on the registry's MCP endpoint. Sources: [Search for registry records](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-search-records.html), [SearchDiscoverableRegistryRecords](https://docs.aws.amazon.com/agent-registry/latest/APIReference/API_SearchDiscoverableRegistryRecords.html).
+| Aspect | `SearchDiscoverableRegistryRecords` |
+|:--|:--|
+| Query | Natural-language `searchQuery`, up to 256 characters |
+| Scope | Exactly one registry in `registryIds`; `APPROVED` revisions only |
+| Results | `maxResults` 1–20 (default 10), ranked |
+| Filters | `$eq`, `$ne`, `$in`, `$and`, `$or` on `name`, `recordType`, `recordVersion`, `customMetadata.<field>` — applied before ranking |
+| Ranking | Semantic and keyword search run in parallel and are merged; in keyword matching the name weighs most, then description and descriptors |
+| Consistency | Eventual: an approved record usually appears within seconds, sometimes minutes |
+
+`ListDiscoverableRegistryRecords` and `BatchGetDiscoverableRegistryRecord` browse without a query; all three are also MCP tools on the registry's MCP endpoint. Sources: [Search for registry records](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry-search-records.html), [SearchDiscoverableRegistryRecords](https://docs.aws.amazon.com/agent-registry/latest/APIReference/API_SearchDiscoverableRegistryRecords.html).
 
 > [!NOTE]
 > **Documented fact** — Semantic search uses **geographic cross-Region inference** to generate embeddings: record data stays stored in its Region, but queries and outputs can be processed in another Region of the same geography (US, EU, Asia Pacific; requests from EU Regions stay in the EU). CloudWatch and CloudTrail do not show the Region where inference ran. There is no extra charge.

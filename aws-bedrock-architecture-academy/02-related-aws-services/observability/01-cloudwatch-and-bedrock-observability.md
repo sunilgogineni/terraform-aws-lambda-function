@@ -41,7 +41,7 @@ from the till roll.
 |:--|:--|:--|:--|
 | `AWS/Bedrock` | `bedrock-runtime`: Converse, ConverseStream, InvokeModel, InvokeModelWithResponseStream, and the OpenAI-compatible Responses and Chat Completions APIs | `Invocations`, `InvocationLatency`, `InvocationClientErrors`, `InvocationServerErrors`, `InvocationThrottles`, `InputTokenCount`, `OutputTokenCount`, `TimeToFirstToken`, `EstimatedTPMQuotaUsage`, `CacheReadInputTokenCount`, `CacheWriteInputTokenCount`, `LegacyModelInvocations`, `OutputImageCount` | `ModelId`; `ModelId` + `ContextWindow` (long-context billing only); `ModelId` + `ImageSize` + `BucketedStepSize` |
 | `AWS/BedrockMantle` | `bedrock-mantle`: Responses, Chat Completions, Anthropic Messages | `Inferences`, `InferenceClientErrors`, `TotalInputTokens`, `TotalOutputTokens`, `InputTokens`, `OutputTokens` | Account (none), `Project`, `Model`, `Project` + `Model` |
-| `AWS/Bedrock/Guardrails` | `ApplyGuardrail` and guardrails applied in inference; Automated Reasoning checks | `Invocations`, `InvocationLatency`, errors, `InvocationThrottles`, `InvocationsIntervened`, `TextUnitCount`, `FindingCounts`, `TotalFindings` | `Operation`, `GuardrailContentSource`, `GuardrailPolicyType`, `GuardrailArn` + `GuardrailVersion` |
+| `AWS/Bedrock/Guardrails` | `ApplyGuardrail` requests; Automated Reasoning checks | `Invocations`, `InvocationLatency`, errors, `InvocationThrottles`, `InvocationsIntervened`, `TextUnitCount`, `FindingCounts`, `TotalFindings` | `Operation`, `GuardrailContentSource`, `GuardrailPolicyType`, `GuardrailArn` + `GuardrailVersion` |
 | `AWS/Bedrock/KnowledgeBases` | Managed Knowledge Base: `Retrieve`, `AgenticRetrieveStream`; storage | `Invocations`, `ClientErrors`, `ServerErrors`, `Throttles`, `TotalIterationCount`, `RawDataSize` | `Operation`, `KnowledgeBaseId` |
 | `AWS/Bedrock/Agents` | Agents Classic: `InvokeAgent`, `InvokeInlineAgent` | `InvocationCount`, `TotalTime`, `TTFT`, `ModelLatency`, model invocation errors and throttles, token counts | `Operation`, `ModelId`, `AgentAliasArn` |
 
@@ -234,11 +234,12 @@ S3 and the console view has no request table. `bedrock-mantle` traffic produces 
 6. **Alarm on the logging pipeline**, not only on the model.
 
 > [!TIP]
-> **Academy recommendation** — Alarms worth having on day one: `InvocationThrottles` > 0 in 3 of 5
-> minutes (all models); server-error rate above a few percent; `ModelInvocationLogsCloudWatchDeliveryFailure`
-> > 0; p99 `TimeToFirstToken` per model for chat; `LegacyModelInvocations` > 0; managed knowledge base
-> `Throttles` and `ServerErrors`; and an anomaly-detection alarm on guardrail `InvocationsIntervened`.
-> Thresholds are ours. This is our design guidance, not an official AWS reference architecture.
+> **Academy recommendation** — Alarms worth having on day one: any `InvocationThrottles` in 3 of 5
+> minutes (all models); a server-error rate above a few percent; any
+> `ModelInvocationLogsCloudWatchDeliveryFailure`; p99 `TimeToFirstToken` per model for chat; any
+> `LegacyModelInvocations`; managed knowledge base `Throttles` and `ServerErrors`; and an
+> anomaly-detection alarm on guardrail `InvocationsIntervened`. Thresholds are ours. This is our design
+> guidance, not an official AWS reference architecture.
 
 ## Example
 
@@ -637,14 +638,14 @@ filter ispresent(requestMetadata.team)
   policy: it masks matching data at every egress point and only principals with `logs:Unmask` see the
   original ([Masking sensitive log data](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/mask-sensitive-log-data.html)).
 - **Confused deputy.** Keep `aws:SourceAccount` and `aws:SourceArn` on the role trust and bucket policy.
-- **Same account and Region only.** To centralise, replicate or forward from the workload account;
-  Bedrock will not write cross-account.
+- **Same account and Region only.** Only destinations in the account and Region of the configuration
+  are supported; to centralise, replicate or forward from the workload account.
 - **No personal data in `requestMetadata`**; it is stored in every log record.
 
 ## Cost considerations
 
-- **Bedrock metrics** — runtime, mantle, guardrail and managed knowledge base metrics are published at
-  no additional charge; alarms and dashboards are billed by CloudWatch.
+- **Bedrock metrics** — metrics that AWS services publish are free in CloudWatch, and the managed
+  knowledge base page says so explicitly; alarms, dashboards and API reads are billed by CloudWatch.
 - **Invocation logs** — CloudWatch Logs bills ingestion per GB (the Standard and Essentials classes
   differ only in ingestion price), storage per GB-month and Logs Insights per GB scanned; masking is
   charged separately. Volume ≈ calls × (prompt + answer), so RAG prompts with long context dominate

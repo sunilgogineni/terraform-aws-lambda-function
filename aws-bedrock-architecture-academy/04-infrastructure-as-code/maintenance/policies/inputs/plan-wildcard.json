@@ -1,0 +1,106 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "complete": true,
+  "errored": false,
+  "resource_changes": [
+    {
+      "address": "aws_iam_policy.analytics_bedrock",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "analytics_bedrock",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "analytics-bedrock",
+          "policy": "{\"Statement\":{\"Action\":\"bedrock:*\",\"Effect\":\"Allow\",\"Resource\":\"*\"},\"Version\":\"2012-10-17\"}"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_iam_role_policy.legacy_invoke",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "legacy_invoke",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": {
+          "name": "legacy-invoke",
+          "role": "legacy-app",
+          "policy": "{\"Statement\":[{\"Action\":[\"bedrock:InvokeModel\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-2-lite-v1:0\",\"arn:aws:bedrock:us-east-2::foundation-model/amazon.nova-2-lite-v1:0\",\"arn:aws:bedrock:us-west-2::foundation-model/amazon.nova-2-lite-v1:0\"],\"Sid\":\"Invoke\"}],\"Version\":\"2012-10-17\"}"
+        },
+        "after": {
+          "name": "legacy-invoke",
+          "role": "legacy-app",
+          "policy": "{\"Statement\":[{\"Action\":[\"bedrock:InvokeModel\",\"bedrock:InvokeModelWithResponseStream\"],\"Effect\":\"Allow\",\"Resource\":\"*\",\"Sid\":\"Invoke\"},{\"Action\":\"bedrock:*\",\"Condition\":{\"StringNotEquals\":{\"aws:RequestedRegion\":[\"us-east-1\",\"us-east-2\",\"us-west-2\"]}},\"Effect\":\"Deny\",\"Resource\":\"*\",\"Sid\":\"DenyOutsideUs\"}],\"Version\":\"2012-10-17\"}"
+        },
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_iam_role.platform",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "platform",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "platform-admin-lite",
+          "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]},\"Sid\":\"TrustedServices\"}],\"Version\":\"2012-10-17\"}",
+          "inline_policy": [
+            {
+              "name": "everything-but-iam",
+              "policy": "{\"Statement\":[{\"Effect\":\"Allow\",\"NotAction\":[\"iam:*\",\"organizations:*\"],\"Resource\":\"*\",\"Sid\":\"BroadNotAction\"}],\"Version\":\"2012-10-17\"}"
+            }
+          ]
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_iam_policy.retired",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "retired",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "name": "retired",
+          "policy": "{\"Statement\":[{\"Action\":\"bedrock:InvokeModel\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}"
+        },
+        "after": null,
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": false
+      }
+    }
+  ]
+}

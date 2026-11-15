@@ -141,11 +141,11 @@ Resources:
       Policies:
         - Version: "2012-10-17"
           Statement:
-            - Sid: InvokeThroughTheInferenceProfile
+            - Sid: AllowTheInferenceProfile
               Effect: Allow
               Action: bedrock:InvokeModel
               Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${InferenceProfileId}"
-            - Sid: InvokeTheModelOnlyThroughThatProfile
+            - Sid: AllowTheModelOnlyThroughThatProfile
               Effect: Allow
               Action: bedrock:InvokeModel
               Resource: !Sub "arn:${AWS::Partition}:bedrock:*::foundation-model/${FoundationModelId}"

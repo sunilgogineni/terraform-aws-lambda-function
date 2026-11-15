@@ -24,6 +24,7 @@ MODULES = [
     ("aws-bedrock", "aws_bedrock", "Amazon Bedrock"),
     ("aws-bedrockagentcore", "aws_bedrockagentcore", "Amazon Bedrock AgentCore"),
     ("aws-bedrockmantle", "aws_bedrockmantle", "Amazon Bedrock (bedrock-mantle endpoint)"),
+    ("aws-agentregistry", "aws_agentregistry", "AWS Agent Registry"),
     ("aws-s3vectors", "aws_s3vectors", "Amazon S3 Vectors"),
     ("aws-opensearchserverless", "aws_opensearchserverless", "Amazon OpenSearch Serverless"),
 ]

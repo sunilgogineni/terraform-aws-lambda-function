@@ -14,6 +14,7 @@ Related chapters: [CDK coverage for Amazon Bedrock](../04-infrastructure-as-code
 | Amazon Bedrock | 23 | 0 |
 | Amazon Bedrock AgentCore | 27 | 14 |
 | Amazon Bedrock (bedrock-mantle endpoint) | 1 | 0 |
+| AWS Agent Registry | 2 | 0 |
 | Amazon S3 Vectors | 3 | 0 |
 | Amazon OpenSearch Serverless | 9 | 0 |
 
@@ -102,6 +103,19 @@ Import: `import { aws_bedrockmantle } from 'aws-cdk-lib';`
 | CloudFormation type | L1 construct |
 |:--|:--|
 | `AWS::BedrockMantle::Project` | `aws_bedrockmantle.CfnProject` |
+
+_No L2 resource constructs for this module in the stable library; use the L1 constructs above._
+
+## AWS Agent Registry — `aws-cdk-lib/aws-agentregistry`
+
+Import: `import { aws_agentregistry } from 'aws-cdk-lib';`
+
+### CloudFormation resource types and their L1 constructs
+
+| CloudFormation type | L1 construct |
+|:--|:--|
+| `AWS::AgentRegistry::Registry` | `aws_agentregistry.CfnRegistry` |
+| `AWS::AgentRegistry::RegistryRecord` | `aws_agentregistry.CfnRegistryRecord` |
 
 _No L2 resource constructs for this module in the stable library; use the L1 constructs above._
 

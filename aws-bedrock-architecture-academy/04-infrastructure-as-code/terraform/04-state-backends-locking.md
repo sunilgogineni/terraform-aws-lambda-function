@@ -22,7 +22,7 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Imagine a warehouse with a ledger. The shelves are your AWS account; the ledger says "row 12 holds the chat guardrail, serial `abc123`". Terraform reads the ledger to know which real object each line of your code refers to, and writes to it after every change. Keep one ledger per warehouse, lock it while someone is writing, keep old pages, and keep it in a safe — because people write sensitive things in the margins.
+Imagine a warehouse ledger: "row 12 holds the chat guardrail, serial `abc123`". Terraform reads it to know which real object each line of code means, and writes to it after every change. Keep one ledger per warehouse, lock it while someone writes, keep old pages, and keep it in a safe — people write sensitive things in the margins.
 
 ## How it really works
 
@@ -133,7 +133,7 @@ flowchart LR
     classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
 ```
 
-**What this shows** — One bucket holds one state object per component and environment; the lock is a sibling object with a `.tflock` suffix that exists only while a run holds it. Every object is encrypted with the same customer managed key, and versioning keeps earlier states for recovery.
+**What this shows** — One bucket, one state object per component and environment, and a sibling `.tflock` object that exists only while a run holds the lock. Everything is encrypted with one customer managed key; versioning keeps earlier states.
 
 **Walkthrough**
 
@@ -163,7 +163,7 @@ stateDiagram-v2
     [*] --> Unlocked
     Unlocked --> Locked: PutObject key.tflock with If-None-Match succeeds
     Locked --> Locked: Another run tries PutObject and is refused
-    Locked --> Writing: apply finished, PutObject state
+    Locked --> Writing: apply writes state with PutObject
     Writing --> Locked: new state version stored
     Locked --> Unlocked: lock ID matches, DeleteObject key.tflock
     Locked --> Stale: runner crashes before unlocking
@@ -172,7 +172,7 @@ stateDiagram-v2
 
 **What this shows** — The lock is binary: the object exists or it does not. A refused run changes nothing. A crashed runner leaves a stale lock that blocks everyone until it is removed deliberately.
 
-**Walkthrough** — Acquire with a conditional write; write state while holding the lock; release by deleting the object after checking the ID. `force-unlock` is the only exit from the stale state and must not be used while another run may still be working.
+**Walkthrough** — Acquire with a conditional write, write state while holding the lock, release by deleting the object after checking the ID. `force-unlock` is the only way out of a stale lock; never use it while another run may still be working.
 
 ## Implementation details
 
@@ -356,15 +356,15 @@ terraform {
 
 ## Security considerations
 
-- Treat read access to state as access to every secret in it. Restrict `s3:GetObject` on state keys to deployment roles and a break-glass role, and audit access with CloudTrail data events.
-- Use SSE-KMS with a customer managed key so the key policy is a second gate; the role needs `kms:Decrypt` to read.
-- Keep secrets out of state in the first place: write-only arguments, ephemeral resources, or services that read secrets themselves ([Secrets management and policy as code](../maintenance/04-secrets-and-policy-as-code.md)).
-- Plan files contain state and backend configuration; store them as short-lived, encrypted CI artifacts.
-- `state pull` and `state show` put plain-text state on a laptop. Avoid them in production except under break-glass procedures.
+- Read access to state is access to every secret in it: limit `s3:GetObject` on state keys to deployment and break-glass roles, and audit it with CloudTrail data events.
+- SSE-KMS with a customer managed key makes the key policy a second gate.
+- Keep secrets out of state: write-only arguments, ephemeral resources, or services that read secrets themselves ([Secrets management and policy as code](../maintenance/04-secrets-and-policy-as-code.md)).
+- Plan files contain state and backend configuration; keep them as short-lived, encrypted CI artifacts.
+- `state pull` and `state show` put plain-text state on a laptop; avoid them in production outside break-glass procedures.
 
 ## Cost considerations
 
-- The S3 backend costs storage for state objects and their versions plus requests; each run makes a handful of requests. Add a lifecycle rule that expires noncurrent versions after a period you can live with ([Amazon S3, AWS Lambda and Amazon API Gateway](../../00-foundations/aws-fundamentals/02-s3-lambda-api-gateway.md)).
+- The S3 backend costs storage for state objects and their versions plus a handful of requests per run. Expire noncurrent versions with a lifecycle rule ([Amazon S3, AWS Lambda and Amazon API Gateway](../../00-foundations/aws-fundamentals/02-s3-lambda-api-gateway.md)).
 - Native locking removes the DynamoDB table and its charges.
 - A customer managed KMS key has a monthly charge and per-request charges; one key can serve all state in the bucket ([AWS KMS and encryption](../../00-foundations/security/04-kms-encryption.md)).
 - HCP Terraform is billed by managed resources instead.

@@ -74,6 +74,7 @@ module "invocation_role" {
 
 # Non-secret runtime configuration. Secrets never go here: see chapter 4.
 resource "aws_ssm_parameter" "runtime_config" {
+  #checkov:skip=CKV2_AWS_34:Non-secret configuration (model and guardrail IDs); secrets live in Secrets Manager.
   name           = "/${var.workload}/${var.environment}/runtime-config"
   description    = "Bedrock runtime configuration for ${local.name_prefix}"
   type           = "String"

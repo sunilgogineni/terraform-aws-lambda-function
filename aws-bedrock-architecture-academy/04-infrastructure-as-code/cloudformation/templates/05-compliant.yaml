@@ -76,8 +76,9 @@ Resources:
         - Key: Project
           Value: bedrock-academy
 
-  # A version is an immutable snapshot. Changing the guardrail does NOT create a new version;
-  # change this resource's Description (or logical ID) to publish one. See chapter 07.
+  # A version is an immutable snapshot: changing the guardrail does NOT create a new version.
+  # To publish version 2, ADD a resource (GuardrailVersionTwo). Editing this one replaces it, and
+  # replacement deletes version 1 - which callers may still use. See chapter 07.
   GuardrailVersionOne:
     Type: AWS::Bedrock::GuardrailVersion
     Properties:

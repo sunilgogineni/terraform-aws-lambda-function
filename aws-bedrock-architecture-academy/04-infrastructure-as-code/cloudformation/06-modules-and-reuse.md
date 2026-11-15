@@ -59,21 +59,18 @@ Sources: [Modules](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuid
 [Module structure and requirements](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/modules-structure.html),
 [CloudFormation quotas](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html).
 
-**Registering.** With the CloudFormation CLI, `cfn init` creates a module project with a
-`fragments` folder that may hold one file; `cfn validate` regenerates the schema and `cfn submit`
-registers it. Alternatively, declare `AWS::CloudFormation::ModuleVersion` (a package in S3) and
-`AWS::CloudFormation::ModuleDefaultVersion` in a template. A version cannot be edited: updating the
-resource registers a new version, and deleting it marks the version `DEPRECATED`. Sources:
+**Registering.** With the CloudFormation CLI, `cfn init` creates a project whose `fragments`
+folder holds one file; `cfn validate` regenerates the schema and `cfn submit` registers it. Or
+declare `AWS::CloudFormation::ModuleVersion` and `ModuleDefaultVersion` in a template; updating a
+version resource registers a new version, deleting it marks the version `DEPRECATED`. Sources:
 [Develop a module](https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/modules-develop.html),
 [`AWS::CloudFormation::ModuleVersion`](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-cloudformation-moduleversion.html).
 
 > [!IMPORTANT]
 > **Status** — Every stack operation uses the module version that is the **default in that account
-> and Region at that moment**, including nested modules. Changing the default does not update
-> existing stacks; their next operation picks it up — except an update with *use previous
-> template*, which reuses the earlier processed template. The first version registered stays the
-> default until you change it. For StackSets, the same default must be set in every target account
-> and Region.
+> and Region at that moment**, nested modules included. Changing the default updates no stack; the
+> next operation picks it up, except an update with *use previous template*. The first version
+> registered stays the default until you change it. StackSets need the same default everywhere.
 > Sources: [Module versioning](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/module-versioning.html),
 > [`AWS::CloudFormation::ModuleDefaultVersion`](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-cloudformation-moduledefaultversion.html)
 

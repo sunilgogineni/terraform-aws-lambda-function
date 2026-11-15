@@ -1,0 +1,85 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "complete": true,
+  "errored": false,
+  "resource_changes": [
+    {
+      "address": "module.invocation_role.aws_iam_role.this",
+      "module_address": "module.invocation_role",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "this",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "chat-prod-invoke",
+          "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]},\"Sid\":\"TrustedServices\"}],\"Version\":\"2012-10-17\"}",
+          "permissions_boundary": "arn:aws:iam::999999999999:policy/example-workload-boundary"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "inline_policy": true,
+          "managed_policy_arns": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "module.invocation_role.aws_iam_role_policy.invoke",
+      "module_address": "module.invocation_role",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "invoke",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "chat-prod-invoke-bedrock-invoke",
+          "policy": "{\"Statement\":[{\"Action\":[\"bedrock:InvokeModel\",\"bedrock:InvokeModelWithResponseStream\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1:999999999999:inference-profile/us.amazon.nova-2-lite-v1:0\"],\"Sid\":\"InvokeThroughInferenceProfiles\"},{\"Action\":[\"bedrock:InvokeModel\",\"bedrock:InvokeModelWithResponseStream\"],\"Condition\":{\"StringLike\":{\"bedrock:InferenceProfileArn\":[\"arn:aws:bedrock:us-east-1:999999999999:inference-profile/us.amazon.nova-2-lite-v1:0\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-2-lite-v1:0\",\"arn:aws:bedrock:us-east-2::foundation-model/amazon.nova-2-lite-v1:0\",\"arn:aws:bedrock:us-west-2::foundation-model/amazon.nova-2-lite-v1:0\"],\"Sid\":\"InvokeFoundationModels\"},{\"Action\":[\"bedrock:ApplyGuardrail\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1:999999999999:guardrail/replaceguardrailid\"],\"Sid\":\"ApplyGuardrails\"},{\"Action\":[\"bedrock:InvokeModel\",\"bedrock:InvokeModelWithResponseStream\"],\"Condition\":{\"ArnNotLike\":{\"bedrock:GuardrailIdentifier\":\"arn:aws:bedrock:us-east-1:999999999999:guardrail/replaceguardrailid:*\"}},\"Effect\":\"Deny\",\"Resource\":\"*\",\"Sid\":\"DenyInferenceWithoutRequiredGuardrail\"}],\"Version\":\"2012-10-17\"}"
+        },
+        "after_unknown": {
+          "id": true,
+          "role": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_ssm_parameter.runtime_config",
+      "mode": "managed",
+      "type": "aws_ssm_parameter",
+      "name": "runtime_config",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "/chat/prod/runtime-config",
+          "type": "String",
+          "insecure_value": "{\"environment\":\"prod\",\"model_id\":\"us.amazon.nova-2-lite-v1:0\"}"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "version": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ]
+}
