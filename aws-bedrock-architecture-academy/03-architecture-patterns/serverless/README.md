@@ -254,10 +254,10 @@ sequenceDiagram
     end
 ```
 
-Steps 3–7: the cheap checks run **before** the function commits to a 200 — once the metadata
-prelude is sent, the status code can no longer change. Steps 8–14: everything after the prelude
-must report errors in-band, in the body. Steps 15–17: the turn is saved only when the stream
-completed; a half answer is never stored as if it were whole.
+Steps 3–8: the cheap checks run **before** the function commits to a 200 in step 9 — once the
+metadata prelude is sent, the status code can no longer change. Steps 10–14: everything after the
+prelude must report errors in-band, in the body. Steps 15–16: the turn is saved only when the
+stream completed; a half answer is never stored as if it were whole.
 
 ## Implementation details
 

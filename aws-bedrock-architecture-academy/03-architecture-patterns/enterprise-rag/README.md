@@ -277,9 +277,9 @@ sequenceDiagram
 
 Steps 2–4: the filter and the user context come from verified claims, never from the request
 body; ACL evaluation fails closed, so a missing `userContext` returns nothing from ACL-enabled
-sources. Steps 5–6: an empty result is answered without a model call — cheaper and honest.
-Steps 7–10: the grounding check needs the model's answer, so it runs on the output only.
-Steps 11–14: an intervention is a normal response, not an error; log it, because a rising rate
+sources. Step 5: an empty result is answered without a model call — cheaper and honest.
+Steps 6–9: the grounding check needs the model's answer, so it runs on the output only.
+Steps 10–13: an intervention is a normal response, not an error; log it, because a rising rate
 signals stale or missing documents.
 
 ## Implementation details
@@ -441,7 +441,7 @@ def grounded_answer(runtime, question: str, results: list, *, model_id: str,
 | Treating ACL filtering as authorization | A caller sets any e-mail and reads as that user | Authenticate upstream; restrict who may call `Retrieve` |
 | `RetrieveAndGenerate` on a managed knowledge base | The API rejects it | `AgenticRetrieveStream` or `Retrieve` + `Converse` |
 | Returning every retrieved passage as a citation | Citations that do not support the text | Cite only what the answer references |
-| Answers longer than 5,000 characters with grounding on | Grounding cannot score the whole answer | Cap `maxTokens`; split long answers |
+| Answers longer than 5,000 characters with grounding on | Beyond the check's documented response limit | Cap `maxTokens`; keep answers short |
 | No evaluation baseline | A chunking change silently lowers quality | Baseline scores; compare before release |
 | Documents uploaded without metadata | They match no tenant, or every tenant | Reject at upload; test the ingestion |
 

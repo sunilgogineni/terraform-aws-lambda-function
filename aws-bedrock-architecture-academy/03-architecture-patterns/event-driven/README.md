@@ -76,7 +76,7 @@ The three lanes and their completion paths are drawn in [diagram set 23](../../d
 | AWS Lambda worker | Claims, calls the model, stores, routes | Maximum concurrency; least-privilege role |
 | Amazon DynamoDB ledger | Idempotency keys, status, pointers to results | Conditional writes; KMS; point-in-time recovery |
 | Amazon Bedrock Runtime + Guardrails | Classification, summarisation, extraction by prompt | IAM scoped to model ARNs; guardrail on every call |
-| Bedrock Data Automation, batch inference | Extraction and bulk lanes | `clientToken` / `clientRequestToken`; service roles |
+| Bedrock Data Automation, batch inference | Extraction and bulk lanes | `clientToken` / `clientRequestToken`; batch service role; Data Automation profile ARNs in IAM |
 | Amazon S3 (results) | Results and job outputs | SSE-KMS; lifecycle rules |
 | Human review queue | Items a person must decide | Separate reviewer role |
 | Amazon SNS | Completion fan-out | Topic policy; KMS; pointers, not content |

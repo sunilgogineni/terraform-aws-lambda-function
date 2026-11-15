@@ -6,7 +6,7 @@
 # `terraform validate -test-directory=integration`.
 #
 #   terraform init -test-directory=integration
-#   terraform test -test-directory=integration -var-file=sandbox.tfvars
+#   terraform test -test-directory=integration -var-file=integration/sandbox.tfvars
 
 run "create_role" {
   # command defaults to apply: real resources in the sandbox account.

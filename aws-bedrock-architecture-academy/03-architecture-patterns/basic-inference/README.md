@@ -251,10 +251,10 @@ sequenceDiagram
     end
 ```
 
-Steps 2–5: one logical call may be several HTTP attempts, and the SDK waits between them; these
-errors cost no generation. Steps 6–7: a guardrail block is a normal 200 with `stopReason`
-`guardrail_intervened`. Steps 8–12: the answer returns with token usage; the log record is
-asynchronous. Steps 13–14: a read timeout is the dangerous case — the model may have finished and
+Steps 2–4: one logical call may be several HTTP attempts, and the SDK waits between them; these
+errors cost no generation. Steps 5–6: a guardrail block is a normal 200 with `stopReason`
+`guardrail_intervened`. Steps 7–11: the answer returns with token usage; the log record is
+asynchronous. Step 12: a read timeout is the dangerous case — the model may have finished and
 billed, so a blind retry can pay twice.
 
 ## Implementation details

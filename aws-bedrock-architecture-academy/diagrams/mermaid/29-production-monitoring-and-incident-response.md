@@ -309,7 +309,7 @@ lever.
 | 17 | Alarm → OpsCenter | OpsItem creation | Alarm details | `AWSServiceRoleForCloudWatchAlarms_ActionSSM` |
 | 18 | GuardDuty, Security Hub → EventBridge | Events | Finding JSON | — |
 | 19 | EventBridge → runbook, function, topic | Rule targets | Event | Target permissions or role |
-| 20–21 | SNS → paging tool → engineer | HTTPS, e-mail or SMS subscription | Notification | Subscription confirmation |
+| 20–21 | SNS → paging tool → engineer | HTTPS, e-mail or SMS subscription | Notification | Topic subscription |
 | 22 | Engineer → AppConfig | `StartDeployment` | New flag value | IAM |
 | 23 | Application → AppConfig | `StartConfigurationSession`, `GetLatestConfiguration` (through AppConfig Agent) | Flag value in | Execution role |
 | 24 | Application → Bedrock | `Converse` with the flag's `modelId` | Prompt out | SigV4; IAM allows each target |
@@ -379,26 +379,26 @@ quotas for Amazon Bedrock"; AWS recommends retries with exponential backoff and 
 requests are counted in `InvocationThrottles` and **not** in `Invocations`, and how many throttles you
 see depends on your SDK retry settings.
 
-**Steps 5–10 — detection and routing.** The alarm acts only on the transition to `ALARM`. The SNS path
+**Steps 5–9 — detection and routing.** The alarm acts only on the transition to `ALARM`. The SNS path
 pages a person; the EventBridge path can start a runbook that collects evidence before anyone logs in.
 
-**Step 11 — triage.** `EstimatedTPMQuotaUsage` is an approximation: throttling is decided on the
+**Step 10 — triage.** `EstimatedTPMQuotaUsage` is an approximation: throttling is decided on the
 upfront reservation of input tokens plus `max_tokens`, so AWS says not to use it alone.
 `InvocationClientErrors` includes requests rejected for exceeding a service quota, which are not counted
 as throttles — check both. The invocation logs show which `identity.arn` drives the load; an unknown
-caller turns this into a security incident (step 12).
+caller turns this into a security incident (the first alternative).
 
-**Steps 13–20 — mitigation without a deployment.** Cross-Region profiles have their own
+**Steps 11–16 — mitigation without a deployment.** Cross-Region profiles have their own
 "Cross-Region InvokeModel tokens per minute" quota, separate from the on-demand quota, so rerouting
 moves traffic to a different quota and a larger pool. Where residency rules forbid that, a fallback
 model gives another quota. AppConfig delivers the flag through the AppConfig Agent, and an alarm on the
 new path protects the change.
 
-**Steps 21–22 — quota.** For any model, requesting an increase of the cross-Region quota lets support
+**Steps 17–18 — quota.** For any model, requesting an increase of the cross-Region quota lets support
 offer increases of the on-demand and daily cross-model quotas too. Priority goes to customers who
 consume their existing quota, and models in Legacy or Deprecated status get no increase.
 
-**Steps 23–26 — recovery and learning.** The alarm returns to `OK`, which also reaches EventBridge. The
+**Steps 19–21 — recovery and learning.** The alarm returns to `OK`, which also reaches EventBridge. The
 review asks the Well-Architected questions: could detection, diagnosis or mitigation have been faster,
 and which runbook steps or alarms would prevent a repeat.
 
@@ -412,7 +412,7 @@ and which runbook steps or alarms would prevent a repeat.
   incident's own throttle alarm, already in `ALARM`, works against you; monitor alarms of the new path
   instead. `StopDeployment` with `AllowRevert` reverts a completed deployment.
 - **The page never arrives** — an alarm with actions disabled sends no notifications, and a deployment
-  does not roll back on it; alarm on the alarm pipeline as well (for example SNS delivery failures).
+  does not roll back on it. Test the notification path on a schedule (academy recommendation).
 
 > [!TIP]
 > **Academy recommendation** — Prepare the three levers before the first incident: a throttle alarm
@@ -432,10 +432,10 @@ and which runbook steps or alarms would prevent a repeat.
 | Managed knowledge base and agentic retrieval | `AWS/Bedrock/KnowledgeBases` `Throttles` by `Operation`; agentic retrieval has its own quota of 300 requests per minute per account — see [diagram set 9](09-agentic-retrieval.md) |
 | Global instead of Geographic profile | Edge 24b counts against "Global cross-Region tokens per minute"; SCPs must allow `aws:RequestedRegion` `unspecified`, not each destination Region — see [diagram set 21](21-cross-region-inference.md) |
 | Predictable, sustained throughput | AWS suggests the Reserved tier or Provisioned Throughput, where the model supports them, instead of repeated reroutes — see [Service tiers](../../01-amazon-bedrock/inference/06-service-tiers.md) |
-| Prompt caching in use | A reroute processes requests elsewhere, so the first requests write new cache entries and cost more until the cache warms |
+| Prompt caching in use | A cache entry lives where the request was processed, so a reroute to a profile causes new cache writes in the Regions it reaches — see [diagram set 21](21-cross-region-inference.md) |
 | Existing Incident Manager customers | Edge 17 can instead create an Incident Manager incident with a response plan; not available to new customers |
 | CloudWatch investigations | An alarm can start an investigation when it goes to `ALARM` — an additional alarm action beside edges 15 and 17 |
-| Multi-account | A monitoring account receives metrics and logs through CloudWatch cross-account observability and can create anomaly detectors on source-account metrics; routing and paging move there — see [Pattern: multi-account generative AI platform](../../03-architecture-patterns/multi-account/README.md) |
+| Multi-account | A monitoring account receives metrics and logs through CloudWatch cross-account observability and can create anomaly detectors on source-account metrics; routing and paging can be centralised there (academy design) — see [Pattern: multi-account generative AI platform](../../03-architecture-patterns/multi-account/README.md) |
 | Security-triggered incident | The path starts at edge 18; GuardDuty's remediation guidance for `CostHarvesting` covers compromised credentials, narrower invoke permissions, AWS Budgets actions and AWS Cost Anomaly Detection |
 | Batch inference | No paging path: jobs report `Batch Inference Job State Change` events, best effort — see the [batch job state diagram](../plantuml/bedrock-batch-job-state.puml) |
 
@@ -456,9 +456,9 @@ and which runbook steps or alarms would prevent a repeat.
 
 ## References
 
-- [Monitor bedrock-runtime inference using CloudWatch metrics](https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html) — `InvocationThrottles`, `EstimatedTPMQuotaUsage`, the `ModelId` caveat, log delivery metrics (edges 4, 13; step 11).
+- [Monitor bedrock-runtime inference using CloudWatch metrics](https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html) — `InvocationThrottles`, `EstimatedTPMQuotaUsage`, the `ModelId` caveat, log delivery metrics (edges 4, 13; step 10).
 - [Troubleshooting Amazon Bedrock API error codes](https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html) — `ThrottlingException` 429, `ServiceUnavailable` 503, `overloaded_error` 529, backoff with jitter, cross-Region inference, Reserved tier (steps 1–4, failure paths).
-- [Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — on-demand, cross-Region and daily quotas; how to request increases; Legacy models (edges 24–25; steps 21–22).
+- [Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html) — on-demand, cross-Region and daily quotas; how to request increases; Legacy models (edges 24–25; steps 17–18).
 - [Requesting a quota increase](https://docs.aws.amazon.com/servicequotas/latest/userguide/request-quota-increase.html) — `RequestServiceQuotaIncrease`, approval and support cases (edge 25).
 - [Model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html) — log contents, `bedrock-runtime` only (edge 8).
 - [Monitor Amazon Bedrock Guardrails using CloudWatch metrics](https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-guardrails-cw-metrics.html) and [Observability for managed knowledge bases](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-observability.html) — edges 5 and 6.
@@ -472,5 +472,5 @@ and which runbook steps or alarms would prevent a repeat.
 - [Incident Manager availability change](https://docs.aws.amazon.com/incident-manager/latest/userguide/incident-manager-availability-change.html) — closed to new customers since 2025-11-07.
 - [What is AWS AppConfig?](https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html), [Retrieving feature flags and configuration data](https://docs.aws.amazon.com/appconfig/latest/userguide/retrieving-feature-flags.html) and [Monitoring deployments for automatic rollback](https://docs.aws.amazon.com/appconfig/latest/userguide/monitoring-deployments.html) — feature flags, AppConfig Agent, alarm-based rollback, `StopDeployment` with `AllowRevert` (edges 22, 23, 26).
 - [Route model inference requests across AWS Regions with cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html) — profiles, CloudTrail `inferenceRegion` (edges 10, 24b).
-- [OPS11-BP02 Perform post-incident analysis](https://docs.aws.amazon.com/wellarchitected/latest/operational-excellence-pillar/ops_evolve_ops_perform_rca_process.html) — the review questions (steps 25–26).
+- [OPS11-BP02 Perform post-incident analysis](https://docs.aws.amazon.com/wellarchitected/latest/operational-excellence-pillar/ops_evolve_ops_perform_rca_process.html) — the review questions (step 21).
 - [Generated API reference](../../references/bedrock-api-operations.md) — Bedrock operation names used in this set.

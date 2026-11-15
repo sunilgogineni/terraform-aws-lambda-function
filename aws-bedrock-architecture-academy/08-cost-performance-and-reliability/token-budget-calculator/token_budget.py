@@ -197,7 +197,7 @@ if __name__ == "__main__":
         print(f"{name:38} ${monthly:>10,.2f} per month")
 
     budget = TenantBudget(EXAMPLE_LARGE, RequestLimits(max_input_tokens=8_000, max_output_tokens=1_000),
-                          {"tenant-a": 0.05}, min_output_tokens=200)
+                          {"tenant-a": 0.04}, min_output_tokens=200)
     first = budget.reserve("tenant-a", input_tokens=5_000)
     print(f"reserved ${first.amount:.4f} with maxTokens={first.max_tokens}")
     actual = budget.settle(first, Usage.from_converse(
@@ -205,3 +205,7 @@ if __name__ == "__main__":
     print(f"settled at ${actual:.4f}; remaining ${budget.remaining('tenant-a'):.4f}")
     second = budget.reserve("tenant-a", input_tokens=5_000)
     print(f"second call shrunk to maxTokens={second.max_tokens}")
+    try:
+        budget.reserve("tenant-a", input_tokens=5_000)
+    except BudgetExceeded as exc:
+        print(f"third call rejected: {exc}")
