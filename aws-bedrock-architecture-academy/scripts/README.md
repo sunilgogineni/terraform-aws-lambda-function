@@ -16,12 +16,15 @@ credentials.
 | [`check-plantuml.sh`](check-plantuml.sh) | PlantUML syntax; `--render` writes SVGs | Java, PlantUML jar |
 | [`check-drawio.py`](check-drawio.py) | draw.io XML is well-formed and internally consistent (it is **not** rendered) | Python 3.10+ |
 | [`check-data-files.py`](check-data-files.py) | Every JSON and YAML file parses | Python 3.10+, PyYAML |
+| [`check-api-names.py`](check-api-names.py) | Every API operation named in a chapter exists in the AWS SDK's service models; unknown names are listed for review | Python 3.10+; `boto3` to recognise non-Bedrock services |
 | [`scan-secrets.py`](scan-secrets.py) | No access keys, tokens, private keys, real account IDs or personal e-mail addresses | Python 3.10+ |
 | [`validate-terraform.sh`](validate-terraform.sh) | `terraform fmt -check`, `init -backend=false`, `validate`, and `terraform test` where tests exist | Terraform 1.11+ |
 | [`validate-cdk.sh`](validate-cdk.sh) | `tsc --noEmit`, Jest, `cdk synth`, then `cfn-lint` on the synthesized templates | Node 22+, project dependencies |
 | [`validate-cfn.sh`](validate-cfn.sh) | `cfn-lint` on every hand-written CloudFormation/SAM template | cfn-lint |
+| [`build-source-index.py`](build-source-index.py) | Lists every external link cited, by section and domain, into [`references/external-links.md`](../references/external-links.md) and the appendix of [`SOURCES.md`](../SOURCES.md) | Python 3.10+ |
 | [`build-nav.py`](build-nav.py) | Generates chapter footers, section indexes, [`CONTENT-MAP.md`](../CONTENT-MAP.md), the diagram index and the progress table from [`content-map.json`](content-map.json) | Python 3.10+ |
 | [`gen-terraform-reference.py`](gen-terraform-reference.py) | Builds [`references/terraform-aws-provider-bedrock.md`](../references/terraform-aws-provider-bedrock.md) from the provider's real schema | Python 3.10+, a schema dump |
+| [`gen-api-reference.py`](gen-api-reference.py) | Builds [`references/bedrock-api-operations.md`](../references/bedrock-api-operations.md) from the AWS SDK's service models | Python with `boto3` installed |
 | [`gen-cdk-reference.py`](gen-cdk-reference.py) | Builds [`references/cdk-and-cloudformation-bedrock.md`](../references/cdk-and-cloudformation-bedrock.md) from an installed `aws-cdk-lib` | Python 3.10+, `node_modules` |
 
 ## Quick start

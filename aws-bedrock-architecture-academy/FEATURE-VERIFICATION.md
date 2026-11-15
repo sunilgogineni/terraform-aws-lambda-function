@@ -31,6 +31,7 @@ wrong or stale — fix it here first.
 | `aws-cdk-lib` | 2.277.0 | Installed package inspected → [`references/cdk-and-cloudformation-bedrock.md`](references/cdk-and-cloudformation-bedrock.md) |
 | `@aws-cdk/aws-bedrock-alpha` | 2.277.0-alpha.0 | Installed package inspected (experimental API) |
 | CloudFormation | resource spec bundled in `aws-cdk-lib` 2.277.0 | L1 constructs are generated from the CloudFormation specification |
+| AWS SDK service models | `botocore` 1.44.3 | API operation names and request members → [`references/bedrock-api-operations.md`](references/bedrock-api-operations.md) |
 
 > [!IMPORTANT]
 > **Status** — A "❌" in the CloudFormation column means the type is absent from the specification
@@ -160,7 +161,7 @@ Registry uses `agent-registry`. The overview names thirteen services. Platform G
 | **Optimization** | Recommendations, batch evaluation and A/B tests GA (Jul 2026); Insights in preview | Recommends prompt and tool-description changes and validates them | Configuration bundles, A/B tests | — | IAM | PrivateLink | See pricing page | [AgentCore pricing](https://aws.amazon.com/bedrock/agentcore/pricing/) |
 | **Policy** | GA 2026-03-03 | Deterministic checks on Gateway tool calls, written in **Cedar**; natural-language authoring | Policy engine attached to a Gateway; `LOG_ONLY` or enforce | Default-deny; forbid wins | — | PrivateLink | Per authorisation request; per token for natural-language authoring | [Policy](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html), [Core concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-core-concepts.html) |
 | **Registry** ("AWS Agent Registry") | GA (Aug 2026) | Governed catalog of agents, MCP servers, tools and skills, with hybrid search | `agent-registry` namespace | — | IAM or JWT | PrivateLink | Records and search/list/get calls | [Document history](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html) |
-| **Payments** | **Preview** (May 2026) | Agent micropayments (x402 and MPP) through wallet providers | `CreateInstrument`, `ProcessPayment` | — | Payment credential providers | — | Per wallet operation. Whether it has since gone GA is **UNVERIFIED** | [Document history](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html) |
+| **Payments** | **Preview** (May 2026) | Agent micropayments (x402 and MPP) through wallet providers | `CreatePaymentInstrument`, `CreatePaymentSession`, `ProcessPayment` | — | Payment credential providers | — | Per wallet operation. Whether it has since gone GA is **UNVERIFIED** | [Document history](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html) |
 | **Web Search / Web Answer** | Web Search tool GA (Jul 2026); Web Answer GA (Nov 2026, us-east-1 only) | Web search and cited answers as a Gateway connector or direct API | `InvokeWebSearch` | 10 TPS | — | PrivateLink | Per 1,000 queries / calls | [AgentCore pricing](https://aws.amazon.com/bedrock/agentcore/pricing/) |
 
 ### B1. AgentCore — Regions

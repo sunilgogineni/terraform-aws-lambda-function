@@ -22,7 +22,11 @@ times read like one course, and so that a reader can always tell a **documented 
 5. **Start from the register.** [`FEATURE-VERIFICATION.md`](../FEATURE-VERIFICATION.md) holds the
    verified status of every feature. If your research contradicts it, do not silently pick one:
    write what you found and report the discrepancy to the editor.
-6. **IaC names are checked mechanically.**
+6. **API names are checked mechanically.** Every API operation you name must exist in
+   [`references/bedrock-api-operations.json`](../references/bedrock-api-operations.json)
+   (generated from the AWS SDK's service models). The OpenAI- and Anthropic-compatible APIs
+   and `bedrock-mantle` are not in the SDK models; cite their documentation pages instead.
+7. **IaC names are checked mechanically.**
    - Terraform resource types and arguments must exist in
      [`references/terraform-aws-provider-bedrock-schema.json`](../references/terraform-aws-provider-bedrock-schema.json)
      (generated from the provider binary) or pass `terraform validate`.
@@ -30,8 +34,8 @@ times read like one course, and so that a reader can always tell a **documented 
      ([`references/cdk-and-cloudformation-bedrock.md`](../references/cdk-and-cloudformation-bedrock.md)).
    - If a tool has no resource for a feature, say so and name the verified alternative
      (CloudFormation type, API call from a custom resource, console-only, and so on).
-7. **Do not present academy designs as AWS reference architectures.** They are ours.
-8. **Model IDs change.** Use an ID only if you saw it in the documentation; in code, make the
+8. **Do not present academy designs as AWS reference architectures.** They are ours.
+9. **Model IDs change.** Use an ID only if you saw it in the documentation; in code, make the
    model ID a variable and note that the reader must confirm the current ID.
 
 ## 2. Callouts — how facts and opinions are marked

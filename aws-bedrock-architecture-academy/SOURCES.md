@@ -16,7 +16,7 @@ used for. Individual chapters list the exact pages they cite in their own last s
 |:--|:--|:--|
 | Page fetched and read | AWS documentation, What's New posts, AWS blogs, pricing pages, HashiCorp and Pulumi documentation | The page content was read on the verification date |
 | Raw file read from the vendor's repository | Terraform provider resource docs, changelogs, READMEs, LICENSE files | Read from the default branch, which can be ahead of the latest release |
-| Extracted from a tool binary or package | Terraform resource and argument names (`terraform providers schema -json`), CDK constructs and CloudFormation types (installed `aws-cdk-lib`) | Mechanical — the strongest evidence for what a tool version accepts |
+| Extracted from a tool binary or package | API operations (AWS SDK service models in `botocore`), Terraform resource and argument names (`terraform providers schema -json`), CDK constructs and CloudFormation types (installed `aws-cdk-lib`) | Mechanical — the strongest evidence for what a tool version accepts |
 | Package registry metadata | Latest tool versions | npm, PyPI, Go module proxy, `releases.hashicorp.com`, Maven Central |
 
 > [!IMPORTANT]
@@ -132,6 +132,15 @@ Third-party blogs and tutorials are **not** used as sources.
 | S-CFN-05 | [CloudFormation template reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-template-resource-type-ref.html) | Resource types |
 | S-SAM-01 | [SAM CLI issue 9339](https://github.com/aws/aws-sam-cli/issues/9339) | AgentCore types in SAM validation |
 | S-PUL-01 | [Pulumi AWS — Bedrock](https://www.pulumi.com/registry/packages/aws/api-docs/bedrock/) and [AWS Native — AgentCore](https://www.pulumi.com/registry/packages/aws-native/api-docs/bedrockagentcore/) | Pulumi coverage |
+
+### API shapes
+
+| ID | Source | Used for |
+|:--|:--|:--|
+| S-API-01 | **AWS SDK service models** — `botocore` 1.44.3, the JSON models AWS publishes for each service | [Generated API operation reference](references/bedrock-api-operations.md): every operation name, HTTP binding and top-level member |
+| S-API-02 | [Converse API reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html) | IAM action required by Converse; request syntax |
+| S-API-03 | [Prerequisites for inference profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-prereq.html) | IAM policy shape for inference profiles; `bedrock:InferenceProfileArn` |
+| S-API-04 | [Guardrails permissions](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions.html) and [Enforce specific guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions-id.html) | `bedrock:ApplyGuardrail`; `bedrock:GuardrailIdentifier` enforcement |
 
 ## 5. DevSecOps tooling
 

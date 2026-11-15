@@ -136,24 +136,24 @@ Hands-on work is in [`labs/`](labs/README.md); day-by-day pacing is in the
 
 ### [Level 1 — Foundations](00-foundations/README.md)
 
-_Level: Beginner · 0/20 chapters written_
+_Level: Beginner · 6/20 chapters written_
 
 | Group | Chapters |
 |:--|:--|
-| **AWS fundamentals** | AWS global infrastructure: Regions, Availability Zones and the edge _(planned)_<br/>Amazon S3, AWS Lambda and Amazon API Gateway _(planned)_<br/>Amazon EventBridge, Amazon SQS and Amazon SNS _(planned)_<br/>Amazon CloudWatch and AWS CloudTrail _(planned)_<br/>AWS Organizations and AWS Control Tower _(planned)_ |
-| **Networking** | VPCs and subnets _(planned)_<br/>Public and private networking _(planned)_<br/>VPC endpoints and AWS PrivateLink _(planned)_ |
+| **AWS fundamentals** | [AWS global infrastructure: Regions, Availability Zones and the edge](00-foundations/aws-fundamentals/01-global-infrastructure.md)<br/>Amazon S3, AWS Lambda and Amazon API Gateway _(planned)_<br/>Amazon EventBridge, Amazon SQS and Amazon SNS _(planned)_<br/>Amazon CloudWatch and AWS CloudTrail _(planned)_<br/>AWS Organizations and AWS Control Tower _(planned)_ |
+| **Networking** | [VPCs and subnets](00-foundations/networking/01-vpc-and-subnets.md)<br/>[Public and private networking](00-foundations/networking/02-public-private-networking.md)<br/>[VPC endpoints and AWS PrivateLink](00-foundations/networking/03-vpc-endpoints-and-privatelink.md) |
 | **Security** | IAM fundamentals: principals, policies and evaluation _(planned)_<br/>IAM roles, trust policies and cross-account access _(planned)_<br/>Resource-based policies _(planned)_<br/>AWS KMS and encryption _(planned)_ |
-| **Level 2 — Generative AI fundamentals** | Generative AI, foundation models and LLMs _(planned)_<br/>Tokens, context windows, and training versus inference _(planned)_<br/>Embeddings, vector search, semantic search and hybrid search _(planned)_<br/>Retrieval-augmented generation (RAG) _(planned)_<br/>Fine-tuning and model customization _(planned)_<br/>Agentic AI, tool calling and multi-agent architectures _(planned)_<br/>Model evaluation and model selection _(planned)_<br/>Latency and token economics _(planned)_ |
+| **Level 2 — Generative AI fundamentals** | [Generative AI, foundation models and LLMs](00-foundations/generative-ai-fundamentals/01-generative-ai-and-foundation-models.md)<br/>[Tokens, context windows, and training versus inference](00-foundations/generative-ai-fundamentals/02-tokens-context-windows-inference.md)<br/>Embeddings, vector search, semantic search and hybrid search _(planned)_<br/>Retrieval-augmented generation (RAG) _(planned)_<br/>Fine-tuning and model customization _(planned)_<br/>Agentic AI, tool calling and multi-agent architectures _(planned)_<br/>Model evaluation and model selection _(planned)_<br/>Latency and token economics _(planned)_ |
 
 ### [Level 3 — Amazon Bedrock deep dive](01-amazon-bedrock/README.md)
 
-_Level: Intermediate · 0/47 chapters written_
+_Level: Intermediate · 6/47 chapters written_
 
 | Group | Chapters |
 |:--|:--|
-| **Overview** | What Amazon Bedrock is: services, namespaces and planes _(planned)_<br/>Endpoints, APIs and authentication _(planned)_<br/>Model access and subscriptions _(planned)_<br/>Projects, Workspaces and the Web Search tool _(planned)_ |
-| **Foundation models** | Model providers and the model catalog _(planned)_<br/>Model lifecycle and selection _(planned)_<br/>Model customization: fine-tuning, reinforcement fine-tuning and distillation _(planned)_<br/>Custom Model Import and on-demand custom model deployment _(planned)_<br/>Amazon Bedrock Marketplace _(planned)_ |
-| **Inference** | The Converse API _(planned)_<br/>InvokeModel and streaming APIs _(planned)_<br/>OpenAI- and Anthropic-compatible APIs _(planned)_<br/>Cross-Region inference: Geo and Global profiles _(planned)_<br/>Application inference profiles _(planned)_<br/>Service tiers: Reserved, Priority, Standard and Flex _(planned)_<br/>Provisioned Throughput _(planned)_<br/>Batch inference _(planned)_ |
+| **Overview** | [What Amazon Bedrock is: services, namespaces and planes](01-amazon-bedrock/overview/01-what-is-amazon-bedrock.md)<br/>[Endpoints, APIs and authentication](01-amazon-bedrock/overview/02-endpoints-apis-and-authentication.md)<br/>Model access and subscriptions _(planned)_<br/>Projects, Workspaces and the Web Search tool _(planned)_ |
+| **Foundation models** | [Model providers and the model catalog](01-amazon-bedrock/foundation-models/01-model-providers-and-catalog.md)<br/>Model lifecycle and selection _(planned)_<br/>Model customization: fine-tuning, reinforcement fine-tuning and distillation _(planned)_<br/>Custom Model Import and on-demand custom model deployment _(planned)_<br/>Amazon Bedrock Marketplace _(planned)_ |
+| **Inference** | [The Converse API](01-amazon-bedrock/inference/01-converse-api.md)<br/>InvokeModel and streaming APIs _(planned)_<br/>OpenAI- and Anthropic-compatible APIs _(planned)_<br/>Cross-Region inference: Geo and Global profiles _(planned)_<br/>[Application inference profiles](01-amazon-bedrock/inference/05-application-inference-profiles.md)<br/>[Service tiers: Reserved, Priority, Standard and Flex](01-amazon-bedrock/inference/06-service-tiers.md)<br/>Provisioned Throughput _(planned)_<br/>Batch inference _(planned)_ |
 | **Prompt management** | Prompt management _(planned)_<br/>Prompt optimization _(planned)_ |
 | **Prompt caching** | Prompt caching _(planned)_ |
 | **Knowledge Bases** | Knowledge Bases overview: managed versus customer-managed _(planned)_<br/>Managed Knowledge Base _(planned)_<br/>Customer-managed knowledge bases and vector stores _(planned)_<br/>Ingestion, parsing and chunking _(planned)_<br/>Retrieval, reranking and metadata filtering _(planned)_<br/>Structured data retrieval and GraphRAG _(planned)_ |
@@ -336,7 +336,7 @@ support is in the [verification matrix](FEATURE-VERIFICATION.md).
 | [PROGRESS.md](PROGRESS.md) | What is written and what is not |
 | [QUALITY-CHECK-REPORT.md](QUALITY-CHECK-REPORT.md) | What was checked, what passed, what could not be tested |
 | [CHANGELOG.md](CHANGELOG.md) | What changed and when it was re-verified |
-| [references/](references/README.md) | Resource tables generated from the Terraform provider schema and the CDK library |
+| [references/](references/README.md) | Tables generated from the tools themselves: API operations from the AWS SDK models, Terraform resources from the provider schema, CloudFormation types and CDK constructs from the CDK library |
 
 ## Repository layout
 
