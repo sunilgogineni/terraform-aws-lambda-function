@@ -87,5 +87,5 @@ resilience and disaster recovery are in
 | 12 | [Observability and tracing for GenAI](12-observability-and-tracing.md) | Advanced architecture topics | 🚧 planned |
 | 13 | [Model quality evaluation in production](13-model-quality-evaluation.md) | Advanced architecture topics | 🚧 planned |
 | 14 | [Choosing between RAG, agents, flows and plain inference](14-choosing-rag-agents-flows.md) | Advanced architecture topics | 🚧 planned |
-| 15 | [Keeping up with AWS changes without outdated tutorials](15-keeping-up-with-aws-changes.md) | Advanced architecture topics | 🚧 planned |
+| 15 | [Keeping up with AWS changes without outdated tutorials](15-keeping-up-with-aws-changes.md) | Advanced architecture topics | ✅ |
 <!-- TOC:END -->

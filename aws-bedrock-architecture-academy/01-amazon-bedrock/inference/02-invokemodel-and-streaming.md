@@ -242,8 +242,8 @@ With a guardrail, the response body gains `amazon-bedrock-guardrailAction` (`INT
 
 ## 8. Security considerations
 
-- **IAM** — The same two actions as Converse authorize every operation here, so a policy that
-  allows `bedrock:InvokeModel` on a model allows it through both API families. To block
+- **IAM** — The same two actions as Converse authorize the invocation operations here, so a
+  policy that allows `bedrock:InvokeModel` on a model allows it through both API families. To block
   inference on a resource, deny both actions.
 - **Guardrails** — A guardrail identifier without a version, or with a content type other than
   `application/json`, is an error. Input tagging uses `amazon-bedrock-guardrailConfig.tagSuffix`

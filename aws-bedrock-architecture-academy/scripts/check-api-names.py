@@ -51,6 +51,15 @@ ALLOW = {
     # IAM actions for responses stored by the OpenAI-compatible Responses API on bedrock-runtime.
     # Documented at https://docs.aws.amazon.com/bedrock/latest/userguide/inference-prereq.html
     "GetInvoke", "CancelInvoke", "DeleteInvoke",
+    # IAM action for IAM-authorised AgentCore gateways (gateways are called over MCP, not an SDK operation).
+    # Documented at https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html
+    "InvokeGateway",
+    # AgentCore Runtime WebSocket operations; the AWS SDK models do not describe WebSocket APIs.
+    "InvokeAgentRuntimeWithWebSocketStream", "InvokeAgentRuntimeCommandShell",
+    # Neptune Analytics IAM actions used by GraphRAG knowledge-base service roles.
+    "ReadDataViaQuery", "WriteDataViaQuery", "DeleteDataViaQuery",
+    # Name used in AgentCore release notes; the chapter explains that the API is CreateGatewayRateLimit.
+    "CreateRateLimit",
 }
 
 

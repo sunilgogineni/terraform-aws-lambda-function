@@ -5,7 +5,7 @@
 Model customization trains a private copy of a foundation model on your data and stores the result as a *custom model* in your account. It sits between prompt engineering and retrieval on one side, and bringing your own model on the other.
 
 > [!IMPORTANT]
-> **Status** — Supervised fine-tuning, reinforcement fine-tuning and distillation are the three methods on the customization overview page. Each works only for the models and Regions listed on its own page (mostly `us-east-1` and `us-west-2`). Document history dates: distillation 2024-12-03, reinforcement fine-tuning 2025-12-03, OpenAI-compatible fine-tuning APIs for open-weight models 2026-02-17. **Continued pre-training** is **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW** (see section 1).
+> **Status** — GA. Supervised fine-tuning, reinforcement fine-tuning and distillation each work only for the models and Regions listed on their own page. Document history: distillation 2024-12-03, reinforcement fine-tuning 2025-12-03, OpenAI-compatible fine-tuning APIs 2026-02-17. **Continued pre-training** is **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW** (section 1).
 > Source: [Customize your model](https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html), [Document history](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-ug-doc-history.html)
 
 ## Learning objectives
@@ -24,9 +24,9 @@ Model customization trains a private copy of a foundation model on your data and
 
 ## 1. What it is
 
-In plain language: you show a model examples of the behaviour you want, and Amazon Bedrock produces a private version of that model that behaves that way. You never see or manage the training hardware.
+In plain language: you show a model examples of the behaviour you want, and Amazon Bedrock produces a private version that behaves that way. You manage no training hardware.
 
-Precisely: a customization is an **asynchronous job** on the `bedrock` control plane. It reads data from your Amazon S3 buckets through a service role, trains a copy of a base model, writes metrics to S3 and registers a custom model resource. You then serve that model through Provisioned Throughput or a custom model deployment.
+Precisely: a customization is an **asynchronous job** on the `bedrock` control plane. It reads data from your S3 buckets through a service role, trains a copy of a base model, writes metrics to S3 and registers a custom model, which you serve through Provisioned Throughput or a custom model deployment.
 
 | Item | Value |
 |:--|:--|
@@ -60,15 +60,15 @@ Precisely: a customization is an **asynchronous job** on the `bedrock` control p
 | Distillation | Teachers Nova Pro and Nova Premier with Nova students; teachers Llama 3.1 405B, Llama 3.1 70B and Llama 3.3 70B with smaller Llama students | `us-east-1` (Nova), `us-west-2` (Llama) |
 
 > [!WARNING]
-> **Common mistake** — Trusting these lists without checking lifecycle. The lifecycle page records several of the same models as end-of-life in those Regions (for example the Llama 3.2 models and Llama 3.1 405B since 2026-07-07, and Claude 3 Haiku in `us-west-2` since 2026-09-10), and a Legacy model cannot start a new fine-tuning job. The distillation page also states that distillation is "not currently available for Anthropic models". Check `customizationsSupported` and `modelLifecycle` from `GetFoundationModel` in your Region before you design around a model.
+> **Common mistake** — Trusting these lists without checking lifecycle. The lifecycle page records several of these models as end-of-life in those Regions (for example the Llama 3.2 models since 2026-07-07), and a Legacy model cannot start a new fine-tuning job. Distillation is also "not currently available for Anthropic models". Check `customizationsSupported` and `modelLifecycle` with `GetFoundationModel` in your Region.
 
 > [!IMPORTANT]
-> **Status** — Continued pre-training (training on unlabelled data): **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**. What we found: the customization overview page no longer lists it; the API reference still accepts `CONTINUED_PRE_TRAINING` as a `customizationType`; the Bedrock FAQ still describes it for Amazon Titan Text models, which are not on the *Models at a glance* page; no deprecation notice was found. Do not design for it.
+> **Status** — Continued pre-training (training on unlabelled data): **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**. The customization overview no longer lists it; the API reference still accepts `CONTINUED_PRE_TRAINING`; the Bedrock FAQ still describes it for Amazon Titan Text models, which are not on *Models at a glance*; we found no deprecation notice. Do not design for it.
 > Source: [CreateModelCustomizationJob](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_CreateModelCustomizationJob.html), [Amazon Bedrock FAQs](https://aws.amazon.com/bedrock/faqs/)
 
 ## 2. Why it exists
 
-Without it you would rent GPU capacity, build a training pipeline, tune it, store the weights securely and run an inference fleet. The feature removes all of that: you supply data, a role and a few hyperparameters. For RFT and distillation it also automates the hard parts — the reward loop and the generation of teacher responses.
+Without it you would rent GPU capacity, build and tune a training pipeline, store the weights securely and run an inference fleet. Here you supply data, a role and a few hyperparameters; for RFT and distillation, Bedrock also automates the reward loop and the teacher responses.
 
 ## 3. When to use it
 
@@ -83,7 +83,6 @@ Without it you would rent GPU capacity, build a training pipeline, tune it, stor
 - **You have not optimized the prompt yet.** Start with [Prompt optimization](../prompt-management/02-prompt-optimization.md).
 - **The model you want is not customizable on Bedrock.** Train elsewhere and use [Custom Model Import](04-custom-model-import.md).
 - **The base model is Legacy or close to its end-of-life date.** Your custom model inherits that clock: [Model lifecycle and selection](02-model-lifecycle-and-selection.md).
-- **You have no evaluation set.** You cannot tell whether tuning helped: [Model and RAG evaluation](../model-evaluation/01-model-evaluation.md).
 
 ## 5. Internal architecture
 
@@ -133,27 +132,27 @@ flowchart LR
     classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
 ```
 
-**What this shows** — The customer-visible parts of a customization. Your data, role, key, reward function and network stay in your account. The training job, the resulting model and the serving capacity are inside the AWS-managed boundary. AWS does not document the training infrastructure itself.
+**What this shows** — Your data, role, key, reward function and network stay in your account; the job, the model and the serving capacity are inside the AWS-managed boundary. AWS does not document the training infrastructure.
 
 **Walkthrough**
 
-1. A pipeline calls `CreateModelCustomizationJob`. The caller needs `iam:PassRole` for the service role.
+1. A pipeline calls `CreateModelCustomizationJob`; the caller needs `iam:PassRole`.
 2. Amazon Bedrock assumes the service role and starts the job.
 3. The job reads training and validation data from your bucket.
-4. RFT only: the job invokes your Lambda reward function to score generated answers.
+4. RFT only: the job invokes your Lambda reward function.
 5. Distillation only: the job calls the teacher model to generate responses.
-6. The job writes training and validation metrics to your output bucket.
-7. The job produces a custom model, stored and managed by AWS.
+6. The job writes metrics to your output bucket.
+7. The job produces a custom model, stored by AWS.
 8. You make it callable with Provisioned Throughput or a custom model deployment.
 9. Your application calls the runtime with the resulting ARN as `modelId`.
 10. The runtime routes the request to that capacity.
 
-**Variations** — With `vpcConfig`, the job reaches S3 through network interfaces in your subnets. Open-weight models tuned through the OpenAI-compatible APIs skip step 8: the fine-tuned model ID is used directly on the Responses or Chat Completions API.
+**Variations** — With `vpcConfig`, the job reaches S3 through your subnets. Open-weight models tuned through the OpenAI-compatible APIs skip step 8 and are called by their fine-tuned model ID.
 
 **Legend** — solid arrow: request or data flow · dashed arrow: supporting relationship · cylinder: data store · boxes: trust boundaries.
 
 > [!NOTE]
-> **Documented fact** — "None of the training or validation data you provide for fine tuning is stored by Amazon Bedrock, after the fine-tuning job completes." The same page warns that a fine-tuned model can replay some of its training data in completions, so filter confidential data first.
+> **Documented fact** — "None of the training or validation data you provide for fine tuning is stored by Amazon Bedrock, after the fine-tuning job completes."
 > Source: [Encryption of custom models](https://docs.aws.amazon.com/bedrock/latest/userguide/encryption-custom-job.html)
 
 ## 6. Request and response lifecycle
@@ -188,7 +187,7 @@ sequenceDiagram
     RT-->>Op: Model response
 ```
 
-Steps 1–2 create the job; include a `clientRequestToken` so a retry does not start a second job. In step 3 the job starts reading data. It passes through validation, data processing and training and "can take several hours"; steps 4–5 poll while the status is `InProgress`. Step 6 is the EventBridge event that can replace polling. Step 7 writes metrics, and steps 8–9 return a terminal status: `Completed`, `Failed` or `Stopped` (`Stopping` appears after `StopModelCustomizationJob`). Steps 10–13 serve the model.
+Steps 1–2 create the job; a `clientRequestToken` makes a retry safe. From step 3 the job runs through validation, data processing and training, which "can take several hours". Steps 4–5 poll; the EventBridge event in step 6 can replace polling. Steps 7–9 end in `Completed`, `Failed` or `Stopped`. Steps 10–13 serve the model.
 
 Error paths that matter:
 
@@ -218,16 +217,16 @@ Error paths that matter:
 ## 8. Security considerations
 
 - **Caller permissions.** `bedrock:CreateModelCustomizationJob` plus `iam:PassRole` on the service role.
-- **Service role.** The trust policy names `bedrock.amazonaws.com`. AWS recommends confused-deputy conditions: `aws:SourceAccount` set to your account and `aws:SourceArn` limited to `model-customization-job/*`. The permissions policy grants `s3:GetObject` and `s3:ListBucket` on the data buckets and `s3:PutObject` on the output bucket.
-- **Extra permissions by method.** RFT: `lambda:InvokeFunction` on the reward function, and `bedrock:InvokeModel` on the Lambda execution role if a model is the judge. Distillation with a cross-Region teacher: `bedrock:InvokeModel` on the inference profile and on the model in each Region of the profile.
-- **Encryption.** By default the custom model is encrypted with an AWS owned key. Pass `customModelKmsKeyId` to use a customer managed key; Amazon Bedrock then creates KMS grants, and the key policy must allow `kms:CreateGrant`, `kms:DescribeKey`, `kms:GenerateDataKey` and `kms:Decrypt`. AWS recommends the `kms:ViaService` condition. Revoking the grant makes the model unusable.
-- **Data handling.** Training data is used only for your job and is not used to train base models. Remove secrets and personal data before training.
-- **Logging.** Amazon Bedrock API calls, including job creation, are recorded by AWS CloudTrail; see [AWS CloudTrail for Bedrock](../../02-related-aws-services/security/05-cloudtrail-for-bedrock.md).
+- **Service role.** Trusts `bedrock.amazonaws.com`; AWS recommends the confused-deputy conditions `aws:SourceAccount` and `aws:SourceArn` (`model-customization-job/*`). It needs `s3:GetObject` and `s3:ListBucket` on the data buckets and `s3:PutObject` on the output bucket.
+- **Extra permissions by method.** RFT: `lambda:InvokeFunction` on the reward function, plus `bedrock:InvokeModel` for the Lambda role if a model is the judge. Distillation with a cross-Region teacher: `bedrock:InvokeModel` on the inference profile and on the model in each of its Regions.
+- **Encryption.** An AWS owned key by default. With `customModelKmsKeyId`, Amazon Bedrock creates KMS grants on your customer managed key; the key policy must allow `kms:CreateGrant`, `kms:DescribeKey`, `kms:GenerateDataKey` and `kms:Decrypt`, ideally with `kms:ViaService`. Revoking the grant makes the model unusable.
+- **Data handling.** Training data is used only for your job, not to train base models. A fine-tuned model can replay training data, so remove secrets and personal data first.
+- **Logging.** API calls are recorded by AWS CloudTrail ([AWS CloudTrail for Bedrock](../../02-related-aws-services/security/05-cloudtrail-for-bedrock.md)).
 
 ## 9. Networking requirements
 
 - **Control plane.** Public endpoint, or the interface endpoint `com.amazonaws.<region>.bedrock`.
-- **The job.** The job must reach your S3 buckets to download data and upload metrics. With `vpcConfig` (subnet IDs and security group IDs) it does so through network interfaces that Amazon Bedrock creates in your subnets, so the service role also needs the documented `ec2:CreateNetworkInterface`, `ec2:Describe*` and related permissions. AWS recommends an S3 VPC endpoint and a bucket policy that restricts access to that VPC. The path used without `vpcConfig` is not documented.
+- **The job.** With `vpcConfig` (subnets and security groups) the job reaches S3 through network interfaces that Amazon Bedrock creates in your subnets, so the service role also needs the documented `ec2:CreateNetworkInterface` and `ec2:Describe*` permissions. AWS recommends an S3 VPC endpoint and a bucket policy limited to that VPC. The path used without `vpcConfig` is not documented.
 - **Inference.** `bedrock-runtime`, public or through `com.amazonaws.<region>.bedrock-runtime` ([Private connectivity for Bedrock](../../02-related-aws-services/networking/01-private-connectivity-for-bedrock.md)).
 - **OpenAI-compatible fine-tuning.** `bedrock-mantle.us-west-2.api.aws`.
 - **Cross-Region traffic.** Only when a distillation teacher is called through a cross-Region inference profile.
@@ -257,7 +256,7 @@ No prices are quoted here; read them on the [pricing page](https://aws.amazon.co
 | In-progress custom model deployments | 2 | Yes |
 | Prompts per distillation job | 100 minimum, 15,000 maximum | No |
 
-Source: [Amazon Bedrock endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/bedrock.html). Record limits for training sets vary by model and are listed on the same page. Custom model deployments have their own requests-per-minute and tokens-per-minute quotas per base model, which are not adjustable. A custom model exists in one Region; `CreateModelCopyJob` copies it to another.
+Source: [Amazon Bedrock endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/bedrock.html). Custom model deployments have fixed request and token quotas per base model. A custom model exists in one Region; `CreateModelCopyJob` copies it to another.
 
 ## 12. IaC support
 
@@ -268,9 +267,9 @@ Source: [Amazon Bedrock endpoints and quotas](https://docs.aws.amazon.com/genera
 | CloudFormation | ❌ | — | No custom-model type in the specification bundled with `aws-cdk-lib` 2.277.0 |
 | AWS CDK (`aws-cdk-lib` 2.277.0) | ❌ | — | No L1 or L2 construct |
 
-Checked against the [Terraform reference](../../references/terraform-aws-provider-bedrock.md), the [CDK and CloudFormation reference](../../references/cdk-and-cloudformation-bedrock.md) and, for operation names, the [API operations reference](../../references/bedrock-api-operations.md). `terraform validate` accepts `customization_type = "DISTILLATION"` but rejects a `customization_config` block as an unsupported block type; the provider documentation lists only `FINE_TUNING` and `CONTINUED_PRE_TRAINING`.
+Checked against the [Terraform reference](../../references/terraform-aws-provider-bedrock.md), the [CDK and CloudFormation reference](../../references/cdk-and-cloudformation-bedrock.md) and the [API operations reference](../../references/bedrock-api-operations.md). `terraform validate` accepts `customization_type = "DISTILLATION"` but rejects a `customization_config` block; the provider documentation lists only `FINE_TUNING` and `CONTINUED_PRE_TRAINING`.
 
-**Verified alternative** — Manage the buckets, the service role, the KMS key and the VPC with IaC, and start the job with `CreateModelCustomizationJob` from a pipeline step (SDK or CLI). A job is a one-time action, not long-lived infrastructure, so this split is also the cleaner design. See [Terraform coverage for Amazon Bedrock](../../04-infrastructure-as-code/terraform/10-terraform-for-bedrock.md).
+**Verified alternative** — Manage the buckets, service role, KMS key and VPC with IaC, and start the job with `CreateModelCustomizationJob` from a pipeline step (SDK or CLI). A job is a one-time action, not long-lived infrastructure. See [Terraform coverage for Amazon Bedrock](../../04-infrastructure-as-code/terraform/10-terraform-for-bedrock.md).
 
 ## 13. Working example
 
@@ -388,7 +387,7 @@ output "custom_model_arn" {
 ```
 
 > [!CAUTION]
-> **Cost or security hazard** — If you run this in your own sandbox, a job bills for training as soon as it starts, the custom model bills for storage every month until you delete it, and Provisioned Throughput bills by the hour. Tear down in this order: delete the deployment or Provisioned Throughput, then the custom model, then the S3 data.
+> **Cost or security hazard** — In your own sandbox, training bills as soon as the job starts, the custom model bills for storage until deleted, and Provisioned Throughput bills by the hour. Tear down in order: deployment or Provisioned Throughput, custom model, S3 data.
 
 ## Common mistakes
 
@@ -400,25 +399,21 @@ output "custom_model_arn" {
 | Adding `vpcConfig` without the EC2 permissions or a route to S3 | The job fails | Attach the documented VPC permissions; add an S3 VPC endpoint |
 | Fine-tuning on a base model that is Legacy | Job creation is refused | Choose an Active base model |
 | Raising `epochCount` to "improve" a model | Cost grows linearly and the model overfits | Start from the defaults; compare validation loss |
-| No held-out evaluation set | You cannot show the tuned model is better | Evaluate base and tuned models on the same data |
+| No held-out evaluation set | You cannot show the tuned model is better | Evaluate base and tuned models on the same data ([Model and RAG evaluation](../model-evaluation/01-model-evaluation.md)) |
 | Using Terraform for distillation or RFT | `Unsupported block type` for `customization_config` | Start those jobs with the API |
 
 ## Knowledge check
 
-1. You have 300 support tickets with ideal answers, and separately a script that can verify whether generated SQL returns the right rows. Which method fits each data set, and why?
-2. Your security team requires that training data never crosses the public internet and that the model is encrypted with a key they control. Which three request fields and which extra role permissions are involved?
-3. What would happen if you deleted the KMS grant for a custom model that is serving traffic?
-4. A distillation job uses a teacher through a `us.` inference profile. What must the service role be allowed to do that a plain fine-tuning role does not need?
-5. Why is a customization job a poor fit for a long-lived IaC resource, even where Terraform supports it?
+1. You have 300 support tickets with ideal answers, and a script that verifies whether generated SQL returns the right rows. Which method fits each, and why?
+2. Training data must not cross the public internet and the model must be encrypted with a key your security team controls. Which request fields and extra role permissions are involved?
+3. Why is a customization job a poor fit for a long-lived IaC resource, even where Terraform supports it?
 
 <details>
 <summary>Answers</summary>
 
-1. Supervised fine-tuning for the tickets: they are labelled input–output pairs. Reinforcement fine-tuning for the SQL task: success is verifiable by code and many answers are valid, so a Lambda reward function can score them.
-2. `vpcConfig` (subnets and security groups) and `customModelKmsKeyId`, with `roleArn` pointing at a service role that also has the EC2 network-interface permissions and access to the key. The VPC needs an S3 endpoint.
-3. Amazon Bedrock can no longer use the key, so it cannot access the custom model encrypted with it; inference on that model stops working.
-4. `bedrock:InvokeModel` on the inference profile and on the foundation model in every Region the profile covers.
-5. The job is a one-time action that costs money when it starts; re-creating the resource re-trains the model, and destroying it deletes the model. Infrastructure around the job belongs in IaC; the job belongs in a pipeline step.
+1. Supervised fine-tuning for the tickets (labelled input–output pairs). Reinforcement fine-tuning for the SQL task: success is verifiable by code, so a Lambda reward function can score answers.
+2. `vpcConfig` and `customModelKmsKeyId`, plus a `roleArn` whose role has the EC2 network-interface permissions and can use the key. The subnets need a route to S3.
+3. The job is a one-time action that costs money when it starts; re-creating the resource re-trains the model and destroying it deletes the model.
 
 </details>
 

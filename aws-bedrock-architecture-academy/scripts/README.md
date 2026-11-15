@@ -10,6 +10,7 @@ credentials.
 
 | Script | Checks or generates | Needs |
 |:--|:--|:--|
+| [`bootstrap-toolchain.sh`](bootstrap-toolchain.sh) | Installs the pinned validation toolchain (Terraform and provider mirror, CDK, Mermaid, cfn-lint, PlantUML, optional TFLint/OPA/Conftest/cfn-guard) outside the repository, with checksum verification | bash, curl, Python, Node, Java |
 | [`validate-all.sh`](validate-all.sh) | Runs everything below and prints one summary table | bash |
 | [`check-links.py`](check-links.py) | Every relative Markdown link and `#anchor` resolves inside the academy | Python 3.10+ |
 | [`check-mermaid.cjs`](check-mermaid.cjs) | Every Mermaid diagram parses **and renders**, on each Mermaid version available; `--render` writes SVGs | Node 22+, Playwright Chromium, Mermaid |
@@ -31,6 +32,9 @@ credentials.
 
 ```bash
 cd aws-bedrock-architecture-academy
+
+# 0. Optional: install the exact toolchain used to verify the academy
+bash scripts/bootstrap-toolchain.sh && source ~/.cache/academy-tools/env.sh
 
 # 1. Documentation checks — Python only
 python3 scripts/check-links.py

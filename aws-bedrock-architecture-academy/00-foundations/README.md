@@ -56,23 +56,23 @@ flowchart LR
 | # | Chapter | Group | Status |
 |--:|:--|:--|:-:|
 | 1 | [AWS global infrastructure: Regions, Availability Zones and the edge](aws-fundamentals/01-global-infrastructure.md) | AWS fundamentals | ✅ |
-| 2 | [Amazon S3, AWS Lambda and Amazon API Gateway](aws-fundamentals/02-s3-lambda-api-gateway.md) | AWS fundamentals | 🚧 planned |
-| 3 | [Amazon EventBridge, Amazon SQS and Amazon SNS](aws-fundamentals/03-eventbridge-sqs-sns.md) | AWS fundamentals | 🚧 planned |
-| 4 | [Amazon CloudWatch and AWS CloudTrail](aws-fundamentals/04-cloudwatch-cloudtrail.md) | AWS fundamentals | 🚧 planned |
-| 5 | [AWS Organizations and AWS Control Tower](aws-fundamentals/05-organizations-control-tower.md) | AWS fundamentals | 🚧 planned |
+| 2 | [Amazon S3, AWS Lambda and Amazon API Gateway](aws-fundamentals/02-s3-lambda-api-gateway.md) | AWS fundamentals | ✅ |
+| 3 | [Amazon EventBridge, Amazon SQS and Amazon SNS](aws-fundamentals/03-eventbridge-sqs-sns.md) | AWS fundamentals | ✅ |
+| 4 | [Amazon CloudWatch and AWS CloudTrail](aws-fundamentals/04-cloudwatch-cloudtrail.md) | AWS fundamentals | ✅ |
+| 5 | [AWS Organizations and AWS Control Tower](aws-fundamentals/05-organizations-control-tower.md) | AWS fundamentals | ✅ |
 | 6 | [VPCs and subnets](networking/01-vpc-and-subnets.md) | Networking | ✅ |
 | 7 | [Public and private networking](networking/02-public-private-networking.md) | Networking | ✅ |
 | 8 | [VPC endpoints and AWS PrivateLink](networking/03-vpc-endpoints-and-privatelink.md) | Networking | ✅ |
-| 9 | [IAM fundamentals: principals, policies and evaluation](security/01-iam-fundamentals.md) | Security | 🚧 planned |
-| 10 | [IAM roles, trust policies and cross-account access](security/02-iam-roles-and-trust.md) | Security | 🚧 planned |
-| 11 | [Resource-based policies](security/03-resource-policies.md) | Security | 🚧 planned |
-| 12 | [AWS KMS and encryption](security/04-kms-encryption.md) | Security | 🚧 planned |
+| 9 | [IAM fundamentals: principals, policies and evaluation](security/01-iam-fundamentals.md) | Security | ✅ |
+| 10 | [IAM roles, trust policies and cross-account access](security/02-iam-roles-and-trust.md) | Security | ✅ |
+| 11 | [Resource-based policies](security/03-resource-policies.md) | Security | ✅ |
+| 12 | [AWS KMS and encryption](security/04-kms-encryption.md) | Security | ✅ |
 | 13 | [Generative AI, foundation models and LLMs](generative-ai-fundamentals/01-generative-ai-and-foundation-models.md) | Level 2 — Generative AI fundamentals | ✅ |
 | 14 | [Tokens, context windows, and training versus inference](generative-ai-fundamentals/02-tokens-context-windows-inference.md) | Level 2 — Generative AI fundamentals | ✅ |
-| 15 | [Embeddings, vector search, semantic search and hybrid search](generative-ai-fundamentals/03-embeddings-and-vector-search.md) | Level 2 — Generative AI fundamentals | 🚧 planned |
-| 16 | [Retrieval-augmented generation (RAG)](generative-ai-fundamentals/04-rag-fundamentals.md) | Level 2 — Generative AI fundamentals | 🚧 planned |
-| 17 | [Fine-tuning and model customization](generative-ai-fundamentals/05-fine-tuning-and-customization.md) | Level 2 — Generative AI fundamentals | 🚧 planned |
-| 18 | [Agentic AI, tool calling and multi-agent architectures](generative-ai-fundamentals/06-agents-tool-calling-multi-agent.md) | Level 2 — Generative AI fundamentals | 🚧 planned |
-| 19 | [Model evaluation and model selection](generative-ai-fundamentals/07-model-evaluation-and-selection.md) | Level 2 — Generative AI fundamentals | 🚧 planned |
-| 20 | [Latency and token economics](generative-ai-fundamentals/08-latency-and-token-economics.md) | Level 2 — Generative AI fundamentals | 🚧 planned |
+| 15 | [Embeddings, vector search, semantic search and hybrid search](generative-ai-fundamentals/03-embeddings-and-vector-search.md) | Level 2 — Generative AI fundamentals | ✅ |
+| 16 | [Retrieval-augmented generation (RAG)](generative-ai-fundamentals/04-rag-fundamentals.md) | Level 2 — Generative AI fundamentals | ✅ |
+| 17 | [Fine-tuning and model customization](generative-ai-fundamentals/05-fine-tuning-and-customization.md) | Level 2 — Generative AI fundamentals | ✅ |
+| 18 | [Agentic AI, tool calling and multi-agent architectures](generative-ai-fundamentals/06-agents-tool-calling-multi-agent.md) | Level 2 — Generative AI fundamentals | ✅ |
+| 19 | [Model evaluation and model selection](generative-ai-fundamentals/07-model-evaluation-and-selection.md) | Level 2 — Generative AI fundamentals | ✅ |
+| 20 | [Latency and token economics](generative-ai-fundamentals/08-latency-and-token-economics.md) | Level 2 — Generative AI fundamentals | ✅ |
 <!-- TOC:END -->

@@ -75,7 +75,7 @@ the top-level `system` field.
 | `text` | Both roles | Plain text |
 | `image` | `user`, tool results | `format` `png`, `jpeg`, `gif`, `webp`; `source.bytes` (Amazon Nova also accepts `s3Location`) |
 | `document` | `user`, tool results | `format` is required (`pdf`, `csv`, `doc`, `docx`, `xls`, `xlsx`, `html`, `txt`, `md`); needs a `text` block beside it; `name` must be neutral; optional `citations` |
-| `video`, `audio` | `user` | Media input, model-dependent |
+| `video`, `audio` | `user` (documented for video) | Media input, model-dependent |
 | `toolUse` | `assistant` | `toolUseId`, `name`, `input`: the model asks your code to run a tool |
 | `toolResult` | `user` | `toolUseId`, `content[]` (`json`, `text`, `image`, `document`, `video`, `searchResult`), optional `status` (`success`, `error`) |
 | `reasoningContent` | `assistant` | `reasoningText` (`text`, `signature`) or `redactedContent`; return it unmodified on later turns |

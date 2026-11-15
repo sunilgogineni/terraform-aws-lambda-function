@@ -9,6 +9,6 @@ Part of [Level 3 — Amazon Bedrock deep dive](../README.md) · [Academy home](.
 |--:|:--|:-:|
 | 1 | [What Amazon Bedrock is: services, namespaces and planes](01-what-is-amazon-bedrock.md) | ✅ |
 | 2 | [Endpoints, APIs and authentication](02-endpoints-apis-and-authentication.md) | ✅ |
-| 3 | [Model access and subscriptions](03-model-access-and-subscriptions.md) | 🚧 planned |
-| 4 | [Projects, Workspaces and the Web Search tool](04-projects-workspaces-and-web-search.md) | 🚧 planned |
+| 3 | [Model access and subscriptions](03-model-access-and-subscriptions.md) | ✅ |
+| 4 | [Projects, Workspaces and the Web Search tool](04-projects-workspaces-and-web-search.md) | ✅ |
 <!-- TOC:END -->

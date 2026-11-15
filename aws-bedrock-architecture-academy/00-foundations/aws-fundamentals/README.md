@@ -8,8 +8,8 @@ Part of [Level 1 — Foundations](../README.md) · [Academy home](../../README.m
 | # | Chapter | Status |
 |--:|:--|:-:|
 | 1 | [AWS global infrastructure: Regions, Availability Zones and the edge](01-global-infrastructure.md) | ✅ |
-| 2 | [Amazon S3, AWS Lambda and Amazon API Gateway](02-s3-lambda-api-gateway.md) | 🚧 planned |
-| 3 | [Amazon EventBridge, Amazon SQS and Amazon SNS](03-eventbridge-sqs-sns.md) | 🚧 planned |
-| 4 | [Amazon CloudWatch and AWS CloudTrail](04-cloudwatch-cloudtrail.md) | 🚧 planned |
-| 5 | [AWS Organizations and AWS Control Tower](05-organizations-control-tower.md) | 🚧 planned |
+| 2 | [Amazon S3, AWS Lambda and Amazon API Gateway](02-s3-lambda-api-gateway.md) | ✅ |
+| 3 | [Amazon EventBridge, Amazon SQS and Amazon SNS](03-eventbridge-sqs-sns.md) | ✅ |
+| 4 | [Amazon CloudWatch and AWS CloudTrail](04-cloudwatch-cloudtrail.md) | ✅ |
+| 5 | [AWS Organizations and AWS Control Tower](05-organizations-control-tower.md) | ✅ |
 <!-- TOC:END -->

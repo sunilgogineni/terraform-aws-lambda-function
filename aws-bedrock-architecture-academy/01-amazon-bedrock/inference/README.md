@@ -8,11 +8,11 @@ Part of [Level 3 — Amazon Bedrock deep dive](../README.md) · [Academy home](.
 | # | Chapter | Status |
 |--:|:--|:-:|
 | 1 | [The Converse API](01-converse-api.md) | ✅ |
-| 2 | [InvokeModel and streaming APIs](02-invokemodel-and-streaming.md) | 🚧 planned |
-| 3 | [OpenAI- and Anthropic-compatible APIs](03-openai-and-anthropic-compatible-apis.md) | 🚧 planned |
-| 4 | [Cross-Region inference: Geo and Global profiles](04-cross-region-inference.md) | 🚧 planned |
+| 2 | [InvokeModel and streaming APIs](02-invokemodel-and-streaming.md) | ✅ |
+| 3 | [OpenAI- and Anthropic-compatible APIs](03-openai-and-anthropic-compatible-apis.md) | ✅ |
+| 4 | [Cross-Region inference: Geo and Global profiles](04-cross-region-inference.md) | ✅ |
 | 5 | [Application inference profiles](05-application-inference-profiles.md) | ✅ |
 | 6 | [Service tiers: Reserved, Priority, Standard and Flex](06-service-tiers.md) | ✅ |
-| 7 | [Provisioned Throughput](07-provisioned-throughput.md) | 🚧 planned |
-| 8 | [Batch inference](08-batch-inference.md) | 🚧 planned |
+| 7 | [Provisioned Throughput](07-provisioned-throughput.md) | ✅ |
+| 8 | [Batch inference](08-batch-inference.md) | ✅ |
 <!-- TOC:END -->

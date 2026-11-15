@@ -8,8 +8,8 @@ Part of [Level 3 — Amazon Bedrock deep dive](../README.md) · [Academy home](.
 | # | Chapter | Status |
 |--:|:--|:-:|
 | 1 | [Model providers and the model catalog](01-model-providers-and-catalog.md) | ✅ |
-| 2 | [Model lifecycle and selection](02-model-lifecycle-and-selection.md) | 🚧 planned |
-| 3 | [Model customization: fine-tuning, reinforcement fine-tuning and distillation](03-model-customization.md) | 🚧 planned |
-| 4 | [Custom Model Import and on-demand custom model deployment](04-custom-model-import.md) | 🚧 planned |
-| 5 | [Amazon Bedrock Marketplace](05-bedrock-marketplace.md) | 🚧 planned |
+| 2 | [Model lifecycle and selection](02-model-lifecycle-and-selection.md) | ✅ |
+| 3 | [Model customization: fine-tuning, reinforcement fine-tuning and distillation](03-model-customization.md) | ✅ |
+| 4 | [Custom Model Import and on-demand custom model deployment](04-custom-model-import.md) | ✅ |
+| 5 | [Amazon Bedrock Marketplace](05-bedrock-marketplace.md) | ✅ |
 <!-- TOC:END -->

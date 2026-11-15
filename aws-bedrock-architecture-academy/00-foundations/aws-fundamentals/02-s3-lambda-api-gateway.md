@@ -25,13 +25,13 @@ After this chapter you can:
 
 Picture a small restaurant with a storeroom.
 
-- **Amazon S3** is the storeroom. Every item (an *object*) sits in a labelled room (a *bucket*) under
-  a unique label (its *key*). The storeroom does not run out of space and is built not to lose
-  anything, but it only stores and hands back — it does not cook.
+- **Amazon S3** is the storeroom. Every item (an *object*) sits in a labelled room (a *bucket*)
+  under a unique label (its *key*). It does not run out of space and is built not to lose anything
+  — but it only stores and hands back.
 - **AWS Lambda** is a kitchen that exists only while an order is being cooked. Each order gets its
-  own cook; ten simultaneous orders mean ten cooks. When there is nothing to cook, nobody is paid.
-- **Amazon API Gateway** is the front desk. It checks who the customer is, refuses to let the queue
-  grow beyond what the kitchen can handle, passes the order in and hands the plate back.
+  own cook; ten simultaneous orders mean ten cooks, and an idle kitchen costs nothing.
+- **Amazon API Gateway** is the front desk. It checks who the customer is, keeps the queue within
+  what the kitchen can handle, passes the order in and hands the plate back.
 
 The front desk waits only so long for the kitchen. Most of this chapter is about those waiting times.
 
@@ -58,16 +58,16 @@ The front desk waits only so long for the kitchen. Most of this chapter is about
 
 ### AWS Lambda
 
-Lambda runs your handler inside an **execution environment**, an isolated runtime that passes
-through `Init` (start the runtime, run code outside the handler), `Invoke` (run the handler) and
-`Shutdown`. After an invocation the environment is frozen and reused for the next request, so only
-the first request pays for `Init` — the *cold start*
+Lambda runs your handler in an **execution environment**, an isolated runtime with three phases:
+`Init` (start the runtime, run code outside the handler), `Invoke` (run the handler) and
+`Shutdown`. The environment is reused for later requests, so only the first one pays for `Init` —
+the *cold start*
 ([Execution environment lifecycle](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html)).
 
 The function's permissions come from its **execution role**, an IAM role that trusts
 `lambda.amazonaws.com` and that Lambda assumes for you
 ([Execution role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html)).
-Who may *call* the function is a different matter, set in the function's resource-based policy.
+Who may *call* the function is set separately, in its resource-based policy.
 
 **Concurrency** is the number of requests in flight. One environment serves one request at a time,
 so `concurrency = requests per second × average duration in seconds`. *Reserved* concurrency caps
@@ -87,10 +87,10 @@ initialised and costs extra ([Lambda scaling](https://docs.aws.amazon.com/lambda
 
 Source: [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html).
 
-**Response streaming** sends partial output as soon as it exists, through a function URL, the
+**Response streaming** returns partial output as it is produced, through a function URL, the
 `InvokeWithResponseStream` API or an API Gateway proxy integration. It is native on Node.js managed
-runtimes; Python needs a custom runtime or the Lambda Web Adapter. You are billed for the full
-duration even if the client disconnects
+runtimes; Python needs a custom runtime or the Lambda Web Adapter. You pay for the full duration
+even if the client disconnects
 ([Response streaming](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html)).
 
 > [!IMPORTANT]
@@ -123,9 +123,9 @@ A **Lambda authorizer** is a function that API Gateway calls first; it returns a
 allows or denies the request, and the result can be cached
 ([Lambda authorizers](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html)).
 
-**Throttling** uses a token bucket. By default an account gets 10,000 requests per second with a
-burst of 5,000 per Region, shared by all REST, HTTP and WebSocket APIs (2,500 and 1,250 in some
-newer Regions). Above that, clients receive `429 Too Many Requests`
+**Throttling** uses a token bucket: by default 10,000 requests per second with a burst of 5,000 per
+account and Region, shared by all REST, HTTP and WebSocket APIs (2,500 and 1,250 in some newer
+Regions). Beyond that, clients receive `429 Too Many Requests`
 ([API Gateway quotas](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html),
 [Throttling](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html)).
 
@@ -176,21 +176,20 @@ flowchart LR
     classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
 ```
 
-**What this shows** — one synchronous request crossing three trust zones inside one account and
-Region: the AWS-managed entry point, your function, and data at rest. Each hop is authorised by a
-different mechanism: a token at the API, a resource-based policy on the function, and the execution
-role at the bucket.
+**What this shows** — one synchronous request crossing three trust zones in one account and Region.
+Each hop is authorised by a different mechanism: a token at the API, a resource-based policy on the
+function, and the execution role at the bucket.
 
 **Walkthrough**
 
-1. The client calls the REST API over HTTPS and sends a bearer token.
-2. API Gateway invokes the Lambda authorizer with the request details.
+1. The client calls the REST API over HTTPS with a bearer token.
+2. API Gateway invokes the Lambda authorizer.
 3. The authorizer returns an IAM policy; on `Deny` the client receives a 403 and nothing else runs.
-4. API Gateway invokes the function through a Lambda proxy integration. The function's resource-based policy must allow `apigateway.amazonaws.com`.
-5. The function calls `GetObject`, signed (Signature Version 4, SigV4) with its execution role's temporary credentials.
-6. Amazon S3 checks the role's policy and the bucket policy, decrypts the object and returns it.
-7. The function returns a JSON document with `statusCode`, `headers` and `body`.
-8. API Gateway turns that document into the HTTPS response.
+4. API Gateway invokes the function through a Lambda proxy integration; the function's resource-based policy must allow `apigateway.amazonaws.com`.
+5. The function calls `GetObject`, signed (Signature Version 4, SigV4) with its execution role.
+6. Amazon S3 authorises the call, decrypts the object and returns it.
+7. The function returns `statusCode`, `headers` and `body`.
+8. API Gateway turns that into the HTTPS response.
 9. Meanwhile Lambda ships the function's log output to its log group.
 
 **Legend** — solid arrow: request · dashed arrow: response · thick arrow: asynchronous · cylinder:
@@ -199,14 +198,14 @@ data store · boxes: trust boundaries. The production version is
 
 ## Implementation details
 
-1. **Bucket.** Pick the Region, keep Block Public Access on, turn versioning on for data you cannot
-   regenerate, and add a bucket policy that denies requests where `aws:SecureTransport` is `false`
+1. **Bucket.** Pick the Region, keep Block Public Access on, enable versioning for data you cannot
+   regenerate, and deny requests where `aws:SecureTransport` is `false`
    ([Bucket policy examples](https://docs.aws.amazon.com/AmazonS3/latest/userguide/example-bucket-policies.html)).
-2. **Function.** Give the execution role only the actions and the key prefix it needs. Set the
+2. **Function.** Give the execution role only the actions and key prefix it needs, and set the
    timeout from the caller's point of view, not to the maximum.
-3. **API.** Choose the API type from the table above, attach an authorizer, set stage or method
-   throttling below what the backend can serve, and deploy.
-4. **Align the limits.** The smallest number on the path wins.
+3. **API.** Choose the type from the table above, attach an authorizer and set throttling below
+   what the backend can serve.
+4. **Align the limits.** The smallest number on the path wins:
 
 | Path | Longest wait | Largest response |
 |:--|:--|:--|
@@ -222,18 +221,19 @@ data store · boxes: trust boundaries. The production version is
 ### Why this matters for Bedrock
 
 - **Model calls are slow by web standards.** A long answer can outlast a 29-second integration
-  timeout. AWS lists "Lower the time-to-first-byte (TTFB) for generative AI applications like
-  chatbots" as the first use case of REST response streaming. See [InvokeModel and streaming APIs](../../01-amazon-bedrock/inference/02-invokemodel-and-streaming.md)
+  timeout; AWS lists "Lower the time-to-first-byte (TTFB) for generative AI applications like
+  chatbots" as the first use case of REST response streaming. See
+  [InvokeModel and streaming APIs](../../01-amazon-bedrock/inference/02-invokemodel-and-streaming.md)
   and [API Gateway, CloudFront and Application Load Balancer](../../02-related-aws-services/compute/04-api-gateway-cloudfront-alb.md).
-- **Lambda is the usual glue.** The function's execution role is what Bedrock authorises — see
+- **Lambda is the usual glue,** and its execution role is what Bedrock authorises — see
   [AWS Lambda with Bedrock](../../02-related-aws-services/compute/01-lambda.md). AgentCore Gateway
   can also expose Lambda functions as tools ([AgentCore Gateway](../../01-amazon-bedrock/agentcore/04-agentcore-gateway.md)).
-- **S3 holds almost everything Bedrock reads and writes in bulk:** knowledge base documents, batch
-  inference input and output files
-  ([Batch inference](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html)),
+- **S3 holds what Bedrock reads and writes in bulk:** knowledge base documents, batch inference
+  input and output files
+  ([Batch inference](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html))
   and model invocation logs. See [Amazon S3 and Amazon S3 Vectors](../../02-related-aws-services/storage/01-amazon-s3-and-s3-vectors.md)
   and [Batch inference](../../01-amazon-bedrock/inference/08-batch-inference.md).
-- **This exact shape, with a model call added, is the first real project:**
+- **This shape plus a model call is the first real project:**
   [Pattern: serverless enterprise chatbot](../../03-architecture-patterns/serverless/README.md) and
   [Project B](../../05-practical-projects/project-02-serverless-chatbot/README.md).
 
@@ -289,8 +289,8 @@ def handler(event, context):
     return _response(200, {"id": doc_id, "versionId": obj.get("VersionId"), "document": document})
 ```
 
-The execution role needs one statement besides logging. `amzn-s3-demo-bucket` is the placeholder
-bucket name used in the AWS documentation; replace it with yours.
+The execution role needs one statement besides logging (`amzn-s3-demo-bucket` is the placeholder
+bucket name of the AWS documentation):
 
 > **Code status:** syntax-checked (JSON parse) · **never deployed**
 
@@ -308,8 +308,8 @@ bucket name used in the AWS documentation; replace it with yours.
 }
 ```
 
-What to notice: the client is created outside the handler so warm invocations reuse it; the object
-key is built only from validated input; the size check keeps the response under the 6 MB limit; and
+What to notice: the client is created outside the handler, so warm invocations reuse it; the
+object key is built only from validated input; the size check keeps the response under 6 MB; and
 the return value has exactly the fields the proxy integration expects — any other shape produces a
 `502 Bad Gateway` ([Lambda proxy integrations](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html)).
 
@@ -332,41 +332,39 @@ the return value has exactly the fields the proxy integration expects — any ot
 ## Security considerations
 
 - **Three separate permissions:** who may call the API (authorizer or IAM), who may invoke the
-  function (resource-based policy), what the function may touch (execution role). Keep each minimal;
-  see [IAM roles, trust policies and cross-account access](../security/02-iam-roles-and-trust.md).
+  function (resource-based policy), what the function may touch (execution role). Keep each
+  minimal; see [IAM roles, trust policies and cross-account access](../security/02-iam-roles-and-trust.md).
 - **Buckets stay private.** Keep all four Block Public Access settings on and grant access with
   policies, not ACLs ([Blocking public access](https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html)).
-- **Encryption at rest is automatic; key control is not.** SSE-S3 is always there; use SSE-KMS when
-  you need key policies and an audit trail of key use — see [AWS KMS and encryption](../security/04-kms-encryption.md).
-- **Throttling is a security control too.** It bounds what a leaked token or a runaway client can
-  spend — which matters once each request triggers a paid model call.
-- **Validate input in the function.** API Gateway forwards whatever arrives.
+- **Encryption at rest is automatic; key control is not.** Use SSE-KMS when you need key policies
+  and an audit trail of key use — see [AWS KMS and encryption](../security/04-kms-encryption.md).
+- **Throttling and input validation are security controls.** Throttling bounds what a leaked token
+  can spend once each request triggers a paid model call, and API Gateway forwards whatever
+  arrives, so validate in the function.
 
 ## Cost considerations
 
-- **Amazon S3** bills storage per GB-month by storage class, requests, data transfer and optional
-  features; every stored version counts in full ([S3 pricing](https://aws.amazon.com/s3/pricing/)).
-- **AWS Lambda** bills per request and per GB-second of duration, so memory size × run time is the
-  lever. Waiting for a slow downstream call is billed time ([Lambda pricing](https://aws.amazon.com/lambda/pricing/)).
-- **Amazon API Gateway** bills HTTP and REST APIs per call received plus data transferred out, and
-  WebSocket APIs per message and connection minute ([API Gateway pricing](https://aws.amazon.com/api-gateway/pricing/)).
-- **What makes the bill grow:** long timeouts that let stuck invocations run, provisioned
-  concurrency left on, old object versions, and streaming responses whose client has gone away.
+- **Amazon S3** bills storage per GB-month by storage class, plus requests and data transfer; every
+  stored version counts in full ([S3 pricing](https://aws.amazon.com/s3/pricing/)).
+- **AWS Lambda** bills per request and per GB-second, so memory × run time is the lever — and
+  waiting for a slow downstream call is billed time ([Lambda pricing](https://aws.amazon.com/lambda/pricing/)).
+- **Amazon API Gateway** bills HTTP and REST APIs per call plus data transferred out, and WebSocket
+  APIs per message and connection minute ([API Gateway pricing](https://aws.amazon.com/api-gateway/pricing/)).
+- **What makes the bill grow:** long timeouts on stuck invocations, provisioned concurrency left
+  on, old object versions, and streamed responses that nobody is reading any more.
 
 ## Knowledge check
 
 1. A function takes 4 seconds on average and receives 300 requests per second at peak. Does it fit in the default Regional concurrency quota?
 2. Your API returns `502 Bad Gateway`, yet the function's log shows it finished without an error. What is the most likely cause?
-3. What would happen if you deleted an object in a bucket with versioning enabled, and how would you get it back?
-4. A chatbot answer takes 45 seconds to generate. Name two changes that let the user see text before the 29-second mark.
+3. A chatbot answer takes 45 seconds to generate. What would happen behind a default REST API, and which change lets the user see text earlier?
 
 <details>
 <summary>Answers</summary>
 
-1. No. Concurrency = 300 × 4 = 1,200, above the default of 1,000 concurrent executions per Region. Shorten the work, request a higher quota, or put a queue in front.
+1. No. Concurrency = 300 × 4 = 1,200, above the default of 1,000 concurrent executions per Region. Shorten the work, request a higher quota or put a queue in front.
 2. The function returned something other than the proxy integration format (`statusCode`, `headers`, `body`), so API Gateway could not build a response.
-3. Amazon S3 inserts a delete marker, which becomes the current version; nothing is removed permanently, so you can restore the previous version.
-4. Use a REST API with the `STREAM` response transfer mode in front of a streaming function, or use a WebSocket API and push partial results over the connection. Raising the timeout alone does not show text earlier.
+3. The request fails at the 29-second integration timeout while the function keeps running. Use the `STREAM` response transfer mode with a streaming function, or a WebSocket API that pushes partial results; raising the timeout alone does not show text earlier.
 
 </details>
 

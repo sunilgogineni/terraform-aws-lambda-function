@@ -47,6 +47,7 @@ else                                     run "PlantUML diagrams" java bash scrip
 echo "== draw.io";                       run "draw.io XML structure" python3 python3 scripts/check-drawio.py
 echo "== JSON / YAML";                   run "JSON and YAML syntax" python3 python3 scripts/check-data-files.py
 echo "== Secrets";                       run "Secret and PII scan" python3 python3 scripts/scan-secrets.py
+echo "== API names";                     run "API names vs AWS SDK models" python3 python3 scripts/check-api-names.py --strict
 echo "== Terraform";                     run "Terraform fmt/validate/test" terraform bash scripts/validate-terraform.sh
 echo "== CloudFormation";                run "CloudFormation cfn-lint" cfn-lint bash scripts/validate-cfn.sh
 echo "== CDK";                           run "CDK tsc/jest/synth" node bash scripts/validate-cdk.sh

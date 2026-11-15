@@ -9,10 +9,10 @@ Part of [Level 1 — Foundations](../README.md) · [Academy home](../../README.m
 |--:|:--|:-:|
 | 1 | [Generative AI, foundation models and LLMs](01-generative-ai-and-foundation-models.md) | ✅ |
 | 2 | [Tokens, context windows, and training versus inference](02-tokens-context-windows-inference.md) | ✅ |
-| 3 | [Embeddings, vector search, semantic search and hybrid search](03-embeddings-and-vector-search.md) | 🚧 planned |
-| 4 | [Retrieval-augmented generation (RAG)](04-rag-fundamentals.md) | 🚧 planned |
-| 5 | [Fine-tuning and model customization](05-fine-tuning-and-customization.md) | 🚧 planned |
-| 6 | [Agentic AI, tool calling and multi-agent architectures](06-agents-tool-calling-multi-agent.md) | 🚧 planned |
-| 7 | [Model evaluation and model selection](07-model-evaluation-and-selection.md) | 🚧 planned |
-| 8 | [Latency and token economics](08-latency-and-token-economics.md) | 🚧 planned |
+| 3 | [Embeddings, vector search, semantic search and hybrid search](03-embeddings-and-vector-search.md) | ✅ |
+| 4 | [Retrieval-augmented generation (RAG)](04-rag-fundamentals.md) | ✅ |
+| 5 | [Fine-tuning and model customization](05-fine-tuning-and-customization.md) | ✅ |
+| 6 | [Agentic AI, tool calling and multi-agent architectures](06-agents-tool-calling-multi-agent.md) | ✅ |
+| 7 | [Model evaluation and model selection](07-model-evaluation-and-selection.md) | ✅ |
+| 8 | [Latency and token economics](08-latency-and-token-economics.md) | ✅ |
 <!-- TOC:END -->

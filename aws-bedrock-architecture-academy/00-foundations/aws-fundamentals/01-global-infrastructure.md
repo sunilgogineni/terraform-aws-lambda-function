@@ -11,9 +11,8 @@ Region?" — decides which models and features you can use at all.
 After this chapter you can:
 
 - Explain how partitions, Regions, Availability Zones, Local Zones and edge locations nest.
-- Distinguish a control plane from a data plane, and say why the difference matters during a failure.
-- Classify a service as zonal, Regional or global, and name where a global service's control plane runs.
-- Choose a Region for a workload from service and model availability, data residency, latency and price.
+- Distinguish a control plane from a data plane, and zonal, Regional and global services.
+- Choose a Region from model and feature availability, data residency, latency and price.
 - Explain why an Amazon Bedrock model can exist in one Region and not in another.
 
 ## Prerequisites
@@ -25,19 +24,19 @@ After this chapter you can:
 
 Think of AWS as a worldwide logistics company.
 
-- A **partition** is a separate legal entity of that company. Each one issues its own staff badges,
-  and a badge from one entity opens no doors in another.
-- A **Region** is a city where the company operates. Every city runs on its own; what you store in
-  one city is not in any other city unless you ship a copy there yourself.
-- An **Availability Zone** is one of several warehouses in that city. They sit on different power
-  lines and roads, far enough apart that one flood does not reach two of them, close enough to move
-  goods between them almost instantly.
+- A **partition** is a separate legal entity of that company with its own staff badges. A badge
+  from one entity opens no doors in another.
+- A **Region** is a city where the company operates. What you store in one city is in no other
+  city unless you ship a copy yourself.
+- An **Availability Zone** is one of several warehouses in that city, on separate power lines and
+  roads: far enough apart that one flood does not reach two, close enough to move goods almost
+  instantly.
 - A **Local Zone** is a small depot in another town that still reports to its city.
 - An **edge location** is a pick-up point near customers. It hands out copies of popular items and
-  takes orders, but the real work happens in the city.
+  takes orders; the real work happens in the city.
 
 You rent space in a city. That choice fixes which services are on offer, where your data sits and
-how far your users have to travel.
+how far your users are from it.
 
 ## How it really works
 
@@ -75,13 +74,12 @@ credentials do not work there, until you enable it
 
 ### Control plane and data plane
 
-AWS splits most services in two. The **control plane** is the set of administrative APIs that
-create, read, update, delete and list resources — creating an Amazon S3 bucket, for example. The
-**data plane** does the service's primary job — getting and putting objects in that bucket. Data
-planes are deliberately simpler, so they fail less often than control planes
+AWS splits most services in two. The **control plane** is the administrative API that creates,
+changes and deletes resources — creating an Amazon S3 bucket, for example. The **data plane** does
+the service's actual job — getting and putting objects. Data planes are deliberately simpler and
+therefore more reliable
 ([Control planes and data planes](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/control-planes-and-data-planes.html)).
-A design that keeps working without calling a control plane during a failure is called *statically
-stable*.
+A design that keeps working without calling a control plane during a failure is *statically stable*.
 
 ### Zonal, Regional and global services
 
@@ -103,16 +101,16 @@ Source: [Zonal services](https://docs.aws.amazon.com/whitepapers/latest/aws-faul
 
 ### Why availability differs by Region
 
-Because Regions are separate deployments of infrastructure and software, every service, feature and
-model has to be launched in each Region individually. AWS tells you to "select a Region that has the
-AWS services and features that you need"
+Regions are separate deployments of infrastructure and software, so every service, feature and model
+has to be launched in each Region individually. AWS tells you to "select a Region that has the AWS
+services and features that you need"
 ([AWS Regions](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html))
-and offers a planning tool, AWS Capabilities by Region, announced on the
+and announces a planning tool, AWS Capabilities by Region, on the
 [Global Infrastructure page](https://aws.amazon.com/about-aws/global-infrastructure/).
 
-**Our reading:** for foundation models there is one more factor — the model needs specialised
-inference capacity in that Region. AWS does not publish the reason for each gap, so treat the
-availability tables as the only source of truth and never assume.
+**Our reading:** a foundation model also needs specialised inference capacity in the Region. AWS
+does not publish the reason for each gap, so treat the availability tables as the only source of
+truth and never assume.
 
 ## Architecture diagram
 
@@ -168,44 +166,42 @@ flowchart TB
     classDef external fill:#F1F3F4,stroke:#5F6368,color:#202124,stroke-dasharray:4 3
 ```
 
-**What this shows** — one partition (`aws`) containing two isolated Regions. The Region on the left
-is drawn in full: three Availability Zones and a Local Zone hold zonal resources, and Regional
-services sit above them with a single endpoint. An edge location and the global IAM service belong
-to the partition, not to a Region. A second partition stands apart with nothing connecting it.
+**What this shows** — one partition (`aws`) with two isolated Regions. One Region is drawn in full:
+three Availability Zones and a Local Zone hold zonal resources, and Regional services have a single
+endpoint. The edge location and the global IAM service belong to the partition, not to a Region; a
+second partition stands apart with nothing connecting it.
 
 **Walkthrough**
 
-1. The client connects over HTTPS to the nearest edge location; DNS chose that location.
-2. The edge location forwards the request across the AWS network to compute in one Availability Zone.
-3. The compute calls a Regional service endpoint, signing the request (Signature Version 4, SigV4) with the credentials of its IAM role.
+1. The client connects over HTTPS to an edge location that DNS chose for it.
+2. The edge location forwards the request over the AWS network to compute in one Availability Zone.
+3. The compute calls a Regional service endpoint and signs the request (Signature Version 4, SigV4) with its IAM role.
 4. The Regional service answers.
 5. The compute returns its result to the edge location.
 6. The edge location returns the response to the client.
-7. In the background, IAM distributes roles and policies from its control plane in `us-east-1` to every enabled Region, so step 3 can be authorised locally.
+7. In the background, IAM distributes roles and policies from its control plane in `us-east-1` to every enabled Region, so step 3 is authorised locally.
 8. Nothing is copied to another Region unless you configure it, for example with Amazon S3 Cross-Region Replication.
 
 **Legend** — solid arrow: request · dashed arrow: response · thick arrow: asynchronous replication ·
-cylinder: data at rest · nested boxes: partition, Region and zone boundaries. The full set, including
-the network inside a Region, is
-[Diagram 01 — AWS global infrastructure and networking](../../diagrams/mermaid/01-aws-global-infrastructure-and-networking.md).
+cylinder: data at rest · nested boxes: partition, Region and zone boundaries. The network inside a
+Region is in [Diagram 01 — AWS global infrastructure and networking](../../diagrams/mermaid/01-aws-global-infrastructure-and-networking.md).
 
 ## Implementation details
 
 1. **Choose the Region first.** Most resources, quotas and prices are per Region.
-2. **Enable an opt-in Region only when you need it.** Enabling propagates your IAM data to that
-   Region. AWS recommends Regional AWS Security Token Service (AWS STS) endpoints over the global
-   one ([Enable or disable AWS Regions](https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-regions.html)).
-3. **Expect the Region in every name.** Regional endpoints follow
+2. **Enable an opt-in Region only when you need it.** Enabling it propagates your IAM data there
+   ([Enable or disable AWS Regions](https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-regions.html)).
+3. **Expect the Region in every name.** Endpoints follow
    `protocol://service_code.region_code.amazonaws.com`
-   ([AWS PrivateLink guide](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html)),
+   ([AWS PrivateLink guide](https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html))
    and ARNs follow `arn:partition:service:region:account-id:resource`
    ([ARN reference](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html)).
 4. **Use AZ IDs across accounts.** For accounts created before November 2025, a zone name such as
-   `us-east-1a` can point at different physical zones in different accounts in the oldest Regions; the
-   AZ ID `use1-az1` is the same place for everyone
+   `us-east-1a` can mean different physical zones in different accounts; the AZ ID `use1-az1` is
+   the same place for everyone
    ([AWS Availability Zones](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-availability-zones.html)).
-5. **Treat Local Zones as limited.** Only selected services run there, and you cannot create VPC
-   endpoints inside Local Zone subnets
+5. **Treat Local Zones as limited.** Only selected services run there, and VPC endpoints cannot be
+   created in Local Zone subnets
    ([How AWS Local Zones work](https://docs.aws.amazon.com/local-zones/latest/ug/how-local-zones-work.html)).
 
 > [!TIP]
@@ -215,21 +211,19 @@ the network inside a Region, is
 
 ### Why this matters for Bedrock
 
-- **Inference has three geographic modes.** In-Region (the request never leaves the Region you
+- **Inference has three geographic modes:** In-Region (the request never leaves the Region you
   call), Geographic cross-Region (routed inside a geography such as US or EU) and Global
-  cross-Region (routed to any supported commercial Region). Availability is published per model and
-  per Region ([Regional availability by models](https://docs.aws.amazon.com/bedrock/latest/userguide/models-region-compatibility.html)).
+  cross-Region (any supported commercial Region). Availability is published per model and per
+  Region ([Regional availability by models](https://docs.aws.amazon.com/bedrock/latest/userguide/models-region-compatibility.html)).
   See [Cross-Region inference: Geo and Global profiles](../../01-amazon-bedrock/inference/04-cross-region-inference.md).
 - **Cross-Region inference ignores opt-in status.** It "can route requests to AWS Regions that are
   not manually enabled in your AWS account"
-  ([Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html)).
-  That affects [data residency](../../09-advanced-topics/11-cross-region-and-data-residency.md).
-- **Features are Region-limited too.** The [verification register](../../FEATURE-VERIFICATION.md)
-  records that Managed Knowledge Base runs in nine Regions and that AgentCore services cover between
-  1 and 22 Regions each.
-- **Partitions change the feature set.** AWS GovCloud (US) is a different partition with a reduced
-  Bedrock feature set; the register lists the restrictions.
-- Next steps: [Endpoints, APIs and authentication](../../01-amazon-bedrock/overview/02-endpoints-apis-and-authentication.md),
+  ([Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html))
+  — a [data residency](../../09-advanced-topics/11-cross-region-and-data-residency.md) question.
+- **Features and partitions differ too.** The [verification register](../../FEATURE-VERIFICATION.md)
+  records that Managed Knowledge Base runs in nine Regions, that AgentCore services cover between
+  1 and 22 Regions each, and that AWS GovCloud (US) has a reduced feature set.
+- Next: [Endpoints, APIs and authentication](../../01-amazon-bedrock/overview/02-endpoints-apis-and-authentication.md),
   [Model providers and the model catalog](../../01-amazon-bedrock/foundation-models/01-model-providers-and-catalog.md)
   and [Disaster recovery and business continuity](../../08-cost-performance-and-reliability/07-disaster-recovery-and-business-continuity.md).
 
@@ -255,14 +249,12 @@ aws ec2 describe-availability-zones \
   --query "AvailabilityZones[].{ZoneName:ZoneName,ZoneId:ZoneId}"
 ```
 
-Reading the result: command 1 returns Region codes; if the Region you planned to use is missing, it
-is an opt-in Region you have not enabled. Command 3 returns pairs such as `us-east-1a` / `use1-az1`;
-record the AZ ID when two accounts must place resources in the same physical zone.
-
-The Region then appears in everything you address. Amazon Bedrock Runtime, for instance, is reached
-at `bedrock-runtime.<region>.amazonaws.com`
-([Bedrock interface endpoints](https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html)),
-so keep the Region in configuration, never in code.
+Command 1 returns Region codes; a Region missing from the list is an opt-in Region you have not
+enabled. Command 3 returns pairs such as `us-east-1a` / `use1-az1`; record the AZ ID when two
+accounts must use the same physical zone. The Region then appears in everything you address —
+Amazon Bedrock Runtime is reached at `bedrock-runtime.<region>.amazonaws.com`
+([Bedrock interface endpoints](https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html))
+— so keep it in configuration, never in code.
 
 ## Common mistakes
 
@@ -281,44 +273,42 @@ so keep the Region in configuration, never in code.
 
 ## Security considerations
 
-- **Partitions are a hard identity boundary.** You cannot use IAM credentials from one partition on
-  resources in another.
-- **A disabled Region is closed to your credentials.** **Academy recommendation:** leave Regions you
-  do not use disabled and add an organization-wide Region restriction on top.
+- **Partitions are a hard identity boundary:** IAM credentials from one partition do not work in
+  another.
+- **A disabled Region is closed to your credentials.** **Academy recommendation:** leave unused
+  Regions disabled and add an organization-wide Region restriction.
 - **Data location is your decision.** Data stays in its Region unless you move it — and choosing a
   Geographic or Global inference profile *is* such a decision for prompts and responses.
-- **Audit every enabled Region.** A multi-Region trail records activity in all of them; see
+- **Audit every enabled Region** with a multi-Region trail; see
   [Amazon CloudWatch and AWS CloudTrail](04-cloudwatch-cloudtrail.md).
 
 ## Cost considerations
 
-- **More Regions cost more.** AWS describes multi-Region architectures as a trade-off in "cost,
-  effort, data consistency, latency, and operational burden"
+- **More Regions cost more.** AWS calls multi-Region architectures a trade-off in "cost, effort,
+  data consistency, latency, and operational burden"
   ([Regional services](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/regional-services.html)).
-- **Spare capacity is the price of static stability.** AWS's own example needs nine instances
-  instead of six — 50% more — to survive the loss of one AZ without launching anything
+- **Spare capacity is the price of static stability.** AWS's example needs nine instances instead
+  of six — 50% more — to survive the loss of one AZ without launching anything
   ([Zonal services](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/zonal-services.html)).
-- **Local Zones are priced differently** from their parent Region
+- **Disabling an opt-in Region does not stop charges** for resources left in it, and Local Zones
+  are priced differently from their parent Region
   ([What is AWS Local Zones?](https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html)).
-- **Disabling an opt-in Region does not stop charges** for resources left in it.
-- **Bedrock routing is not billed.** Cross-Region inference has no additional routing cost; the
-  price is that of the Region you call from
+- **Bedrock routing is not billed.** Cross-Region inference has no additional routing cost; you pay
+  the price of the Region you call from
   ([Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html)).
 
 ## Knowledge check
 
-1. Your application runs in three Availability Zones of one Region. Which failure does that protect against, and which not?
-2. During an incident in `us-east-1` your runbook creates a new IAM role in the recovery Region. Why is that risky?
-3. A colleague in another account says "put it in `us-east-1b` like ours". What do you ask for instead, and why?
-4. What would happen if your organization denied every Region except `eu-central-1` and you then called an EU Geographic inference profile?
+1. During an incident in `us-east-1` your runbook creates a new IAM role in the recovery Region. Why is that risky?
+2. A colleague in another account says "put it in `us-east-1b` like ours". What do you ask for instead, and why?
+3. What would happen if your organization denied every Region except `eu-central-1` and you then called an EU Geographic inference profile?
 
 <details>
 <summary>Answers</summary>
 
-1. It protects against the loss of one AZ (a data-center-level failure). It does not protect against the impairment of a Regional service or of the whole Region.
-2. IAM is a global service whose control plane runs in `us-east-1`. Creating a role is a control-plane action, so it may be unavailable exactly then. Create the role beforehand.
-3. The AZ ID (for example `use1-az2`). Zone names can map to different physical zones per account for accounts created before November 2025; AZ IDs are the same for everyone.
-4. Requests that Amazon Bedrock routes to another EU Region would be denied, because Geographic cross-Region inference requires you to allow all destination Regions of the profile.
+1. IAM is a global service whose control plane runs in `us-east-1`. Creating a role is a control-plane action, so it may be unavailable exactly then. Create the role beforehand.
+2. The AZ ID (for example `use1-az2`). Zone names can map to different physical zones per account for accounts created before November 2025; AZ IDs are the same for everyone.
+3. Requests that Amazon Bedrock routes to another EU Region would be denied, because Geographic cross-Region inference requires you to allow all destination Regions of the profile.
 
 </details>
 
@@ -332,7 +322,7 @@ Official sources opened while writing this chapter:
 - [Global services](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/global-services.html) — which Region hosts each global control plane.
 - [AWS Regions](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html) — Region list, opt-in status and the CLI commands used in the example.
 - [AWS Availability Zones](https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-availability-zones.html) — AZ IDs and zone-name mapping.
-- [Enable or disable AWS Regions in your account](https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-regions.html) — opt-in Regions and STS endpoints.
+- [Enable or disable AWS Regions in your account](https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-regions.html) — opt-in Regions and IAM data propagation.
 - [What is AWS Local Zones?](https://docs.aws.amazon.com/local-zones/latest/ug/what-is-aws-local-zones.html) and [How AWS Local Zones work](https://docs.aws.amazon.com/local-zones/latest/ug/how-local-zones-work.html) — purpose, pricing note and limitations.
 - [How CloudFront delivers content](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/HowCloudFrontWorks.html) — edge locations and Regional edge caches.
 - [Identify AWS resources with ARNs](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html) — the partition and Region fields of an ARN.

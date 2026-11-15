@@ -2,7 +2,7 @@
 
 > **Level:** Intermediate · **Verified:** 2026-11-15 · **Feature status:** n/a · **Time:** ~20 min
 
-Every model version on Amazon Bedrock is eventually retired. This chapter explains the three lifecycle states and what each one restricts, shows how to see a retirement coming, and gives a repeatable method for choosing a model that ties capability, latency, cost, Region and feature support together.
+Every model version on Amazon Bedrock is eventually retired. This chapter explains the three lifecycle states and what each restricts, shows how to see a retirement coming, and gives a repeatable method for choosing a model by capability, latency, cost, Region and feature support.
 
 > [!IMPORTANT]
 > **Status** — Two lifecycle policies now exist, split by launch date. Models launched on Amazon Bedrock **on or after 2026-09-07** follow the current "Model lifecycle" page; models launched **before** that date follow "Model lifecycle (Legacy)". Each model card names the policy that applies to it.
@@ -61,7 +61,7 @@ One exception is documented: GPT-6.1 Sol follows OpenAI's own lifecycle terms an
 
 ### State is per Region
 
-A model can be Legacy in one Region and Active in another. On the verification date the Marengo Embed 3.0 card read "Legacy in ap-northeast-2; Active in other Regions". The Legacy-policy page states that a Region missing from its tables "doesn't mean the model will stay available there indefinitely" and tells you to call the API in the Region you use.
+A model can be Legacy in one Region and Active in another: on the verification date the Marengo Embed 3.0 card read "Legacy in ap-northeast-2; Active in other Regions". The Legacy-policy page tells you to call the API in the Region you use.
 
 The `modelLifecycle` object returned by `GetFoundationModel` and `ListFoundationModels` carries `status` plus four optional timestamps: `startOfLifeTime`, `legacyTime`, `publicExtendedAccessTime` and `endOfLifeTime`.
 
@@ -132,7 +132,7 @@ stateDiagram-v2
 
 1. The model launches and is Active in that Region.
 2. The provider retires the version. AWS announces the Legacy state and the EOL date.
-3. Models launched before 2026-09-07, with an EOL date after 2026-02-01: after at least three months the model enters public extended access, where the provider may raise prices.
+3. Older policy only: after at least three months the model enters public extended access, where the provider may raise prices.
 4. The EOL date arrives.
 5. The model is removed from the Region and every request to it fails.
 
@@ -204,7 +204,7 @@ flowchart TD
 
 ## Implementation details
 
-- **Latency levers.** Service tiers are a per-request option: Priority gives the fastest responses for a premium, Flex trades speed for a discount, and each model card lists the tiers that model supports ([Service tiers](../inference/06-service-tiers.md)).
+- **Latency levers.** Service tiers are a per-request option: Priority is fastest at a premium, Flex is slower at a discount; each model card lists the tiers it supports ([Service tiers](../inference/06-service-tiers.md)).
 - **Cost levers.** For models that offer one, a Global inference profile is priced about 10% below a Geo profile; batch and Flex are discounted where the model supports them ([Cross-Region inference](../inference/04-cross-region-inference.md), [Batch inference](../inference/08-batch-inference.md)).
 - **Migration plan.** The AWS blog recommends five phases — assessment, research, testing, migration, operation. Technically: update the model ID, request quota for the new model *before* cutting over, re-tune prompts and adjust response parsing. The post adds that quota increases are "not expected to be approved" during public extended access.
 - **Customized models.** Re-train on an Active base model well before the old base model's EOL date.
@@ -250,12 +250,12 @@ def weighted_score(scores: dict[str, float], weights: dict[str, float]) -> float
     return sum(scores[name] * weight for name, weight in weights.items()) / sum(weights.values())
 ```
 
-Run `lifecycle_report` on a schedule and in CI. `GetFoundationModel` takes a model ID or ARN, not an inference profile ID, so pass the model ID that sits behind a profile.
+Run `lifecycle_report` on a schedule and in CI. `GetFoundationModel` takes a model ID or ARN, not an inference profile ID.
 
 ## Common mistakes
 
 > [!WARNING]
-> **Common mistake** — Treating Legacy as "still fine for a while". An account that stops calling a Legacy model for 15 days may lose access, so a rarely used batch job or a disaster-recovery Region can break long before the EOL date.
+> **Common mistake** — Treating Legacy as "still fine for a while". An account that stops calling a Legacy model for 15 days may lose access, so a rarely used job or a standby Region can break long before the EOL date.
 
 | Mistake | Symptom | Fix |
 |:--|:--|:--|
@@ -270,12 +270,12 @@ Run `lifecycle_report` on a schedule and in CI. `GetFoundationModel` takes a mod
 ## Security considerations
 
 - **Residency is a filter, not a score.** Decide In-Region, Geo or Global before comparing prices ([Cross-Region considerations and data residency](../../09-advanced-topics/11-cross-region-and-data-residency.md)).
-- **A model change is a security-relevant change.** A new model can behave differently under prompt injection and with your guardrail configuration. Re-run safety tests as part of migration ([Amazon Bedrock Guardrails](../guardrails/01-guardrails.md)).
+- **A model change is a security-relevant change.** A new model can react differently to prompt injection and to your guardrail configuration; re-run safety tests during migration ([Amazon Bedrock Guardrails](../guardrails/01-guardrails.md)).
 - **IAM follows the model.** Policies that name a foundation-model ARN need the new ARN; remove the old one after cut-over. The lifecycle report itself needs only `bedrock:GetFoundationModel`.
 
 ## Cost considerations
 
-- **Extended access can cost more.** During public extended access the provider may raise the price of a Legacy model; AWS says it announces such changes in the Legacy notice and before later changes.
+- **Extended access can cost more.** During public extended access the provider may raise the price; AWS announces such changes in the Legacy notice.
 - **Migration has a price.** Budget for evaluation runs, prompt re-tuning and a period of running two models in parallel.
 - **The cheapest token is not the cheapest answer.** Compare cost per successful task: a smaller model that needs retries or longer prompts can cost more ([Cost optimization and token budgeting](../../08-cost-performance-and-reliability/02-cost-optimization-and-token-budgeting.md)).
 
