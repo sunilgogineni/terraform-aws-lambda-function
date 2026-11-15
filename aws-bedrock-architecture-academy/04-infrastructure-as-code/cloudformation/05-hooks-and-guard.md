@@ -320,7 +320,7 @@ passes. The guardrail rules check `KmsKeyArn` and a `PROMPT_ATTACK` filter of `M
 
 ### Real output
 
-> **Code status:** commands run on 2026-11-15 with cfn-lint 1.60.1 and cfn-guard 3.2.1 · **never deployed**
+> **Code status:** commands run on 2026-11-15 with cfn-lint 1.60.1 and cfn-guard 3.2.1; output trimmed and paths shortened · **never deployed**
 
 ```text
 $ cfn-lint 05-compliant.yaml 05-noncompliant.yaml

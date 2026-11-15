@@ -12,7 +12,7 @@
 #  * The index stores float32 vectors only, 1-4096 dimensions, cosine or euclidean; Bedrock's
 #    AMAZON_BEDROCK_TEXT and AMAZON_BEDROCK_METADATA keys must be non-filterable (max 10 keys).
 #  * Data source operations do not pass a role, so the role is the only boundary on what can
-#    be ingested: GetObject is narrowed to the inclusion prefixes.
+#    be ingested: GetObject is narrowed to the inclusion prefix.
 # Sources are listed in README.md.
 
 data "aws_caller_identity" "current" {}
@@ -32,9 +32,7 @@ locals {
 
   bucket_owner_account_id = coalesce(var.data_source_bucket_owner_account_id, local.account_id)
 
-  document_object_arns = length(var.inclusion_prefixes) == 0 ? ["${var.data_source_bucket_arn}/*"] : [
-    for prefix in var.inclusion_prefixes : "${var.data_source_bucket_arn}/${prefix}*"
-  ]
+  document_object_arn = "${var.data_source_bucket_arn}/${var.inclusion_prefix == null ? "" : var.inclusion_prefix}*"
 
   non_filterable_metadata_keys = setunion(
     toset(["AMAZON_BEDROCK_TEXT", "AMAZON_BEDROCK_METADATA"]),
@@ -81,7 +79,7 @@ locals {
         Sid       = "S3GetObjectStatement"
         Effect    = "Allow"
         Action    = "s3:GetObject"
-        Resource  = local.document_object_arns
+        Resource  = local.document_object_arn
         Condition = { StringEquals = { "aws:ResourceAccount" = local.bucket_owner_account_id } }
       },
       {
@@ -235,7 +233,7 @@ resource "aws_bedrockagent_data_source" "this" {
     s3_configuration {
       bucket_arn              = var.data_source_bucket_arn
       bucket_owner_account_id = local.bucket_owner_account_id
-      inclusion_prefixes      = length(var.inclusion_prefixes) == 0 ? null : var.inclusion_prefixes
+      inclusion_prefixes      = var.inclusion_prefix == null ? null : [var.inclusion_prefix]
     }
   }
 

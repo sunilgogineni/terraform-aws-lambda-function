@@ -83,14 +83,14 @@ variable "data_source_bucket_owner_account_id" {
   }
 }
 
-variable "inclusion_prefixes" {
-  description = "S3 key prefixes to ingest, for example [\"documents/\"]. The service role can read only these prefixes. An empty list ingests, and lets the role read, the whole bucket."
-  type        = list(string)
-  default     = []
+variable "inclusion_prefix" {
+  description = "S3 key prefix to ingest, for example \"documents/\". The S3 data source accepts one prefix, and the service role can read only that prefix. null ingests, and lets the role read, the whole bucket."
+  type        = string
+  default     = null
 
   validation {
-    condition     = alltrue([for p in var.inclusion_prefixes : length(p) >= 1 && !startswith(p, "/") && !strcontains(p, "*")])
-    error_message = "Prefixes must be non-empty, must not start with a slash and must not contain wildcards."
+    condition     = var.inclusion_prefix == null ? true : (length(var.inclusion_prefix) >= 1 && length(var.inclusion_prefix) <= 300 && !startswith(var.inclusion_prefix, "/") && !strcontains(var.inclusion_prefix, "*"))
+    error_message = "inclusion_prefix must be 1-300 characters, must not start with a slash and must not contain wildcards."
   }
 }
 

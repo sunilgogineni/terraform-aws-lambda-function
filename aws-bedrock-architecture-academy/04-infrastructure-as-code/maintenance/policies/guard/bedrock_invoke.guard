@@ -1,0 +1,45 @@
+#
+# No unscoped Amazon Bedrock inference — CloudFormation Guard version.
+# Input: a CloudFormation template (for AWS CDK, the template from `cdk synth`).
+# Fails an Allow statement that grants bedrock:InvokeModel or
+# bedrock:InvokeModelWithResponseStream on Resource "*" or through NotResource.
+#
+# The action pattern is a regular expression, not IAM's wildcard matching: it
+# covers *, bedrock:*, bedrock:Invoke*, bedrock:InvokeModel* and the two exact
+# action names, case-insensitively. Exotic wildcards (for example bedrock:*Model)
+# are not caught here; the Rego version in ../policy matches IAM wildcards fully.
+#
+# Resource entries that are intrinsic functions (Fn::Sub, Fn::Join, Ref — common in
+# templates synthesized by the AWS CDK) are objects, not strings, so only string
+# entries are compared with "*".
+#
+let bedrock_invoke_actions = /(?i)^(\*|bedrock:\*|bedrock:invoke\*|bedrock:invokemodel(\*|withresponsestream)?)$/
+
+let iam_policies = Resources.*[ Type in ['AWS::IAM::Policy', 'AWS::IAM::ManagedPolicy'] ]
+let iam_roles = Resources.*[ Type == 'AWS::IAM::Role' ]
+
+rule bedrock_invoke_scoped_in_policies when %iam_policies !empty {
+    %iam_policies.Properties.PolicyDocument.Statement[
+        Effect == 'Allow'
+        some Action[*] == %bedrock_invoke_actions
+    ] {
+        Resource[*] {
+            when this is_string { this != '*' }
+        }
+        NotResource not exists
+        <<Allow statements that grant bedrock:InvokeModel must name foundation-model, inference-profile or guardrail ARNs, not "*">>
+    }
+}
+
+rule bedrock_invoke_scoped_in_role_inline_policies when %iam_roles !empty {
+    %iam_roles.Properties.Policies[*].PolicyDocument.Statement[
+        Effect == 'Allow'
+        some Action[*] == %bedrock_invoke_actions
+    ] {
+        Resource[*] {
+            when this is_string { this != '*' }
+        }
+        NotResource not exists
+        <<Inline role policies that grant bedrock:InvokeModel must name specific ARNs, not "*">>
+    }
+}

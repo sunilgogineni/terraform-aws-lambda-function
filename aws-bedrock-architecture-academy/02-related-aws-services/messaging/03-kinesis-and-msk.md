@@ -208,7 +208,8 @@ cylinder: data at rest · grey dashed box: outside AWS · red box: network contr
 
 **Variations** — Replace step 3 with a Flink application using async I/O for higher throughput, or with
 the MSK vector embedding blueprint when the target is OpenSearch rather than a knowledge base. Interface
-endpoint names are in [Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md).
+endpoint names are listed in [VPC endpoints and AWS PrivateLink](../../00-foundations/networking/03-vpc-endpoints-and-privatelink.md)
+and applied in [Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md).
 
 ## Implementation details
 

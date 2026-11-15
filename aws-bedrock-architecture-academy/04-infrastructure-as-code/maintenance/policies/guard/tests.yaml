@@ -1,0 +1,107 @@
+# Unit tests for bedrock_invoke.guard. Run with: cfn-guard test -r bedrock_invoke.guard -t tests.yaml
+- name: scoped model ARN passes
+  input:
+    Resources:
+      P:
+        Type: AWS::IAM::Policy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource: arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-2-lite-v1:0
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: PASS
+      bedrock_invoke_scoped_in_role_inline_policies: SKIP
+- name: intrinsic function resource passes
+  input:
+    Resources:
+      P:
+        Type: AWS::IAM::Policy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/amazon.nova-2-lite-v1:0
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: PASS
+- name: InvokeModel on star fails
+  input:
+    Resources:
+      P:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: "*"
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: FAIL
+- name: service wildcard on star fails
+  input:
+    Resources:
+      P:
+        Type: AWS::IAM::Policy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: Bedrock:*
+                Resource:
+                  - "*"
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: FAIL
+- name: deny statement on star is not flagged
+  input:
+    Resources:
+      P:
+        Type: AWS::IAM::Policy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Deny
+                Action: bedrock:InvokeModel
+                Resource: "*"
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: SKIP
+- name: NotResource fails
+  input:
+    Resources:
+      P:
+        Type: AWS::IAM::Policy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: bedrock:InvokeModel
+                NotResource: arn:aws:bedrock:us-east-1::foundation-model/example.model-v1:0
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: FAIL
+- name: role inline policy on star fails
+  input:
+    Resources:
+      R:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: p
+              PolicyDocument:
+                Statement:
+                  - Effect: Allow
+                    Action: bedrock:InvokeModelWithResponseStream
+                    Resource: "*"
+  expectations:
+    rules:
+      bedrock_invoke_scoped_in_policies: SKIP
+      bedrock_invoke_scoped_in_role_inline_policies: FAIL

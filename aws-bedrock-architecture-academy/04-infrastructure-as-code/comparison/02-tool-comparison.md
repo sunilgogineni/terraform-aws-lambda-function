@@ -304,7 +304,7 @@ new CfnOutput(stack, 'GuardrailVersion', { value: version.attrVersion });
 
 **Pulumi (TypeScript, `aws` provider)**
 
-> **Code status:** illustrative — not executed (Pulumi is not installed in the build environment) · resource names checked on the Pulumi Registry · **never deployed**
+> **Code status:** illustrative — not executed (Pulumi is not installed in the build environment) · resource names checked on the Pulumi Registry · TypeScript syntax checked with esbuild · **never deployed**
 
 ```typescript
 import * as aws from "@pulumi/aws";

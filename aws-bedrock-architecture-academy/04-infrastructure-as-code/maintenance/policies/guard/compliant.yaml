@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Scoped Bedrock invocation policy (passes the Guard rule). Validation input only, never deployed.
+Parameters:
+  RoleName:
+    Type: String
+    Default: chat-dev-invoke
+  GuardrailId:
+    Type: String
+    Default: replaceguardrailid
+Resources:
+  InvokePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: bedrock-invoke
+      Roles:
+        - !Ref RoleName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: InvokeFoundationModels
+            Effect: Allow
+            Action:
+              - bedrock:InvokeModel
+              - bedrock:InvokeModelWithResponseStream
+            Resource:
+              - !Sub arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/amazon.nova-2-lite-v1:0
+          - Sid: DenyInferenceWithoutRequiredGuardrail
+            Effect: Deny
+            Action:
+              - bedrock:InvokeModel
+              - bedrock:InvokeModelWithResponseStream
+            Resource: "*"
+            Condition:
+              ArnNotLike:
+                bedrock:GuardrailIdentifier: !Sub arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/${GuardrailId}:*
