@@ -11,11 +11,11 @@ real output.
 
 After this chapter you can:
 
-- Place preventive, proactive and detective controls in a Bedrock delivery pipeline.
-- Choose between a Guard Hook, a Lambda Hook, a custom Hook and an AWS Control Tower proactive control, and configure targets, actions, filters and failure mode.
-- Write Guard rules with queries, filters, `when` blocks, `some` and named rules, and unit-test them.
-- Explain what cfn-lint, Guard, cdk-nag, Checkov and Hooks each catch, and run them in the right order.
-- Recognise what a policy check cannot see — modules, macros, unresolved values, other tools — and close the gap.
+- Place preventive, proactive and detective controls in a Bedrock pipeline.
+- Choose and configure a Guard, Lambda, custom or Control Tower Hook: targets, actions, filters, failure mode.
+- Write and unit-test Guard rules with filters, `when`, `some` and named rules.
+- Explain what cfn-lint, Guard, cdk-nag, Checkov and Hooks each catch.
+- Recognise what a policy check cannot see, and close the gap.
 
 ## Prerequisites
 
@@ -25,10 +25,9 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Think of a flight. **Guard in your pipeline** is checking your own suitcase at home: fast and
-private, but you can skip it. A **Hook** is airport security: every passenger going through
-CloudFormation passes it, and it can refuse boarding (`FAIL`) or just note a problem (`WARN`).
-**AWS Config** is the audit after landing: it finds problems that already exist.
+Think of a flight. **Guard in your pipeline** is checking your own suitcase at home — fast, but
+skippable. A **Hook** is airport security: everything CloudFormation deploys passes it, and it can
+refuse boarding (`FAIL`) or note a problem (`WARN`). **AWS Config** is the audit after landing.
 
 A **linter** (cfn-lint) is a spell checker; a **policy engine** (Guard) is your company style
 guide ("every guardrail uses our own encryption key"). The
@@ -90,10 +89,9 @@ Sources: [What are CloudFormation Hooks?](https://docs.aws.amazon.com/cloudforma
 [Activate a proactive control-based Hook](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/proactive-controls-hooks-activate-hooks.html).
 
 > [!IMPORTANT]
-> **Status** — We found no Amazon Bedrock–specific proactive control in the Control Tower Control
-> Catalog pages read on the verification date. **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**:
-> list the catalog with the Control Catalog `ListControls` API before assuming one exists; until
-> then, Bedrock rules are yours to write (Guard or Lambda).
+> **Status** — We found no Bedrock-specific proactive control in the Control Catalog pages read.
+> **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: check with the Control Catalog `ListControls` API;
+> until then, write Bedrock rules yourself.
 > Source searched: [Proactive controls](https://docs.aws.amazon.com/controltower/latest/controlreference/proactive-controls.html)
 
 ### Activation and targeting
@@ -103,8 +101,10 @@ Hooks are per account and Region. Activate one with `ActivateType` and configure
 `HookInvocationStatus`, `TargetOperations`, `FailureMode`, type-specific `Properties` (Guard:
 `ruleLocation`, `logBucket`) and two filters:
 
-- **`TargetFilters`** — `Actions`, `InvocationPoints` (`PRE_PROVISION`) and `TargetNames` (up to 50 resource types, wildcards allowed), or a `Targets` list that combines them.
-- **`StackFilters`** — `FilteringCriteria` (`ALL` or `ANY`), `StackNames` and `StackRoles`, each with `Include` and `Exclude` lists of up to 50 entries. They are ignored for Cloud Control API operations.
+| Filter | Fields | Notes |
+|:--|:--|:--|
+| `TargetFilters` | `Actions`, `InvocationPoints` (`PRE_PROVISION`), `TargetNames` — or a `Targets` list combining them | Up to 50 resource type names; wildcards allowed |
+| `StackFilters` | `FilteringCriteria` (`ALL` or `ANY`), `StackNames`, `StackRoles` with `Include` / `Exclude` | Up to 50 entries per list; ignored for Cloud Control API operations |
 
 Sources: [Hook configuration schema](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hook-configuration-schema.html),
 [Target filters](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-target-filtering.html),
@@ -429,18 +429,16 @@ processes the template. Also run Guard on the module's own fragment in CI
 
 ## Knowledge check
 
-1. A template passes cfn-lint with no findings. Why can it still be rejected by a Guard Hook?
-2. Your Guard Hook targets `STACK`. A team adds a guardrail through a registry module. What does the Hook see, and what would you change?
-3. What happens to your `preDelete` check when someone deletes a guardrail by removing it from the template?
-4. Why does the IAM rule select only `Allow` statements, and what would break if it also selected `Deny`?
+1. A template passes cfn-lint with no findings. Why can a Guard Hook still reject it?
+2. Your Guard Hook targets `STACK`. A team adds a guardrail through a registry module. What does the Hook see, and what do you change?
+3. Why does the IAM rule select only `Allow` statements?
 
 <details>
 <summary>Answers</summary>
 
-1. cfn-lint checks the template against the resource schemas; it knows nothing about your organisation's policies, such as "every guardrail needs a customer managed key".
-2. The template as submitted, which contains the module reference but not the guardrail. Use a `RESOURCE` target (validated in `WARN` mode first) and run the rules on the module fragment in CI.
-3. Nothing: the deletion happens during `UpdateCleanup`, which does not invoke Hooks. Protect it another way, for example with a stack policy, `DeletionPolicy` or IAM.
-4. A `Deny` on `"*"` removes access — the documented way to require a guardrail on every inference call. Selecting it would fail compliant templates.
+1. cfn-lint checks the template against the resource schemas; it knows nothing about your policies, such as "every guardrail needs a customer managed key".
+2. The submitted template: the module reference, not the guardrail. Use a `RESOURCE` target (proven in `WARN` mode first) and run the rules on the module fragment in CI.
+3. A `Deny` on `"*"` removes access — it is the documented way to require a guardrail on every inference call. Selecting it would fail compliant templates.
 
 </details>
 

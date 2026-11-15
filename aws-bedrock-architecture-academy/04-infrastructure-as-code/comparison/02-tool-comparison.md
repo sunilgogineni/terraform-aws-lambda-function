@@ -51,7 +51,7 @@ breaks on the stairs.
 | 12 | Import | `import` blocks; `terraform query` for discovery | Resource import, IaC generator, auto-import | `cdk import`; `--import-existing-resources` | Through the stack | `pulumi import` |
 | 13 | Refactor without replacement | `moved`, `removed` | Stack refactoring | `cdk refactor` (unstable flag) | Logical IDs of generated resources derive from SAM IDs | `aliases` |
 | 14 | Secrets kept out of state | `ephemeral` values and write-only arguments | Dynamic references | Dynamic references | Dynamic references (resolved after the transform) | Secret values encrypted per stack |
-| 15 | Local emulation | — | — | Through the SAM CLI | `sam local invoke` in Docker | — |
+| 15 | Local emulation of functions | SAM CLI, beta (`--hook-name terraform`) | — | Through the SAM CLI | `sam local invoke` in Docker | — |
 | 16 | Beyond AWS | Any platform with a provider in the Terraform Registry | AWS, plus private types in the CloudFormation registry | AWS, through CloudFormation | AWS, through CloudFormation | Pulumi Registry packages, including bridged Terraform providers |
 | 17 | Bedrock resources (non-AgentCore) | 24 resource types | 23 `AWS::Bedrock::*` + 1 `AWS::BedrockMantle::Project` | L1 for each type; 0 stable L2; 8 experimental L2 classes | The CloudFormation types; no `AWS::Serverless::*` Bedrock type | `aws` 7.55.0: 18 in `aws.bedrock` + 2 in `aws.bedrockmodel`; `aws-native` 1.85.0: 23 + 1 |
 | 18 | AgentCore resources | 21 `aws_bedrockagentcore_*` | 27 `AWS::BedrockAgentCore::*` | 27 L1; 14 stable L2 | The CloudFormation types | `aws`: 21 `Agentcore*` in `aws.bedrock`; `aws-native`: 27 in `bedrockagentcore` |
@@ -74,8 +74,9 @@ numbers are the resources listed on the registry module pages on the verificatio
 > Sources: [aws.bedrock module](https://www.pulumi.com/registry/packages/aws/api-docs/bedrock/), [AWS Cloud Control provider](https://www.pulumi.com/registry/packages/aws-native/)
 
 > [!NOTE]
-> **Documented fact** — Terraform from 1.6.0 is licensed under the Business Source License 1.1,
-> with production use permitted except in offerings that compete with the licensor's paid
+> **Documented fact** — Terraform from 1.6.0 is licensed under the Business Source License 1.1
+> (the licensor named in the file is IBM Corp.). Production use is permitted unless it offers
+> Terraform to third parties on a hosted or embedded basis to compete with the licensor's paid
 > versions; each version converts to MPL 2.0 four years after publication. OpenTofu is a fork
 > under the Linux Foundation, licensed MPL 2.0, created in response to the licence change.
 > Sources: [Terraform LICENSE](https://raw.githubusercontent.com/hashicorp/terraform/main/LICENSE), [OpenTofu](https://opentofu.org/), [OpenTofu LICENSE](https://raw.githubusercontent.com/opentofu/opentofu/main/LICENSE)
@@ -130,7 +131,7 @@ A ❌ in the Pulumi `aws` column means the resource is not on the `aws.bedrock` 
 | Reviewability of a change | High: one plan for everything | High: change sets | Medium: review `cdk diff`, not the program | High: change sets | High: preview with property diffs |
 | State operations burden | Yours (backend, locking, access) | None | None | None | Low with Pulumi Cloud; yours with DIY |
 | Failure recovery | Roll forward by hand | Automatic rollback | Automatic rollback | Automatic rollback | Roll forward by hand |
-| New Bedrock types | Weekly provider releases; fills some gaps first | Day-one for many types; some never | Follows CloudFormation for L1 | Follows CloudFormation | Both lineages in one program |
+| New Bedrock types | Frequent provider releases; fills some gaps first | Often early; some features absent (see gaps) | Follows CloudFormation for L1 | Follows CloudFormation | Both lineages in one program |
 | Multi-cloud | Strong | None | None | None | Strong |
 
 ## Architecture diagram
