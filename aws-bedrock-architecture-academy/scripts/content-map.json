@@ -10,44 +10,104 @@
           "path": "aws-fundamentals",
           "title": "AWS fundamentals",
           "chapters": [
-            ["01-global-infrastructure.md", "AWS global infrastructure: Regions, Availability Zones and the edge"],
-            ["02-s3-lambda-api-gateway.md", "Amazon S3, AWS Lambda and Amazon API Gateway"],
-            ["03-eventbridge-sqs-sns.md", "Amazon EventBridge, Amazon SQS and Amazon SNS"],
-            ["04-cloudwatch-cloudtrail.md", "Amazon CloudWatch and AWS CloudTrail"],
-            ["05-organizations-control-tower.md", "AWS Organizations and AWS Control Tower"]
+            [
+              "01-global-infrastructure.md",
+              "AWS global infrastructure: Regions, Availability Zones and the edge"
+            ],
+            [
+              "02-s3-lambda-api-gateway.md",
+              "Amazon S3, AWS Lambda and Amazon API Gateway"
+            ],
+            [
+              "03-eventbridge-sqs-sns.md",
+              "Amazon EventBridge, Amazon SQS and Amazon SNS"
+            ],
+            [
+              "04-cloudwatch-cloudtrail.md",
+              "Amazon CloudWatch and AWS CloudTrail"
+            ],
+            [
+              "05-organizations-control-tower.md",
+              "AWS Organizations and AWS Control Tower"
+            ]
           ]
         },
         {
           "path": "networking",
           "title": "Networking",
           "chapters": [
-            ["01-vpc-and-subnets.md", "VPCs and subnets"],
-            ["02-public-private-networking.md", "Public and private networking"],
-            ["03-vpc-endpoints-and-privatelink.md", "VPC endpoints and AWS PrivateLink"]
+            [
+              "01-vpc-and-subnets.md",
+              "VPCs and subnets"
+            ],
+            [
+              "02-public-private-networking.md",
+              "Public and private networking"
+            ],
+            [
+              "03-vpc-endpoints-and-privatelink.md",
+              "VPC endpoints and AWS PrivateLink"
+            ]
           ]
         },
         {
           "path": "security",
           "title": "Security",
           "chapters": [
-            ["01-iam-fundamentals.md", "IAM fundamentals: principals, policies and evaluation"],
-            ["02-iam-roles-and-trust.md", "IAM roles, trust policies and cross-account access"],
-            ["03-resource-policies.md", "Resource-based policies"],
-            ["04-kms-encryption.md", "AWS KMS and encryption"]
+            [
+              "01-iam-fundamentals.md",
+              "IAM fundamentals: principals, policies and evaluation"
+            ],
+            [
+              "02-iam-roles-and-trust.md",
+              "IAM roles, trust policies and cross-account access"
+            ],
+            [
+              "03-resource-policies.md",
+              "Resource-based policies"
+            ],
+            [
+              "04-kms-encryption.md",
+              "AWS KMS and encryption"
+            ]
           ]
         },
         {
           "path": "generative-ai-fundamentals",
           "title": "Level 2 — Generative AI fundamentals",
           "chapters": [
-            ["01-generative-ai-and-foundation-models.md", "Generative AI, foundation models and LLMs"],
-            ["02-tokens-context-windows-inference.md", "Tokens, context windows, and training versus inference"],
-            ["03-embeddings-and-vector-search.md", "Embeddings, vector search, semantic search and hybrid search"],
-            ["04-rag-fundamentals.md", "Retrieval-augmented generation (RAG)"],
-            ["05-fine-tuning-and-customization.md", "Fine-tuning and model customization"],
-            ["06-agents-tool-calling-multi-agent.md", "Agentic AI, tool calling and multi-agent architectures"],
-            ["07-model-evaluation-and-selection.md", "Model evaluation and model selection"],
-            ["08-latency-and-token-economics.md", "Latency and token economics"]
+            [
+              "01-generative-ai-and-foundation-models.md",
+              "Generative AI, foundation models and LLMs"
+            ],
+            [
+              "02-tokens-context-windows-inference.md",
+              "Tokens, context windows, and training versus inference"
+            ],
+            [
+              "03-embeddings-and-vector-search.md",
+              "Embeddings, vector search, semantic search and hybrid search"
+            ],
+            [
+              "04-rag-fundamentals.md",
+              "Retrieval-augmented generation (RAG)"
+            ],
+            [
+              "05-fine-tuning-and-customization.md",
+              "Fine-tuning and model customization"
+            ],
+            [
+              "06-agents-tool-calling-multi-agent.md",
+              "Agentic AI, tool calling and multi-agent architectures"
+            ],
+            [
+              "07-model-evaluation-and-selection.md",
+              "Model evaluation and model selection"
+            ],
+            [
+              "08-latency-and-token-economics.md",
+              "Latency and token economics"
+            ]
           ]
         }
       ]
@@ -61,125 +121,266 @@
           "path": "overview",
           "title": "Overview",
           "chapters": [
-            ["01-what-is-amazon-bedrock.md", "What Amazon Bedrock is: services, namespaces and planes"],
-            ["02-endpoints-apis-and-authentication.md", "Endpoints, APIs and authentication"],
-            ["03-model-access-and-subscriptions.md", "Model access and subscriptions"],
-            ["04-projects-workspaces-and-web-search.md", "Projects, Workspaces and the Web Search tool"]
+            [
+              "01-what-is-amazon-bedrock.md",
+              "What Amazon Bedrock is: services, namespaces and planes"
+            ],
+            [
+              "02-endpoints-apis-and-authentication.md",
+              "Endpoints, APIs and authentication"
+            ],
+            [
+              "03-model-access-and-subscriptions.md",
+              "Model access and subscriptions"
+            ],
+            [
+              "04-projects-workspaces-and-web-search.md",
+              "Projects, Workspaces and the Web Search tool"
+            ]
           ]
         },
         {
           "path": "foundation-models",
           "title": "Foundation models",
           "chapters": [
-            ["01-model-providers-and-catalog.md", "Model providers and the model catalog"],
-            ["02-model-lifecycle-and-selection.md", "Model lifecycle and selection"],
-            ["03-model-customization.md", "Model customization: fine-tuning, reinforcement fine-tuning and distillation"],
-            ["04-custom-model-import.md", "Custom Model Import and on-demand custom model deployment"],
-            ["05-bedrock-marketplace.md", "Amazon Bedrock Marketplace"]
+            [
+              "01-model-providers-and-catalog.md",
+              "Model providers and the model catalog"
+            ],
+            [
+              "02-model-lifecycle-and-selection.md",
+              "Model lifecycle and selection"
+            ],
+            [
+              "03-model-customization.md",
+              "Model customization: fine-tuning, reinforcement fine-tuning and distillation"
+            ],
+            [
+              "04-custom-model-import.md",
+              "Custom Model Import and on-demand custom model deployment"
+            ],
+            [
+              "05-bedrock-marketplace.md",
+              "Amazon Bedrock Marketplace"
+            ]
           ]
         },
         {
           "path": "inference",
           "title": "Inference",
           "chapters": [
-            ["01-converse-api.md", "The Converse API"],
-            ["02-invokemodel-and-streaming.md", "InvokeModel and streaming APIs"],
-            ["03-openai-and-anthropic-compatible-apis.md", "OpenAI- and Anthropic-compatible APIs"],
-            ["04-cross-region-inference.md", "Cross-Region inference: Geo and Global profiles"],
-            ["05-application-inference-profiles.md", "Application inference profiles"],
-            ["06-service-tiers.md", "Service tiers: Reserved, Priority, Standard and Flex"],
-            ["07-provisioned-throughput.md", "Provisioned Throughput"],
-            ["08-batch-inference.md", "Batch inference"]
+            [
+              "01-converse-api.md",
+              "The Converse API"
+            ],
+            [
+              "02-invokemodel-and-streaming.md",
+              "InvokeModel and streaming APIs"
+            ],
+            [
+              "03-openai-and-anthropic-compatible-apis.md",
+              "OpenAI- and Anthropic-compatible APIs"
+            ],
+            [
+              "04-cross-region-inference.md",
+              "Cross-Region inference: Geo and Global profiles"
+            ],
+            [
+              "05-application-inference-profiles.md",
+              "Application inference profiles"
+            ],
+            [
+              "06-service-tiers.md",
+              "Service tiers: Reserved, Priority, Standard and Flex"
+            ],
+            [
+              "07-provisioned-throughput.md",
+              "Provisioned Throughput"
+            ],
+            [
+              "08-batch-inference.md",
+              "Batch inference"
+            ]
           ]
         },
         {
           "path": "prompt-management",
           "title": "Prompt management",
           "chapters": [
-            ["01-prompt-management.md", "Prompt management"],
-            ["02-prompt-optimization.md", "Prompt optimization"]
+            [
+              "01-prompt-management.md",
+              "Prompt management"
+            ],
+            [
+              "02-prompt-optimization.md",
+              "Prompt optimization"
+            ]
           ]
         },
         {
           "path": "prompt-caching",
           "title": "Prompt caching",
           "chapters": [
-            ["01-prompt-caching.md", "Prompt caching"]
+            [
+              "01-prompt-caching.md",
+              "Prompt caching"
+            ]
           ]
         },
         {
           "path": "knowledge-bases",
           "title": "Knowledge Bases",
           "chapters": [
-            ["01-knowledge-bases-overview.md", "Knowledge Bases overview: managed versus customer-managed"],
-            ["02-managed-knowledge-base.md", "Managed Knowledge Base"],
-            ["03-customer-managed-knowledge-bases.md", "Customer-managed knowledge bases and vector stores"],
-            ["04-ingestion-parsing-chunking.md", "Ingestion, parsing and chunking"],
-            ["05-retrieval-reranking-filtering.md", "Retrieval, reranking and metadata filtering"],
-            ["06-structured-data-and-graphrag.md", "Structured data retrieval and GraphRAG"]
+            [
+              "01-knowledge-bases-overview.md",
+              "Knowledge Bases overview: managed versus customer-managed"
+            ],
+            [
+              "02-managed-knowledge-base.md",
+              "Managed Knowledge Base"
+            ],
+            [
+              "03-customer-managed-knowledge-bases.md",
+              "Customer-managed knowledge bases and vector stores"
+            ],
+            [
+              "04-ingestion-parsing-chunking.md",
+              "Ingestion, parsing and chunking"
+            ],
+            [
+              "05-retrieval-reranking-filtering.md",
+              "Retrieval, reranking and metadata filtering"
+            ],
+            [
+              "06-structured-data-and-graphrag.md",
+              "Structured data retrieval and GraphRAG"
+            ]
           ]
         },
         {
           "path": "agentic-retrieval",
           "title": "Agentic retrieval",
           "chapters": [
-            ["01-agentic-retrieval.md", "Agentic retrieval with AgenticRetrieveStream"]
+            [
+              "01-agentic-retrieval.md",
+              "Agentic retrieval with AgenticRetrieveStream"
+            ]
           ]
         },
         {
           "path": "agents",
           "title": "Agents (Classic)",
           "chapters": [
-            ["01-agents-classic.md", "Amazon Bedrock Agents Classic"],
-            ["02-multi-agent-collaboration.md", "Multi-agent collaboration"],
-            ["03-agents-classic-vs-agentcore.md", "Agents Classic versus AgentCore, and migrating"]
+            [
+              "01-agents-classic.md",
+              "Amazon Bedrock Agents Classic"
+            ],
+            [
+              "02-multi-agent-collaboration.md",
+              "Multi-agent collaboration"
+            ],
+            [
+              "03-agents-classic-vs-agentcore.md",
+              "Agents Classic versus AgentCore, and migrating"
+            ]
           ]
         },
         {
           "path": "agentcore",
           "title": "Amazon Bedrock AgentCore",
           "chapters": [
-            ["01-agentcore-overview.md", "AgentCore overview"],
-            ["02-agentcore-runtime.md", "AgentCore Runtime"],
-            ["03-agentcore-harness.md", "AgentCore harness"],
-            ["04-agentcore-gateway.md", "AgentCore Gateway"],
-            ["05-agentcore-identity.md", "AgentCore Identity"],
-            ["06-agentcore-memory.md", "AgentCore Memory"],
-            ["07-agentcore-observability.md", "AgentCore Observability"],
-            ["08-agentcore-browser-and-code-interpreter.md", "AgentCore Browser and Code Interpreter"],
-            ["09-agentcore-policy.md", "AgentCore Policy"],
-            ["10-agentcore-evaluations-and-optimization.md", "AgentCore Evaluations and Optimization"],
-            ["11-agentcore-registry.md", "AWS Agent Registry"],
-            ["12-agentcore-payments-and-web-search.md", "AgentCore Payments, Web Search and Web Answer"]
+            [
+              "01-agentcore-overview.md",
+              "AgentCore overview"
+            ],
+            [
+              "02-agentcore-runtime.md",
+              "AgentCore Runtime"
+            ],
+            [
+              "03-agentcore-harness.md",
+              "AgentCore harness"
+            ],
+            [
+              "04-agentcore-gateway.md",
+              "AgentCore Gateway"
+            ],
+            [
+              "05-agentcore-identity.md",
+              "AgentCore Identity"
+            ],
+            [
+              "06-agentcore-memory.md",
+              "AgentCore Memory"
+            ],
+            [
+              "07-agentcore-observability.md",
+              "AgentCore Observability"
+            ],
+            [
+              "08-agentcore-browser-and-code-interpreter.md",
+              "AgentCore Browser and Code Interpreter"
+            ],
+            [
+              "09-agentcore-policy.md",
+              "AgentCore Policy"
+            ],
+            [
+              "10-agentcore-evaluations-and-optimization.md",
+              "AgentCore Evaluations and Optimization"
+            ],
+            [
+              "11-agentcore-registry.md",
+              "AWS Agent Registry"
+            ],
+            [
+              "12-agentcore-payments-and-web-search.md",
+              "AgentCore Payments, Web Search and Web Answer"
+            ]
           ]
         },
         {
           "path": "flows",
           "title": "Flows",
           "chapters": [
-            ["01-bedrock-flows.md", "Amazon Bedrock Flows"]
+            [
+              "01-bedrock-flows.md",
+              "Amazon Bedrock Flows"
+            ]
           ]
         },
         {
           "path": "guardrails",
           "title": "Guardrails",
           "chapters": [
-            ["01-guardrails.md", "Amazon Bedrock Guardrails"],
-            ["02-automated-reasoning-and-enforcement.md", "Automated Reasoning checks and guardrail enforcement"]
+            [
+              "01-guardrails.md",
+              "Amazon Bedrock Guardrails"
+            ],
+            [
+              "02-automated-reasoning-and-enforcement.md",
+              "Automated Reasoning checks and guardrail enforcement"
+            ]
           ]
         },
         {
           "path": "model-evaluation",
           "title": "Model evaluation",
           "chapters": [
-            ["01-model-evaluation.md", "Model and RAG evaluation"]
+            [
+              "01-model-evaluation.md",
+              "Model and RAG evaluation"
+            ]
           ]
         },
         {
           "path": "data-automation",
           "title": "Data Automation",
           "chapters": [
-            ["01-bedrock-data-automation.md", "Amazon Bedrock Data Automation"]
+            [
+              "01-bedrock-data-automation.md",
+              "Amazon Bedrock Data Automation"
+            ]
           ]
         }
       ]
@@ -193,63 +394,126 @@
           "path": "storage",
           "title": "Data and storage",
           "chapters": [
-            ["01-amazon-s3-and-s3-vectors.md", "Amazon S3 and Amazon S3 Vectors"],
-            ["02-glue-and-lake-formation.md", "AWS Glue and AWS Lake Formation"]
+            [
+              "01-amazon-s3-and-s3-vectors.md",
+              "Amazon S3 and Amazon S3 Vectors"
+            ],
+            [
+              "02-glue-and-lake-formation.md",
+              "AWS Glue and AWS Lake Formation"
+            ]
           ]
         },
         {
           "path": "databases",
           "title": "Databases and search",
           "chapters": [
-            ["01-opensearch.md", "Amazon OpenSearch Service and OpenSearch Serverless"],
-            ["02-aurora-pgvector-and-rds.md", "Amazon Aurora PostgreSQL with pgvector, and Amazon RDS"],
-            ["03-dynamodb.md", "Amazon DynamoDB"],
-            ["04-redshift-kendra-dms.md", "Amazon Redshift, Amazon Kendra and AWS DMS"]
+            [
+              "01-opensearch.md",
+              "Amazon OpenSearch Service and OpenSearch Serverless"
+            ],
+            [
+              "02-aurora-pgvector-and-rds.md",
+              "Amazon Aurora PostgreSQL with pgvector, and Amazon RDS"
+            ],
+            [
+              "03-dynamodb.md",
+              "Amazon DynamoDB"
+            ],
+            [
+              "04-redshift-kendra-dms.md",
+              "Amazon Redshift, Amazon Kendra and AWS DMS"
+            ]
           ]
         },
         {
           "path": "compute",
           "title": "Compute and applications",
           "chapters": [
-            ["01-lambda.md", "AWS Lambda with Bedrock"],
-            ["02-containers-ecs-eks-fargate.md", "Amazon ECS, Amazon EKS and AWS Fargate"],
-            ["03-ec2-and-app-runner.md", "Amazon EC2 and AWS App Runner"],
-            ["04-api-gateway-cloudfront-alb.md", "API Gateway, CloudFront and Application Load Balancer"]
+            [
+              "01-lambda.md",
+              "AWS Lambda with Bedrock"
+            ],
+            [
+              "02-containers-ecs-eks-fargate.md",
+              "Amazon ECS, Amazon EKS and AWS Fargate"
+            ],
+            [
+              "03-ec2-and-app-runner.md",
+              "Amazon EC2 and AWS App Runner"
+            ],
+            [
+              "04-api-gateway-cloudfront-alb.md",
+              "API Gateway, CloudFront and Application Load Balancer"
+            ]
           ]
         },
         {
           "path": "networking",
           "title": "Networking",
           "chapters": [
-            ["01-private-connectivity-for-bedrock.md", "Private connectivity for Bedrock: interface endpoints and PrivateLink"]
+            [
+              "01-private-connectivity-for-bedrock.md",
+              "Private connectivity for Bedrock: interface endpoints and PrivateLink"
+            ]
           ]
         },
         {
           "path": "messaging",
           "title": "Event-driven architecture",
           "chapters": [
-            ["01-eventbridge-sqs-sns.md", "EventBridge, SQS and SNS with Bedrock"],
-            ["02-step-functions.md", "AWS Step Functions with Bedrock"],
-            ["03-kinesis-and-msk.md", "Amazon Kinesis and Amazon MSK"]
+            [
+              "01-eventbridge-sqs-sns.md",
+              "EventBridge, SQS and SNS with Bedrock"
+            ],
+            [
+              "02-step-functions.md",
+              "AWS Step Functions with Bedrock"
+            ],
+            [
+              "03-kinesis-and-msk.md",
+              "Amazon Kinesis and Amazon MSK"
+            ]
           ]
         },
         {
           "path": "security",
           "title": "Security services",
           "chapters": [
-            ["01-iam-and-identity-center.md", "IAM and IAM Identity Center for Bedrock"],
-            ["02-kms-secrets-manager-parameter-store.md", "AWS KMS, Secrets Manager and Parameter Store"],
-            ["03-waf-and-shield.md", "AWS WAF and AWS Shield"],
-            ["04-guardduty-security-hub-config-macie.md", "GuardDuty, Security Hub, AWS Config and Macie"],
-            ["05-cloudtrail-for-bedrock.md", "AWS CloudTrail for Bedrock"]
+            [
+              "01-iam-and-identity-center.md",
+              "IAM and IAM Identity Center for Bedrock"
+            ],
+            [
+              "02-kms-secrets-manager-parameter-store.md",
+              "AWS KMS, Secrets Manager and Parameter Store"
+            ],
+            [
+              "03-waf-and-shield.md",
+              "AWS WAF and AWS Shield"
+            ],
+            [
+              "04-guardduty-security-hub-config-macie.md",
+              "GuardDuty, Security Hub, AWS Config and Macie"
+            ],
+            [
+              "05-cloudtrail-for-bedrock.md",
+              "AWS CloudTrail for Bedrock"
+            ]
           ]
         },
         {
           "path": "observability",
           "title": "Observability",
           "chapters": [
-            ["01-cloudwatch-and-bedrock-observability.md", "CloudWatch and Bedrock-specific observability"],
-            ["02-xray-opentelemetry-adot.md", "AWS X-Ray, OpenTelemetry and ADOT"]
+            [
+              "01-cloudwatch-and-bedrock-observability.md",
+              "CloudWatch and Bedrock-specific observability"
+            ],
+            [
+              "02-xray-opentelemetry-adot.md",
+              "AWS X-Ray, OpenTelemetry and ADOT"
+            ]
           ]
         }
       ]
@@ -259,13 +523,76 @@
       "title": "Architecture patterns",
       "level": "Intermediate",
       "groups": [
-        {"path": "basic-inference", "title": "Basic inference", "chapters": [["README.md", "Pattern: basic model inference"]]},
-        {"path": "serverless", "title": "Serverless", "chapters": [["README.md", "Pattern: serverless enterprise chatbot"]]},
-        {"path": "enterprise-rag", "title": "Enterprise RAG", "chapters": [["README.md", "Pattern: enterprise RAG"]]},
-        {"path": "agentic-ai", "title": "Agentic AI", "chapters": [["README.md", "Pattern: agentic AI"]]},
-        {"path": "event-driven", "title": "Event-driven", "chapters": [["README.md", "Pattern: event-driven generative AI"]]},
-        {"path": "private-enterprise", "title": "Private enterprise", "chapters": [["README.md", "Pattern: secure private enterprise Bedrock"]]},
-        {"path": "multi-account", "title": "Multi-account", "chapters": [["README.md", "Pattern: multi-account generative AI platform"]]}
+        {
+          "path": "basic-inference",
+          "title": "Basic inference",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: basic model inference"
+            ]
+          ]
+        },
+        {
+          "path": "serverless",
+          "title": "Serverless",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: serverless enterprise chatbot"
+            ]
+          ]
+        },
+        {
+          "path": "enterprise-rag",
+          "title": "Enterprise RAG",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: enterprise RAG"
+            ]
+          ]
+        },
+        {
+          "path": "agentic-ai",
+          "title": "Agentic AI",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: agentic AI"
+            ]
+          ]
+        },
+        {
+          "path": "event-driven",
+          "title": "Event-driven",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: event-driven generative AI"
+            ]
+          ]
+        },
+        {
+          "path": "private-enterprise",
+          "title": "Private enterprise",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: secure private enterprise Bedrock"
+            ]
+          ]
+        },
+        {
+          "path": "multi-account",
+          "title": "Multi-account",
+          "chapters": [
+            [
+              "README.md",
+              "Pattern: multi-account generative AI platform"
+            ]
+          ]
+        }
       ]
     },
     {
@@ -277,79 +604,190 @@
           "path": "comparison",
           "title": "IaC concepts and comparison",
           "chapters": [
-            ["01-iac-concepts.md", "IaC concepts: declarative versus imperative, state, graphs, drift and idempotency"],
-            ["02-tool-comparison.md", "Terraform, AWS CDK, CloudFormation, SAM and Pulumi compared"],
-            ["03-choosing-an-iac-tool.md", "Choosing an IaC tool"]
+            [
+              "01-iac-concepts.md",
+              "IaC concepts: declarative versus imperative, state, graphs, drift and idempotency"
+            ],
+            [
+              "02-tool-comparison.md",
+              "Terraform, AWS CDK, CloudFormation, SAM and Pulumi compared"
+            ],
+            [
+              "03-choosing-an-iac-tool.md",
+              "Choosing an IaC tool"
+            ]
           ]
         },
         {
           "path": "terraform",
           "title": "Terraform",
           "chapters": [
-            ["01-providers-resources-data-sources.md", "Providers, resources and data sources"],
-            ["02-variables-outputs-locals.md", "Variables, outputs and locals"],
-            ["03-modules.md", "Modules"],
-            ["04-state-backends-locking.md", "State, remote backends and state locking"],
-            ["05-environments-and-workspaces.md", "Workspaces and environment strategies"],
-            ["06-for-each-count-dynamic.md", "for_each, count and dynamic blocks"],
-            ["07-lifecycle-import-moved-removed.md", "Lifecycle rules, import, moved and removed blocks"],
-            ["08-plan-apply-drift.md", "Plan, apply and drift detection"],
-            ["09-testing-and-version-pinning.md", "Testing and version pinning"],
-            ["10-terraform-for-bedrock.md", "Terraform coverage for Amazon Bedrock"]
+            [
+              "01-providers-resources-data-sources.md",
+              "Providers, resources and data sources"
+            ],
+            [
+              "02-variables-outputs-locals.md",
+              "Variables, outputs and locals"
+            ],
+            [
+              "03-modules.md",
+              "Modules"
+            ],
+            [
+              "04-state-backends-locking.md",
+              "State, remote backends and state locking"
+            ],
+            [
+              "05-environments-and-workspaces.md",
+              "Workspaces and environment strategies"
+            ],
+            [
+              "06-for-each-count-dynamic.md",
+              "for_each, count and dynamic blocks"
+            ],
+            [
+              "07-lifecycle-import-moved-removed.md",
+              "Lifecycle rules, import, moved and removed blocks"
+            ],
+            [
+              "08-plan-apply-drift.md",
+              "Plan, apply and drift detection"
+            ],
+            [
+              "09-testing-and-version-pinning.md",
+              "Testing and version pinning"
+            ],
+            [
+              "10-terraform-for-bedrock.md",
+              "Terraform coverage for Amazon Bedrock"
+            ]
           ]
         },
         {
           "path": "aws-cdk",
           "title": "AWS CDK",
           "chapters": [
-            ["01-apps-stacks-constructs.md", "Apps, stacks and constructs"],
-            ["02-l1-l2-l3-constructs.md", "L1, L2 and L3 constructs"],
-            ["03-synthesis-and-cloudformation.md", "Synthesis and CloudFormation templates"],
-            ["04-context-and-environments.md", "Context and environment configuration"],
-            ["05-permissions-and-aspects.md", "Permissions and Aspects"],
-            ["06-bootstrap-and-deployment.md", "Bootstrap and deployment"],
-            ["07-testing.md", "Testing CDK applications"],
-            ["08-construct-libraries.md", "Reusable construct libraries"],
-            ["09-cdk-for-bedrock.md", "CDK coverage for Amazon Bedrock"]
+            [
+              "01-apps-stacks-constructs.md",
+              "Apps, stacks and constructs"
+            ],
+            [
+              "02-l1-l2-l3-constructs.md",
+              "L1, L2 and L3 constructs"
+            ],
+            [
+              "03-synthesis-and-cloudformation.md",
+              "Synthesis and CloudFormation templates"
+            ],
+            [
+              "04-context-and-environments.md",
+              "Context and environment configuration"
+            ],
+            [
+              "05-permissions-and-aspects.md",
+              "Permissions and Aspects"
+            ],
+            [
+              "06-bootstrap-and-deployment.md",
+              "Bootstrap and deployment"
+            ],
+            [
+              "07-testing.md",
+              "Testing CDK applications"
+            ],
+            [
+              "08-construct-libraries.md",
+              "Reusable construct libraries"
+            ],
+            [
+              "09-cdk-for-bedrock.md",
+              "CDK coverage for Amazon Bedrock"
+            ]
           ]
         },
         {
           "path": "cloudformation",
           "title": "AWS CloudFormation",
           "chapters": [
-            ["01-template-anatomy.md", "Template anatomy: parameters, mappings, conditions, resources and outputs"],
-            ["02-intrinsic-functions.md", "Intrinsic functions"],
-            ["03-nested-stacks-and-stacksets.md", "Nested stacks and StackSets"],
-            ["04-change-sets-and-drift.md", "Change sets and drift detection"],
-            ["05-hooks-and-guard.md", "Hooks and CloudFormation Guard"],
-            ["06-modules-and-reuse.md", "CloudFormation modules and reuse"],
-            ["07-cloudformation-for-bedrock.md", "CloudFormation coverage for Amazon Bedrock"]
+            [
+              "01-template-anatomy.md",
+              "Template anatomy: parameters, mappings, conditions, resources and outputs"
+            ],
+            [
+              "02-intrinsic-functions.md",
+              "Intrinsic functions"
+            ],
+            [
+              "03-nested-stacks-and-stacksets.md",
+              "Nested stacks and StackSets"
+            ],
+            [
+              "04-change-sets-and-drift.md",
+              "Change sets and drift detection"
+            ],
+            [
+              "05-hooks-and-guard.md",
+              "Hooks and CloudFormation Guard"
+            ],
+            [
+              "06-modules-and-reuse.md",
+              "CloudFormation modules and reuse"
+            ],
+            [
+              "07-cloudformation-for-bedrock.md",
+              "CloudFormation coverage for Amazon Bedrock"
+            ]
           ]
         },
         {
           "path": "aws-sam",
           "title": "AWS SAM",
           "chapters": [
-            ["01-aws-sam.md", "AWS SAM"]
+            [
+              "01-aws-sam.md",
+              "AWS SAM"
+            ]
           ]
         },
         {
           "path": "pulumi",
           "title": "Pulumi",
           "chapters": [
-            ["01-pulumi.md", "Pulumi"]
+            [
+              "01-pulumi.md",
+              "Pulumi"
+            ]
           ]
         },
         {
           "path": "maintenance",
           "title": "IaC maintenance and engineering excellence",
           "chapters": [
-            ["01-lifecycle-workflow.md", "The infrastructure change lifecycle"],
-            ["02-module-and-construct-versioning.md", "Module and construct versioning"],
-            ["03-environments-and-promotion.md", "Environments, isolation and controlled promotion"],
-            ["04-secrets-and-policy-as-code.md", "Secrets management and policy as code"],
-            ["05-upgrades-refactoring-import.md", "Version upgrades, refactoring and importing existing resources"],
-            ["06-multi-account-multi-region.md", "Multi-account and multi-Region deployments"]
+            [
+              "01-lifecycle-workflow.md",
+              "The infrastructure change lifecycle"
+            ],
+            [
+              "02-module-and-construct-versioning.md",
+              "Module and construct versioning"
+            ],
+            [
+              "03-environments-and-promotion.md",
+              "Environments, isolation and controlled promotion"
+            ],
+            [
+              "04-secrets-and-policy-as-code.md",
+              "Secrets management and policy as code"
+            ],
+            [
+              "05-upgrades-refactoring-import.md",
+              "Version upgrades, refactoring and importing existing resources"
+            ],
+            [
+              "06-multi-account-multi-region.md",
+              "Multi-account and multi-Region deployments"
+            ]
           ]
         }
       ]
@@ -359,12 +797,66 @@
       "title": "Practical IaC projects",
       "level": "Intermediate to Advanced",
       "groups": [
-        {"path": "project-01-basic-inference", "title": "Project A", "chapters": [["README.md", "Project A: basic Bedrock model inference"]]},
-        {"path": "project-02-serverless-chatbot", "title": "Project B", "chapters": [["README.md", "Project B: serverless chatbot with API Gateway and Lambda"]]},
-        {"path": "project-03-enterprise-rag", "title": "Project C", "chapters": [["README.md", "Project C: enterprise RAG with Knowledge Bases"]]},
-        {"path": "project-04-agentic-ai", "title": "Project D", "chapters": [["README.md", "Project D: agentic application on AgentCore"]]},
-        {"path": "project-05-private-genai", "title": "Project E", "chapters": [["README.md", "Project E: secure private enterprise GenAI"]]},
-        {"path": "project-06-multi-account-platform", "title": "Project F", "chapters": [["README.md", "Project F: multi-account enterprise GenAI platform"]]}
+        {
+          "path": "project-01-basic-inference",
+          "title": "Project A",
+          "chapters": [
+            [
+              "README.md",
+              "Project A: basic Bedrock model inference"
+            ]
+          ]
+        },
+        {
+          "path": "project-02-serverless-chatbot",
+          "title": "Project B",
+          "chapters": [
+            [
+              "README.md",
+              "Project B: serverless chatbot with API Gateway and Lambda"
+            ]
+          ]
+        },
+        {
+          "path": "project-03-enterprise-rag",
+          "title": "Project C",
+          "chapters": [
+            [
+              "README.md",
+              "Project C: enterprise RAG with Knowledge Bases"
+            ]
+          ]
+        },
+        {
+          "path": "project-04-agentic-ai",
+          "title": "Project D",
+          "chapters": [
+            [
+              "README.md",
+              "Project D: agentic application on AgentCore"
+            ]
+          ]
+        },
+        {
+          "path": "project-05-private-genai",
+          "title": "Project E",
+          "chapters": [
+            [
+              "README.md",
+              "Project E: secure private enterprise GenAI"
+            ]
+          ]
+        },
+        {
+          "path": "project-06-multi-account-platform",
+          "title": "Project F",
+          "chapters": [
+            [
+              "README.md",
+              "Project F: multi-account enterprise GenAI platform"
+            ]
+          ]
+        }
       ]
     },
     {
@@ -376,13 +868,34 @@
           "path": "",
           "title": "Security and governance",
           "chapters": [
-            ["01-shared-responsibility-and-threat-model.md", "Shared responsibility and a GenAI threat model"],
-            ["02-identity-and-least-privilege.md", "Identity, least privilege and IAM isolation for agents"],
-            ["03-data-protection-and-privacy.md", "Data protection, privacy and data leakage prevention"],
-            ["04-prompt-injection-and-untrusted-content.md", "Prompt injection, untrusted tool output and retrieval poisoning"],
-            ["05-network-security-and-private-access.md", "Network security and private access"],
-            ["06-governance-at-scale.md", "Governance at scale: Organizations, SCPs and guardrail enforcement"],
-            ["07-logging-audit-and-compliance.md", "Logging, audit and compliance evidence"]
+            [
+              "01-shared-responsibility-and-threat-model.md",
+              "Shared responsibility and a GenAI threat model"
+            ],
+            [
+              "02-identity-and-least-privilege.md",
+              "Identity, least privilege and IAM isolation for agents"
+            ],
+            [
+              "03-data-protection-and-privacy.md",
+              "Data protection, privacy and data leakage prevention"
+            ],
+            [
+              "04-prompt-injection-and-untrusted-content.md",
+              "Prompt injection, untrusted tool output and retrieval poisoning"
+            ],
+            [
+              "05-network-security-and-private-access.md",
+              "Network security and private access"
+            ],
+            [
+              "06-governance-at-scale.md",
+              "Governance at scale: Organizations, SCPs and guardrail enforcement"
+            ],
+            [
+              "07-logging-audit-and-compliance.md",
+              "Logging, audit and compliance evidence"
+            ]
           ]
         }
       ]
@@ -396,13 +909,34 @@
           "path": "",
           "title": "DevOps and CI/CD",
           "chapters": [
-            ["01-pipeline-overview.md", "From developer change to drift detection: the pipeline"],
-            ["02-static-analysis-and-security-scanning.md", "Formatting, linting and security scanning"],
-            ["03-testing-iac.md", "Testing infrastructure code"],
-            ["04-github-actions.md", "GitHub Actions for IaC"],
-            ["05-codepipeline-and-codebuild.md", "AWS CodePipeline and AWS CodeBuild"],
-            ["06-policy-cost-and-approvals.md", "Policy validation, cost estimation and human approval"],
-            ["07-post-deploy-validation-and-drift.md", "Post-deployment validation, monitoring and drift detection"]
+            [
+              "01-pipeline-overview.md",
+              "From developer change to drift detection: the pipeline"
+            ],
+            [
+              "02-static-analysis-and-security-scanning.md",
+              "Formatting, linting and security scanning"
+            ],
+            [
+              "03-testing-iac.md",
+              "Testing infrastructure code"
+            ],
+            [
+              "04-github-actions.md",
+              "GitHub Actions for IaC"
+            ],
+            [
+              "05-codepipeline-and-codebuild.md",
+              "AWS CodePipeline and AWS CodeBuild"
+            ],
+            [
+              "06-policy-cost-and-approvals.md",
+              "Policy validation, cost estimation and human approval"
+            ],
+            [
+              "07-post-deploy-validation-and-drift.md",
+              "Post-deployment validation, monitoring and drift detection"
+            ]
           ]
         }
       ]
@@ -416,14 +950,38 @@
           "path": "",
           "title": "Cost, performance and reliability",
           "chapters": [
-            ["01-pricing-model-and-cost-drivers.md", "Pricing model and cost drivers"],
-            ["02-cost-optimization-and-token-budgeting.md", "Cost optimization and token budgeting"],
-            ["03-latency-optimization.md", "Latency optimization"],
-            ["04-caching-strategies.md", "Caching strategies"],
-            ["05-quotas-rate-limits-and-throttling.md", "Quotas, rate limits and throttling"],
-            ["06-resilience-fallback-and-model-routing.md", "Resilience, fallback models and model routing"],
-            ["07-disaster-recovery-and-business-continuity.md", "Disaster recovery and business continuity"],
-            ["08-monitoring-and-incident-response.md", "Production monitoring and incident response"]
+            [
+              "01-pricing-model-and-cost-drivers.md",
+              "Pricing model and cost drivers"
+            ],
+            [
+              "02-cost-optimization-and-token-budgeting.md",
+              "Cost optimization and token budgeting"
+            ],
+            [
+              "03-latency-optimization.md",
+              "Latency optimization"
+            ],
+            [
+              "04-caching-strategies.md",
+              "Caching strategies"
+            ],
+            [
+              "05-quotas-rate-limits-and-throttling.md",
+              "Quotas, rate limits and throttling"
+            ],
+            [
+              "06-resilience-fallback-and-model-routing.md",
+              "Resilience, fallback models and model routing"
+            ],
+            [
+              "07-disaster-recovery-and-business-continuity.md",
+              "Disaster recovery and business continuity"
+            ],
+            [
+              "08-monitoring-and-incident-response.md",
+              "Production monitoring and incident response"
+            ]
           ]
         }
       ]
@@ -437,21 +995,66 @@
           "path": "",
           "title": "Advanced architecture topics",
           "chapters": [
-            ["01-rag-vs-fine-tuning-vs-long-context.md", "RAG versus fine-tuning versus long-context inference"],
-            ["02-vector-store-selection.md", "Vector store selection"],
-            ["03-chunking-strategies.md", "Chunking strategies"],
-            ["04-embedding-model-selection.md", "Embedding model selection"],
-            ["05-hybrid-search-reranking-metadata-filtering.md", "Hybrid search, reranking and metadata filtering"],
-            ["06-multitenant-rag.md", "Multitenant RAG"],
-            ["07-agent-orchestration-patterns.md", "Agent orchestration patterns"],
-            ["08-human-in-the-loop.md", "Human-in-the-loop workflows"],
-            ["09-mcp-and-tool-integration.md", "MCP and tool integration on AWS"],
-            ["10-model-routing-and-fallback.md", "Model routing and fallback models"],
-            ["11-cross-region-and-data-residency.md", "Cross-Region considerations and data residency"],
-            ["12-observability-and-tracing.md", "Observability and tracing for GenAI"],
-            ["13-model-quality-evaluation.md", "Model quality evaluation in production"],
-            ["14-choosing-rag-agents-flows.md", "Choosing between RAG, agents, flows and plain inference"],
-            ["15-keeping-up-with-aws-changes.md", "Keeping up with AWS changes without outdated tutorials"]
+            [
+              "01-rag-vs-fine-tuning-vs-long-context.md",
+              "RAG versus fine-tuning versus long-context inference"
+            ],
+            [
+              "02-vector-store-selection.md",
+              "Vector store selection"
+            ],
+            [
+              "03-chunking-strategies.md",
+              "Chunking strategies"
+            ],
+            [
+              "04-embedding-model-selection.md",
+              "Embedding model selection"
+            ],
+            [
+              "05-hybrid-search-reranking-metadata-filtering.md",
+              "Hybrid search, reranking and metadata filtering"
+            ],
+            [
+              "06-multitenant-rag.md",
+              "Multitenant RAG"
+            ],
+            [
+              "07-agent-orchestration-patterns.md",
+              "Agent orchestration patterns"
+            ],
+            [
+              "08-human-in-the-loop.md",
+              "Human-in-the-loop workflows"
+            ],
+            [
+              "09-mcp-and-tool-integration.md",
+              "MCP and tool integration on AWS"
+            ],
+            [
+              "10-model-routing-and-fallback.md",
+              "Model routing and fallback models"
+            ],
+            [
+              "11-cross-region-and-data-residency.md",
+              "Cross-Region considerations and data residency"
+            ],
+            [
+              "12-observability-and-tracing.md",
+              "Observability and tracing for GenAI"
+            ],
+            [
+              "13-model-quality-evaluation.md",
+              "Model quality evaluation in production"
+            ],
+            [
+              "14-choosing-rag-agents-flows.md",
+              "Choosing between RAG, agents, flows and plain inference"
+            ],
+            [
+              "15-keeping-up-with-aws-changes.md",
+              "Keeping up with AWS changes without outdated tutorials"
+            ]
           ]
         }
       ]
@@ -465,49 +1068,212 @@
           "path": "",
           "title": "Hands-on labs",
           "chapters": [
-            ["lab-01-verify-a-feature-from-the-docs.md", "Lab 1: verify a feature from the official docs"],
-            ["lab-02-first-converse-call.md", "Lab 2: your first Converse call"],
-            ["lab-03-terraform-validate-and-test-offline.md", "Lab 3: validate and test Terraform offline"],
-            ["lab-04-cdk-synth-and-inspect.md", "Lab 4: synthesize a CDK app and read the template"],
-            ["lab-05-design-a-rag-pipeline.md", "Lab 5: design a RAG pipeline"],
-            ["lab-06-threat-model-an-agent.md", "Lab 6: threat-model an agent"],
-            ["lab-07-estimate-chatbot-cost.md", "Lab 7: estimate the cost of a chatbot"],
-            ["lab-08-pipeline-dry-run.md", "Lab 8: run the IaC pipeline checks locally"]
+            [
+              "lab-01-verify-a-feature-from-the-docs.md",
+              "Lab 1: verify a feature from the official docs"
+            ],
+            [
+              "lab-02-first-converse-call.md",
+              "Lab 2: your first Converse call"
+            ],
+            [
+              "lab-03-terraform-validate-and-test-offline.md",
+              "Lab 3: validate and test Terraform offline"
+            ],
+            [
+              "lab-04-cdk-synth-and-inspect.md",
+              "Lab 4: synthesize a CDK app and read the template"
+            ],
+            [
+              "lab-05-design-a-rag-pipeline.md",
+              "Lab 5: design a RAG pipeline"
+            ],
+            [
+              "lab-06-threat-model-an-agent.md",
+              "Lab 6: threat-model an agent"
+            ],
+            [
+              "lab-07-estimate-chatbot-cost.md",
+              "Lab 7: estimate the cost of a chatbot"
+            ],
+            [
+              "lab-08-pipeline-dry-run.md",
+              "Lab 8: run the IaC pipeline checks locally"
+            ]
           ]
         }
       ]
     }
   ],
   "diagrams": [
-    [1, "01-aws-global-infrastructure-and-networking.md", "AWS global infrastructure and networking"],
-    [2, "02-bedrock-high-level-architecture.md", "Amazon Bedrock high-level architecture"],
-    [3, "03-model-inference-lifecycle.md", "Bedrock model inference lifecycle"],
-    [4, "04-converse-api-application.md", "Bedrock Converse API application architecture"],
-    [5, "05-enterprise-rag.md", "Enterprise RAG architecture"],
-    [6, "06-knowledge-base-ingestion-pipeline.md", "Knowledge Base ingestion pipeline"],
-    [7, "07-knowledge-base-retrieval-pipeline.md", "Knowledge Base retrieval pipeline"],
-    [8, "08-managed-knowledge-base.md", "Managed Knowledge Base architecture"],
-    [9, "09-agentic-retrieval.md", "Agentic retrieval architecture"],
-    [10, "10-bedrock-agents-classic.md", "Bedrock Agents (Classic) architecture"],
-    [11, "11-multi-agent-collaboration.md", "Multi-agent collaboration architecture"],
-    [12, "12-agentcore-architecture.md", "Amazon Bedrock AgentCore architecture"],
-    [13, "13-agentcore-runtime-and-tool-execution.md", "AgentCore Runtime and tool execution"],
-    [14, "14-agentcore-gateway-and-identity.md", "AgentCore Gateway and Identity"],
-    [15, "15-agentcore-memory.md", "AgentCore Memory architecture"],
-    [16, "16-agentcore-observability.md", "AgentCore observability architecture"],
-    [17, "17-bedrock-flows.md", "Bedrock Flows architecture"],
-    [18, "18-guardrails.md", "Guardrails architecture"],
-    [19, "19-prompt-caching.md", "Prompt caching architecture"],
-    [20, "20-model-evaluation.md", "Model evaluation architecture"],
-    [21, "21-cross-region-inference.md", "Cross-Region inference architecture"],
-    [22, "22-serverless-enterprise-chatbot.md", "Serverless enterprise chatbot architecture"],
-    [23, "23-event-driven-genai.md", "Event-driven GenAI architecture"],
-    [24, "24-secure-private-enterprise-bedrock.md", "Secure private enterprise Bedrock architecture"],
-    [25, "25-multi-account-aws.md", "Multi-account AWS architecture"],
-    [26, "26-cicd-and-iac-deployment.md", "CI/CD and IaC deployment architecture"],
-    [27, "27-terraform-state-and-modules.md", "Terraform state and module architecture"],
-    [28, "28-cdk-and-cloudformation-synthesis.md", "AWS CDK and CloudFormation synthesis architecture"],
-    [29, "29-production-monitoring-and-incident-response.md", "Production monitoring and incident-response architecture"],
-    [30, "30-enterprise-end-to-end-genai-reference.md", "Enterprise end-to-end GenAI reference architecture"]
+    [
+      1,
+      "01-aws-global-infrastructure-and-networking.md",
+      "AWS global infrastructure and networking"
+    ],
+    [
+      2,
+      "02-bedrock-high-level-architecture.md",
+      "Amazon Bedrock high-level architecture"
+    ],
+    [
+      3,
+      "03-model-inference-lifecycle.md",
+      "Bedrock model inference lifecycle"
+    ],
+    [
+      4,
+      "04-converse-api-application.md",
+      "Bedrock Converse API application architecture"
+    ],
+    [
+      5,
+      "05-enterprise-rag.md",
+      "Enterprise RAG architecture"
+    ],
+    [
+      6,
+      "06-knowledge-base-ingestion-pipeline.md",
+      "Knowledge Base ingestion pipeline"
+    ],
+    [
+      7,
+      "07-knowledge-base-retrieval-pipeline.md",
+      "Knowledge Base retrieval pipeline"
+    ],
+    [
+      8,
+      "08-managed-knowledge-base.md",
+      "Managed Knowledge Base architecture"
+    ],
+    [
+      9,
+      "09-agentic-retrieval.md",
+      "Agentic retrieval architecture"
+    ],
+    [
+      10,
+      "10-bedrock-agents-classic.md",
+      "Bedrock Agents (Classic) architecture"
+    ],
+    [
+      11,
+      "11-multi-agent-collaboration.md",
+      "Multi-agent collaboration architecture"
+    ],
+    [
+      12,
+      "12-agentcore-architecture.md",
+      "Amazon Bedrock AgentCore architecture"
+    ],
+    [
+      13,
+      "13-agentcore-runtime-and-tool-execution.md",
+      "AgentCore Runtime and tool execution"
+    ],
+    [
+      14,
+      "14-agentcore-gateway-and-identity.md",
+      "AgentCore Gateway and Identity"
+    ],
+    [
+      15,
+      "15-agentcore-memory.md",
+      "AgentCore Memory architecture"
+    ],
+    [
+      16,
+      "16-agentcore-observability.md",
+      "AgentCore observability architecture"
+    ],
+    [
+      17,
+      "17-bedrock-flows.md",
+      "Bedrock Flows architecture"
+    ],
+    [
+      18,
+      "18-guardrails.md",
+      "Guardrails architecture"
+    ],
+    [
+      19,
+      "19-prompt-caching.md",
+      "Prompt caching architecture"
+    ],
+    [
+      20,
+      "20-model-evaluation.md",
+      "Model evaluation architecture"
+    ],
+    [
+      21,
+      "21-cross-region-inference.md",
+      "Cross-Region inference architecture"
+    ],
+    [
+      22,
+      "22-serverless-enterprise-chatbot.md",
+      "Serverless enterprise chatbot architecture"
+    ],
+    [
+      23,
+      "23-event-driven-genai.md",
+      "Event-driven GenAI architecture"
+    ],
+    [
+      24,
+      "24-secure-private-enterprise-bedrock.md",
+      "Secure private enterprise Bedrock architecture"
+    ],
+    [
+      25,
+      "25-multi-account-aws.md",
+      "Multi-account AWS architecture"
+    ],
+    [
+      26,
+      "26-cicd-and-iac-deployment.md",
+      "CI/CD and IaC deployment architecture"
+    ],
+    [
+      27,
+      "27-terraform-state-and-modules.md",
+      "Terraform state and module architecture"
+    ],
+    [
+      28,
+      "28-cdk-and-cloudformation-synthesis.md",
+      "AWS CDK and CloudFormation synthesis architecture"
+    ],
+    [
+      29,
+      "29-production-monitoring-and-incident-response.md",
+      "Production monitoring and incident-response architecture"
+    ],
+    [
+      30,
+      "30-enterprise-end-to-end-genai-reference.md",
+      "Enterprise end-to-end GenAI reference architecture"
+    ]
+  ],
+  "planned_files": [
+    "04-infrastructure-as-code/terraform/modules/README.md",
+    "04-infrastructure-as-code/terraform/modules/bedrock-invocation-role/README.md",
+    "04-infrastructure-as-code/terraform/modules/bedrock-guardrail/README.md",
+    "04-infrastructure-as-code/terraform/modules/bedrock-invocation-logging/README.md",
+    "04-infrastructure-as-code/terraform/modules/knowledge-base-s3-vectors/README.md",
+    "04-infrastructure-as-code/terraform/modules/managed-knowledge-base/README.md",
+    "04-infrastructure-as-code/terraform/modules/bedrock-private-endpoints/README.md",
+    "04-infrastructure-as-code/terraform/modules/agentcore-runtime/README.md",
+    "04-infrastructure-as-code/terraform/modules/terraform-state-backend/README.md",
+    "04-infrastructure-as-code/aws-cdk/construct-library/README.md",
+    "04-infrastructure-as-code/cloudformation/templates/README.md",
+    "04-infrastructure-as-code/maintenance/environments/README.md",
+    "07-devops-and-cicd/examples/README.md",
+    "diagrams/plantuml/README.md",
+    "diagrams/drawio/README.md",
+    "diagrams/rendered/README.md",
+    "references/external-links.md"
   ]
 }

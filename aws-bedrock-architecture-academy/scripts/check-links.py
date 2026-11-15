@@ -138,6 +138,8 @@ def planned_paths() -> set[Path]:
                 planned.add(gdir / fname)
     for _num, fname, _title in data.get("diagrams", []):
         planned.add(ROOT / "diagrams" / "mermaid" / fname)
+    for rel in data.get("planned_files", []):
+        planned.add(ROOT / rel)
     for name in (
         "README.md", "LEARNING-ROADMAP.md", "SOURCES.md", "FEATURE-VERIFICATION.md",
         "ARCHITECTURE-DECISIONS.md", "GLOSSARY.md", "CHANGELOG.md", "PROGRESS.md",
