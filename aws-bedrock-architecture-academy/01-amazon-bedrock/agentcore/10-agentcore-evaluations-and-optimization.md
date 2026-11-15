@@ -194,7 +194,7 @@ sequenceDiagram
     participant G as AgentCore Gateway
     participant A as Agent on AgentCore Runtime
     participant C as Amazon CloudWatch
-    participant E as AgentCore Evaluations (online)
+    participant E as AgentCore Evaluations and A/B test (data plane)
     participant J as Judge (built-in, Bedrock model or Lambda)
     participant O as Operator
     U->>G: Request with runtime session ID
@@ -213,7 +213,7 @@ sequenceDiagram
     O->>E: GetABTest
     E-->>O: Per-variant mean, percent change, p-value
     alt Treatment significantly better (p below 0.05)
-        O->>G: CreateGatewayRule: static override to the winning bundle version
+        O->>G: CreateGatewayRule (control plane): static override to the winning bundle version
     else No significant difference
         O->>O: Keep collecting samples or stop the test
     end

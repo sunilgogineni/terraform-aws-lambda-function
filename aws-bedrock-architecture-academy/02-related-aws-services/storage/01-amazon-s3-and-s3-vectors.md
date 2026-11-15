@@ -26,15 +26,14 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Think of Bedrock as a contractor who works in your warehouse (S3). Some jobs come with a **badge
-you issue** — a service role: the contractor wears it to open the shelves you allowed. Other jobs
-are **deliveries to your loading dock**: Bedrock drops log files off under its own name, so the
-dock door (the bucket policy) must say who may deliver. A few jobs use **your own badge** — the
-identity that started the job.
+Think of Bedrock as a contractor working in your warehouse (S3). Most jobs come with a **badge you
+issue** — a service role that opens only the shelves you allowed. Log files are **deliveries to
+your loading dock**: Bedrock drops them off under its own name, so the dock door (the bucket
+policy) must say who may deliver. A few jobs use **your own badge**, the identity that started them.
 
-S3 Vectors is a second kind of warehouse built for one product: lists of numbers (vectors) that
-you search by "closest to this one". It is cheap to store in and you pay per search, which suits
-large collections that are not queried every second.
+S3 Vectors is a second warehouse built for one product: lists of numbers (vectors) searched by
+"closest to this one". Storage is cheap and you pay per search, which suits large collections that
+are not queried every second.
 
 ## How it really works
 
@@ -52,14 +51,10 @@ large collections that are not queried every second.
 > in another account additionally needs a bucket policy for that identity.
 > Source: [Configure access to Amazon S3 buckets](https://docs.aws.amazon.com/bedrock/latest/userguide/s3-bucket-access.html)
 
-`InvokeDataAutomationAsync` has no role parameter (request members: `inputConfiguration`,
-`outputConfiguration`, `dataAutomationProfileArn` and optional settings, per the SDK model in the
-[API operations reference](../../references/bedrock-api-operations.md)). Which identity Bedrock
-Data Automation uses to read the input object and write the output is
-**UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: the
+`InvokeDataAutomationAsync` has no role parameter ([SDK-derived reference](../../references/bedrock-api-operations.md)).
+Which identity Data Automation uses for S3 is **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**; the
 [API reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_data-automation-runtime_InvokeDataAutomationAsync.html)
-and [Using the Data Automation API](https://docs.aws.amazon.com/bedrock/latest/userguide/bda-using-api.html)
-pages read for this chapter do not say.
+and [Using the Data Automation API](https://docs.aws.amazon.com/bedrock/latest/userguide/bda-using-api.html) do not say.
 
 ### Integration with Amazon Bedrock
 
@@ -95,10 +90,9 @@ The feature chapters go deeper: [Batch inference](../../01-amazon-bedrock/infere
 
 ### Amazon S3 Vectors
 
-S3 Vectors has its own namespace (`s3vectors`) and three resources: a **vector bucket**, **vector
-indexes** inside it, and **vectors** (a key, the float values, and metadata) inside an index.
-Writes are strongly consistent; queries take under a second when infrequent and "as low as 100
-milliseconds" when frequent. Block Public Access is always on and cannot be disabled.
+S3 Vectors has its own namespace (`s3vectors`): **vector buckets** hold **indexes**, which hold
+**vectors** (key, float values, metadata). Writes are strongly consistent; queries take under a
+second, "as low as 100 milliseconds" when frequent. Block Public Access is always on.
 Source: [What is Amazon S3 Vectors?](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html)
 
 | Limit (per the S3 User Guide) | Value |
@@ -114,9 +108,9 @@ Source: [What is Amazon S3 Vectors?](https://docs.aws.amazon.com/AmazonS3/latest
 
 Source: [S3 Vectors limitations and restrictions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-limitations.html)
 
-**Fixed at creation.** An index's name, dimension, distance metric (`Cosine` or `Euclidean`) and
-non-filterable keys cannot change. A bucket's encryption (SSE-S3 by default, or SSE-KMS with a
-key given by full ARN) cannot change either; an index may override it at creation.
+**Fixed at creation:** an index's name, dimension, distance metric (`Cosine` or `Euclidean`) and
+non-filterable keys, and a bucket's encryption (SSE-S3 by default, or SSE-KMS by full key ARN; an
+index may override it).
 Sources: [Vector indexes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-indexes.html),
 [S3 Vectors encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-data-encryption.html)
 
@@ -129,19 +123,17 @@ Sources: [Vector indexes](https://docs.aws.amazon.com/AmazonS3/latest/userguide/
 > has no index-mode argument. Source: [Vector indexes — index mode](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-indexes.html),
 > [Metadata filtering](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-metadata-filtering.html)
 
-**How a knowledge base uses it.** Bedrock writes each chunk as one vector and stores the chunk text
-and its own bookkeeping as metadata, so the index needs `AMAZON_BEDROCK_TEXT` and
-`AMAZON_BEDROCK_METADATA` declared non-filterable. Through a knowledge base you get up to **1 KB
-of custom metadata and 35 keys per vector**; an ingestion job fails when a vector exceeds that.
-Search is **semantic only** (no hybrid), vectors are **float32 only**, and hierarchical chunking —
-or the table-and-figure context that parsing attaches — can exceed the metadata limit.
+**How a knowledge base uses it.** Each chunk becomes one vector; the chunk text and Bedrock's
+bookkeeping travel as metadata, so declare `AMAZON_BEDROCK_TEXT` and `AMAZON_BEDROCK_METADATA`
+non-filterable. A knowledge base allows **1 KB of custom metadata and 35 keys per vector** (the
+ingestion job fails beyond that). Search is **semantic only**, vectors are **float32 only**, and
+hierarchical chunking or the table-and-figure context added by parsing can exceed the limit.
 Source: [Prerequisites for a vector store you created — S3 Vectors tab](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html)
 
-The [customer-managed knowledge base chapter](../../01-amazon-bedrock/knowledge-bases/03-customer-managed-knowledge-bases.md)
-lists `startsWith` as unsupported on S3 Vectors. S3 Vectors itself now supports `$startsWith` on
-`ENHANCED` indexes; whether a knowledge base `Retrieve` filter with `startsWith` reaches it is
-**UNVERIFIED — REQUIRES DOCUMENTATION REVIEW** (the Bedrock pages read for this chapter do not
-mention index modes).
+S3 Vectors now supports `$startsWith` on `ENHANCED` indexes, but the
+[customer-managed chapter](../../01-amazon-bedrock/knowledge-bases/03-customer-managed-knowledge-bases.md)
+lists `startsWith` as unsupported through a knowledge base; whether that changed is
+**UNVERIFIED — REQUIRES DOCUMENTATION REVIEW** (the Bedrock pages read do not mention index modes).
 
 ## Architecture diagram
 
@@ -194,26 +186,25 @@ flowchart LR
     classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
 ```
 
-**What this shows** — every data store is in your account and every Bedrock component is in the
-AWS-managed boundary. Each arrow that crosses the boundary names the identity it uses: a service
-role you created (6, 7, 9, 12), the Bedrock service principal admitted by a bucket policy (13), or
-your own execution role (5). Nothing on the Bedrock side has a network interface in your VPC.
+**What this shows** — data stays in your account; Bedrock components sit in the AWS-managed
+boundary. Each crossing arrow names its identity: a service role you created (6, 7, 9, 12), the
+Bedrock service principal admitted by a bucket policy (13), or your execution role (5).
 
 **Walkthrough**
 
-1. Your application writes a document (and its optional metadata file) to the documents bucket.
-2. With EventBridge notifications enabled on the bucket, S3 sends an `Object Created` event.
-3. A rule matches events for that bucket and puts them on an SQS queue.
-4. A starter function drains the queue in batches — many file changes become one sync.
-5. It calls `StartIngestionJob` with its own role. This is your code; Bedrock has no built-in S3 trigger.
-6. The ingestion job lists and reads changed objects with the knowledge base service role.
-7. It writes vectors for new or changed chunks and deletes vectors of removed documents.
-8. A user question arrives at the runtime endpoint.
-9. Bedrock embeds the question and calls `QueryVectors` with the same service role.
-10. Ranked chunks with their S3 source locations return to the application.
+1. The application writes a document and its optional metadata file.
+2. With EventBridge notifications on, S3 emits `Object Created`.
+3. A rule puts matching events on an SQS queue.
+4. A starter function drains the queue in batches.
+5. It calls `StartIngestionJob` with its own role — your code, not a Bedrock feature.
+6. The ingestion job reads changed objects with the knowledge base service role.
+7. It writes vectors for new chunks and deletes those of removed documents.
+8. A question arrives at the runtime endpoint.
+9. Bedrock embeds it and calls `QueryVectors` with the same role.
+10. Ranked chunks with S3 source locations return.
 11. A batch job is submitted with a service role and two S3 locations.
-12. The batch job reads JSONL input and writes results with that role.
-13. After each `bedrock-runtime` call, logging delivers records under its own service principal.
+12. It reads JSONL input and writes results with that role.
+13. Logging delivers records under its own service principal.
 
 | Legend | Meaning |
 |:--|:--|
@@ -224,24 +215,22 @@ your own execution role (5). Nothing on the Bedrock side has a network interface
 | Outer boxes | Your account versus the AWS-managed Bedrock boundary |
 | Red box | Security control (KMS key) |
 
-**Variations** — a Managed Knowledge Base reads the same S3 bucket but stores vectors in
-AWS-managed storage, not S3 Vectors, and offers sync schedules (`daily`, `weekly`, `monthly`), so
-steps 2–5 become optional ([Managed Knowledge Base](../../01-amazon-bedrock/knowledge-bases/02-managed-knowledge-base.md)).
-With OpenSearch Serverless or Aurora, steps 7 and 9 go to those stores instead
-([OpenSearch](../databases/01-opensearch.md), [Aurora](../databases/02-aurora-pgvector-and-rds.md)).
-A batch job with `vpcConfig` reaches S3 from network interfaces in your subnets.
-The full ingestion picture is [diagram set 6](../../diagrams/mermaid/06-knowledge-base-ingestion-pipeline.md).
+**Variations** — a [Managed Knowledge Base](../../01-amazon-bedrock/knowledge-bases/02-managed-knowledge-base.md)
+reads the same bucket, stores vectors in AWS-managed storage and has sync schedules, so steps 2–5
+become optional. With [OpenSearch](../databases/01-opensearch.md) or
+[Aurora](../databases/02-aurora-pgvector-and-rds.md), steps 7 and 9 go there. A batch job with
+`vpcConfig` reaches S3 from your subnets. Full ingestion view:
+[diagram set 6](../../diagrams/mermaid/06-knowledge-base-ingestion-pipeline.md).
 
 ## Implementation details
 
 ### Bucket policies and KMS for Bedrock
 
-1. **Service-role features (knowledge bases, batch, customization, evaluation).** Grant S3 actions
-   on the role, scoped to buckets and prefixes, with `aws:ResourceAccount`. A same-account bucket
-   needs no bucket policy. For SSE-KMS, give the role `kms:Decrypt` (read) and
-   `kms:GenerateDataKey` (write) with `kms:ViaService` = `s3.<region>.amazonaws.com` — the call
-   to KMS is made by S3, not by Bedrock. A missing key permission on a batch job is reported as
-   an S3 `GetObject`/`PutObject` validation failure, minutes after submission.
+1. **Service-role features.** Grant S3 actions on the role, scoped to prefixes, with
+   `aws:ResourceAccount`; a same-account bucket needs no bucket policy. For SSE-KMS add
+   `kms:Decrypt` (read) and `kms:GenerateDataKey` (write) with `kms:ViaService` =
+   `s3.<region>.amazonaws.com` — S3, not Bedrock, calls KMS. A missing key permission on a batch
+   job surfaces as an S3 `GetObject`/`PutObject` failure.
 2. **Invocation logging.** The bucket policy admits `bedrock.amazonaws.com` to
    `<prefix>/AWSLogs/<account>/BedrockModelInvocationLogs/*`, conditioned on `aws:SourceAccount`
    and `aws:SourceArn`; ACLs must be disabled for the policy to take effect. With SSE-KMS, the key
@@ -249,11 +238,10 @@ The full ingestion picture is [diagram set 6](../../diagrams/mermaid/06-knowledg
 3. **Cross-account S3 data source.** The knowledge base role needs the permissions, **and** the
    bucket owner's bucket policy (and key policy) must name it; the data source records the
    `bucketOwnerAccountId`.
-4. **S3 Vectors with a customer managed key.** The key policy must allow
-   `indexing.s3vectors.amazonaws.com` `kms:Decrypt` (background index maintenance); principals that
-   read or write vectors need `kms:Decrypt`, and creating the bucket needs `kms:GenerateDataKey`.
-   With a custom service role, AWS also advises a vector bucket policy that restricts the bucket
-   and index to that role.
+4. **S3 Vectors with a customer managed key.** The key policy allows
+   `indexing.s3vectors.amazonaws.com` `kms:Decrypt` for background index maintenance; vector
+   readers and writers need `kms:Decrypt`. With a custom service role, AWS advises a vector bucket
+   policy that restricts the bucket and index to that role.
 
 Sources: [KB service role](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-permissions.html),
 [Batch service role](https://docs.aws.amazon.com/bedrock/latest/userguide/batch-iam-sr.html),
@@ -264,13 +252,12 @@ Background: [AWS KMS, Secrets Manager and Parameter Store](../security/02-kms-se
 
 ### S3 events as an ingestion trigger
 
-A sync is incremental — unchanged documents are skipped — but it is a job over the whole data
-source, and the quotas are tight: `StartIngestionJob` allows 0.1 requests per second and one
-job per data source and per knowledge base at a time (see
-[Ingestion, parsing and chunking](../../01-amazon-bedrock/knowledge-bases/04-ingestion-parsing-chunking.md)).
-One job per uploaded object therefore fails under load. AWS's own sample design routes S3 events
-through EventBridge, buffers them in SQS and orchestrates syncs with Step Functions and a DynamoDB
-change log, "while respecting service quotas and rate limits".
+A sync is incremental but runs over the whole data source, and `StartIngestionJob` allows 0.1
+requests per second with one job per data source at a time
+([Ingestion, parsing and chunking](../../01-amazon-bedrock/knowledge-bases/04-ingestion-parsing-chunking.md)),
+so one job per uploaded object fails under load. AWS's sample design routes S3 events through
+EventBridge, buffers them in SQS and orchestrates syncs with Step Functions and a DynamoDB change
+log, "while respecting service quotas and rate limits".
 Source: [Build and deploy an automatic sync solution for Amazon Bedrock Knowledge Bases](https://aws.amazon.com/blogs/machine-learning/build-and-deploy-an-automatic-sync-solution-for-amazon-bedrock-knowledge-bases/)
 
 > [!TIP]
@@ -625,15 +612,10 @@ output "ingestion_queue_url" {
 }
 ```
 
-Notes on the example:
-
-- The vector bucket policy denies vector data actions to every principal except the knowledge base
-  role. Administrators can still manage the bucket and index; tighten further if needed.
-- `BucketOwnerEnforced` disables ACLs on the log bucket, which logging requires.
-- The queue only buffers events; the function that drains it and calls `StartIngestionJob` is
-  covered in [AWS Lambda with Bedrock](../compute/01-lambda.md).
-- A reusable version of the vector store lives in the planned module
-  [knowledge-base-s3-vectors](../../04-infrastructure-as-code/terraform/modules/knowledge-base-s3-vectors/README.md).
+Notes: the vector bucket policy denies vector data actions to everyone but the knowledge base role
+(bucket and index management stay possible). The queue only buffers events; the draining function
+is covered in [AWS Lambda with Bedrock](../compute/01-lambda.md). A reusable vector store is the
+planned module [knowledge-base-s3-vectors](../../04-infrastructure-as-code/terraform/modules/knowledge-base-s3-vectors/README.md).
 
 > [!CAUTION]
 > **Cost hazard** — applying this in a sandbox creates a KMS key (monthly charge), S3 storage, SQS
@@ -643,9 +625,9 @@ Notes on the example:
 ## Common mistakes
 
 > [!WARNING]
-> **Common mistake** — giving the knowledge base role `s3:GetObject` on a whole bucket "to keep it
-> simple". Data source operations do not pass a role, so anyone allowed to edit data sources can
-> point ingestion at any prefix the role can read and then read it back through `Retrieve`.
+> **Common mistake** — granting the knowledge base role a whole bucket. Data source operations pass
+> no role, so anyone who may edit data sources can ingest any prefix the role reads and read it
+> back through `Retrieve`.
 > Source: [Create a service role for Knowledge Bases](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-permissions.html)
 
 | Mistake | Symptom | Fix |
@@ -660,52 +642,46 @@ Notes on the example:
 
 ## Security considerations
 
-- **Least privilege per feature.** One role per knowledge base or job type, scoped to prefixes; the
-  trust policy carries `aws:SourceAccount` and an `aws:SourceArn` for that resource type.
-- **Confused deputy.** Bucket and key policies that admit `bedrock.amazonaws.com` must condition on
+- **Least privilege and confused deputy.** One role per knowledge base or job type, scoped to
+  prefixes. Trust, bucket and key policies that admit `bedrock.amazonaws.com` condition on
   `aws:SourceAccount` and `aws:SourceArn`.
-- **Logs are sensitive data.** Invocation logs contain full prompts and responses; Converse image
-  and document inputs are written to S3. Treat the log bucket like the source data
+- **Logs are sensitive.** They hold full prompts and responses, plus Converse images and documents
   ([Data protection and privacy](../../06-security-governance/03-data-protection-and-privacy.md)).
-- **Encryption.** S3 Vectors encryption is fixed at bucket creation — decide on SSE-KMS first.
-- **Network.** Bedrock-side S3 access stays inside AWS. Your own uploads and API calls can stay
-  private through S3 gateway endpoints and Bedrock interface endpoints
-  ([Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md)).
-- **Poisoned documents.** Anyone who can write to the documents bucket can influence answers
+- **Encryption** of a vector bucket is fixed at creation — decide on SSE-KMS first.
+- **Network.** Bedrock's S3 access stays inside AWS; keep your own calls private with S3 gateway and
+  Bedrock interface endpoints ([Private connectivity](../networking/01-private-connectivity-for-bedrock.md)).
+- **Poisoning.** Whoever can write to the documents bucket can steer answers
   ([Prompt injection and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md)).
 
 ## Cost considerations
 
-- **General purpose buckets:** storage, requests and data transfer as usual; batch and logging add
-  objects at volume. Lifecycle rules on log and batch-output prefixes keep this bounded.
+- **General purpose buckets:** usual storage and request charges; add lifecycle rules to log and
+  batch-output prefixes.
 - **S3 Vectors** has three meters: **PUT** per logical GB uploaded (vector data, key and all
   metadata; minimum 128 KB per request), **storage** per logical GB-month, and **queries** — a
   per-request fee, a per-TB "data processed" charge computed from the size of the **whole index
   queried**, and a per-GB data-returned charge. Non-filterable metadata is excluded from data
   processed, which is one more reason Bedrock's text key is non-filterable.
   Source: [Amazon S3 pricing — S3 Vectors](https://aws.amazon.com/s3/pricing/)
-- **Our reading:** because each query is billed on the index size, cost grows with
-  *queries × index size*. Many small indexes (for example, one per tenant) query cheaper than one
-  giant index; high-QPS workloads may be cheaper on OpenSearch.
-- **KMS:** customer managed keys add a monthly charge and per-request charges for every S3 data key
-  operation. See [Pricing model and cost drivers](../../08-cost-performance-and-reliability/01-pricing-model-and-cost-drivers.md).
+- **Our reading:** query cost grows with *queries × index size*, so several small indexes (one per
+  tenant) query cheaper than one giant index, and high-QPS workloads may be cheaper on OpenSearch.
+- **KMS** keys add monthly and per-request charges. See
+  [Pricing model and cost drivers](../../08-cost-performance-and-reliability/01-pricing-model-and-cost-drivers.md).
 
 ## Knowledge check
 
 1. A batch job fails ten minutes after submission with a message that Bedrock cannot validate `GetObject` on the input bucket. The role has `s3:GetObject`. What do you check next?
-2. Why does the invocation-log bucket need a bucket policy while the knowledge base documents bucket in the same account does not?
-3. You upload 2,000 files in a minute and a Lambda function calls `StartIngestionJob` for each. What happens, and what should the design be?
-4. A team wants keyword and semantic search over 50 million chunks with a rich metadata schema. Is S3 Vectors a good store for this knowledge base?
-5. What breaks if the vector bucket uses SSE-KMS but the key policy does not allow `indexing.s3vectors.amazonaws.com`?
+2. You upload 2,000 files in a minute and a Lambda function calls `StartIngestionJob` for each. What happens, and what should the design be?
+3. A team wants keyword and semantic search over 50 million chunks with a rich metadata schema. Is S3 Vectors a good store for this knowledge base?
+4. What breaks if the vector bucket uses SSE-KMS but the key policy does not allow `indexing.s3vectors.amazonaws.com`?
 
 <details>
 <summary>Answers</summary>
 
-1. The KMS key. If the bucket uses SSE-KMS, the role needs `kms:Decrypt` (and `kms:GenerateDataKey` for output) via S3; the error message mentions S3, not KMS.
-2. Logging writes as the `bedrock.amazonaws.com` service principal, which needs a resource-policy grant. Ingestion uses a service role in your account, and a same-account bucket needs only the role's identity policy.
-3. Most calls are throttled (0.1 requests per second) or conflict with the running job (one job per data source). Buffer events and start one sync per data source per window, or use direct ingestion for urgent single documents.
-4. Not on its own: S3 Vectors is semantic-only and allows 1 KB of custom metadata and 35 keys per vector through a knowledge base. OpenSearch Serverless or Aurora fit better.
-5. S3 Vectors cannot decrypt data for background index maintenance, so the index cannot be maintained; the key policy must grant that principal `kms:Decrypt`.
+1. The KMS key: with SSE-KMS the role needs `kms:Decrypt` (and `kms:GenerateDataKey` for output) via S3; the message names S3, not KMS.
+2. Most calls are throttled (0.1 per second) or conflict with the running job. Buffer and debounce; use direct ingestion for urgent single documents.
+3. No: it is semantic-only and allows 1 KB of custom metadata and 35 keys per vector. OpenSearch Serverless or Aurora fit better.
+4. Background index maintenance cannot decrypt the data; that principal needs `kms:Decrypt` in the key policy.
 
 </details>
 

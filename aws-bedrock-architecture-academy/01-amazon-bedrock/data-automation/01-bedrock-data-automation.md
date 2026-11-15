@@ -277,8 +277,8 @@ Sources: [InvokeDataAutomationAsync](https://docs.aws.amazon.com/bedrock/latest/
   `bedrock:GetDataAutomationStatus` is on the `data-automation-invocation-job` resource. Tag-based
   conditions are supported on jobs and resources.
 - **Global profile is opt-in.** You must name `global.data-automation-v1` explicitly in IAM, and
-  it is the only profile in Asia Pacific (Singapore). An SCP that denies the global profile ARN keeps
-  processing inside a geography.
+  it is the only profile in Asia Pacific (Singapore). **Our reading:** an SCP that denies the global
+  profile ARN keeps processing inside a geography.
 - **Encryption.** AWS owned keys by default. With a customer managed key, the key policy allows
   `kms:DescribeKey`, `kms:GenerateDataKey`, `kms:Decrypt` and `kms:CreateGrant` through
   `kms:ViaService` `bedrock.<region>.amazonaws.com`; grants for a job are retired after 30 hours.
@@ -349,8 +349,8 @@ Source: [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)
 | Inline blueprints per request (quota table) | 10 for documents; 1 for images, audio, video |
 
 Request-rate quotas for the runtime APIs were not found in the rows read; use the Service Quotas
-console. Large backlogs fit an S3-event → queue → `InvokeDataAutomationAsync` pattern with
-EventBridge for completion — see [Event-driven GenAI](../../diagrams/mermaid/23-event-driven-genai.md).
+console. **Our reading:** large backlogs fit an S3-event → queue → `InvokeDataAutomationAsync`
+pattern with EventBridge for completion — see [Event-driven GenAI](../../diagrams/mermaid/23-event-driven-genai.md).
 
 Sources: [Prerequisites for BDA](https://docs.aws.amazon.com/bedrock/latest/userguide/bda-limits.html),
 [Amazon Bedrock endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/bedrock.html)

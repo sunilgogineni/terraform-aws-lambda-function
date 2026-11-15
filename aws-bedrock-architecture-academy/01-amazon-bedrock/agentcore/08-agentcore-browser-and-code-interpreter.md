@@ -40,7 +40,7 @@ Operation names are checked against the [generated API reference](../../referenc
 
 ## 2. Why it exists
 
-Without these tools you would run a headless browser fleet and a code sandbox yourself: container images, scaling, per-user isolation, cleanup between users, egress control, and a way for a person to watch or take over a stuck browser. Running model-written code next to your agent is worse — it inherits the agent's credentials and network. The built-in tools move both risks into a separate, short-lived microVM with its own role and network mode.
+Without them you would run a headless browser fleet and a code sandbox yourself: images, scaling, per-user isolation, cleanup, egress control, and a way for a person to take over a stuck browser. Running model-written code inside your agent is worse: it inherits the agent's credentials and network. The built-in tools move both risks into a short-lived microVM with its own role and network mode.
 
 ## 3. When to use it
 
@@ -137,7 +137,7 @@ flowchart LR
 | After termination | "the data is cleaned up" | "Ephemeral sessions that reset after each use" |
 | Retention policy | "The time to live (TTL) retention policy for the session data is 30 days" | Same statement |
 
-**Our reading** of the last two rows, which sit on the same pages: the sandbox filesystem is gone when the session ends, while some session data is kept for up to 30 days. Do not write secrets into a session. Sources: [Code Interpreter session management](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-session-characteristics.html), [Browser fundamentals](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-resource-session-management.html), [Browser tool](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-tool.html).
+**Our reading** of the last two rows: the sandbox is wiped at session end, but some session data is retained for up to 30 days, so keep secrets out of sessions. Sources: [Code Interpreter session management](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-session-characteristics.html), [Browser fundamentals](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-resource-session-management.html), [Browser tool](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-tool.html).
 
 ### Network modes
 
@@ -147,11 +147,22 @@ flowchart LR
 | `SANDBOX` | ✅ | — | "Limited external network access to AWS services": Amazon S3 for data operations |
 | `VPC` | ✅ | ✅ | Your VPC through network interfaces in your subnets; internet only through a NAT gateway |
 
-Sources: [Code Interpreter resource management](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-resource-management.html), [Configure Runtime and tools for VPC](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agentcore-vpc.html). Two documentation inconsistencies to know: the Browser fundamentals page still says the browser "supports the public network mode" only, while the VPC page and the API (`PUBLIC | VPC`) document VPC mode; and the VPC page's CLI examples use a `networkModeConfig` key where the API, CLI reference and SDK use `vpcConfig`.
+Sources: [Code Interpreter resource management](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-resource-management.html), [Configure Runtime and tools for VPC](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agentcore-vpc.html).
+
+> [!WARNING]
+> **Common mistake** — Trusting two stale passages. The Browser fundamentals page says the browser "supports the public network mode", but the VPC page and the API (`PUBLIC | VPC`) document VPC mode. The VPC page's CLI examples use `networkModeConfig`; the API and SDK field is `vpcConfig`.
 
 ### Code Interpreter in detail
 
-`InvokeCodeInterpreter` takes a tool `name` and `arguments`: `executeCode` (with `language` `python`, `javascript` or `typescript`), `executeCommand` (shell, including the AWS CLI), `writeFiles`, `readFiles`, `listFiles`, `removeFiles`, and `startCommandExecution` / `getTask` / `stopTask` for long-running commands. Results arrive as a stream whose `structuredContent` carries `stdout`, `stderr`, `exitCode` and `executionTime`. Python and Node.js libraries come pre-installed. Inline uploads can be up to 100 MB; files moved through Amazon S3 with terminal commands up to 5 GB. A session can also mount Amazon EFS or Amazon S3 Files access points (`filesystemConfigurations`) and install certificates from AWS Secrets Manager. Sources: [InvokeCodeInterpreter](https://docs.aws.amazon.com/bedrock-agentcore/latest/APIReference/API_InvokeCodeInterpreter.html), [StartCodeInterpreterSession](https://docs.aws.amazon.com/bedrock-agentcore/latest/APIReference/API_StartCodeInterpreterSession.html), [Code Interpreter](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-tool.html), [Pre-installed libraries](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-preinstalled-libraries.html).
+| Aspect | What is documented |
+|:--|:--|
+| Tool names in `InvokeCodeInterpreter` | `executeCode`, `executeCommand` (shell, including the AWS CLI), `writeFiles`, `readFiles`, `listFiles`, `removeFiles`; `startCommandExecution`, `getTask`, `stopTask` for long-running commands |
+| Languages | `language`: `python`, `javascript`, `typescript`; pre-installed Python and Node.js libraries |
+| Result | A stream; `structuredContent` carries `stdout`, `stderr`, `exitCode`, `executionTime` |
+| Files | Inline upload up to 100 MB; through Amazon S3 with terminal commands up to 5 GB; optional Amazon EFS or Amazon S3 Files mounts (`filesystemConfigurations`) |
+| Certificates | Installed from AWS Secrets Manager at resource or session level |
+
+Sources: [InvokeCodeInterpreter](https://docs.aws.amazon.com/bedrock-agentcore/latest/APIReference/API_InvokeCodeInterpreter.html), [StartCodeInterpreterSession](https://docs.aws.amazon.com/bedrock-agentcore/latest/APIReference/API_StartCodeInterpreterSession.html), [Code Interpreter](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-tool.html), [Pre-installed libraries](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-preinstalled-libraries.html).
 
 ### Browser in detail
 
@@ -200,8 +211,8 @@ sequenceDiagram
 ```
 
 - **Steps 1–4.** The caller needs `bedrock-agentcore:StartCodeInterpreterSession` on the interpreter. `clientToken` makes a retried start idempotent. A request that would exceed a quota returns `ServiceQuotaExceededException` (HTTP 402); one above the rate limit returns `ThrottlingException` (429); retry those with backoff.
-- **Steps 5–13.** A call against an expired or stopped session fails; `isError` in the result marks a failed execution rather than an API error. Synchronous requests time out at 15 minutes — use `startCommandExecution` and `getTask` for longer work.
-- **Steps 14–15.** Billing runs until the session ends, so stop it explicitly instead of waiting for the timeout.
+- **Steps 5–13.** A call on an expired or stopped session fails. `isError` marks failed code, not an API error. Synchronous requests stop at 15 minutes; use `startCommandExecution` and `getTask` for longer work.
+- **Steps 14–15.** Billing runs until the session ends, so stop it explicitly.
 
 ```mermaid
 ---
@@ -236,11 +247,11 @@ sequenceDiagram
     A->>DP: StopBrowserSession
 ```
 
-- **Steps 1–5.** The SDK helper `browser_session()` and `generate_ws_headers()` start the session and sign the WebSocket URL; Playwright connects with `connect_over_cdp`. Source: [Playwright quickstart](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-quickstart-playwright.html).
-- **Steps 6–9.** Everything a page returns is untrusted model input.
-- **Steps 10–11.** `InvokeBrowser` has its own, lower rate quota (5 TPS).
-- **Steps 12–14.** Live view is a separate IAM action; give it to an operator role, not the agent.
-- **Step 15.** A profile can be saved only from an active session, and saving overwrites the previous profile.
+- **Steps 1–5.** The Python SDK's `browser_session()` and `generate_ws_headers()` start the session and sign the WebSocket URL; Playwright connects with `connect_over_cdp` ([Playwright quickstart](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-quickstart-playwright.html)).
+- **Steps 6–9.** Page content is untrusted model input.
+- **Steps 10–11.** `InvokeBrowser` has a lower rate quota (5 TPS).
+- **Steps 12–14.** Live view is a separate IAM action.
+- **Step 15.** Profiles save only from an active session, and a save overwrites the previous profile.
 
 ## 7. Dependencies
 
@@ -256,19 +267,19 @@ sequenceDiagram
 
 ## 8. Security considerations
 
-What is documented:
-
-- **The execution role is the sandbox's reach.** It "defines what AWS resources the code interpreter can access", and model-written code runs with it. The documented trust policy pins `aws:SourceAccount` and `aws:SourceArn`.
-- **`SANDBOX` is limited, not offline.** It provides "limited external network access to AWS services" — Amazon S3. VPC mode puts egress under your security groups and routes.
-- **The CDK L2 constructs default to `PUBLIC`.** `CodeInterpreterCustom` and `BrowserCustom` use the public network mode unless you set another (README of the installed `aws-cdk-lib` 2.277.0 module).
-- **Profiles hold sign-in state.** The profiles page warns that they "may contain sensitive data such as authentication cookies" and asks for IAM policies that restrict access to profile resources.
-- **Recordings capture network traffic and console logs.** They are written with the execution role, which needs `s3:PutObject`, `s3:ListMultipartUploadParts` and `s3:AbortMultipartUpload`, with an `aws:ResourceAccount` condition.
-- **Isolation is per session.** Nothing documented binds a session to an end user; your application keeps that mapping.
+| Topic | What is documented |
+|:--|:--|
+| Execution role | "Defines what AWS resources the code interpreter can access"; model-written code runs with it. The documented trust policy pins `aws:SourceAccount` and `aws:SourceArn` |
+| `SANDBOX` mode | "Limited external network access to AWS services" (Amazon S3), not no network. VPC mode puts egress under your security groups and routes |
+| CDK defaults | The `CodeInterpreterCustom` and `BrowserCustom` L2 constructs default to `PUBLIC` (installed `aws-cdk-lib` 2.277.0 README) |
+| Browser profiles | "May contain sensitive data such as authentication cookies"; restrict access to profile resources with IAM |
+| Recordings | Capture network traffic and console logs; written with the execution role (`s3:PutObject`, `s3:ListMultipartUploadParts`, `s3:AbortMultipartUpload`, `aws:ResourceAccount` condition) |
+| User binding | Isolation is per session; nothing binds a session to an end user, so your application keeps that mapping |
 
 Sources: [Code Interpreter resource management](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-resource-management.html), [Code Interpreter sessions and IAM](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-interpreter-resource-session-management.html), [Browser fundamentals](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-resource-session-management.html), [Browser profiles](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/browser-profiles.html), [CDK and CloudFormation reference](../../references/cdk-and-cloudformation-bedrock.md).
 
 > [!TIP]
-> **Academy recommendation** — Give each tool its own execution role scoped to one bucket prefix, and never reuse a Runtime or Gateway role (they trust the same service principal but need different permissions). Treat DOM text and screenshots as untrusted input, like retrieved documents; see [Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md). Encrypt the recording bucket, restrict who can read it and expire objects with a lifecycle rule. Give agents the automation actions and people `ConnectBrowserLiveViewStream`. Set the network mode explicitly in every IaC tool.
+> **Academy recommendation** — One execution role per tool, scoped to one bucket prefix; never reuse a Runtime or Gateway role. Treat DOM text and screenshots as untrusted input (see [Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md)). Encrypt, restrict and expire the recording bucket. Automation actions for agents, `ConnectBrowserLiveViewStream` for people. Always set the network mode explicitly.
 > This is our design guidance, not an official AWS reference architecture.
 
 > [!CAUTION]
