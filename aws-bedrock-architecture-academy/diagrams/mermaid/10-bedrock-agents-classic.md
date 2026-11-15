@@ -231,7 +231,7 @@ sequenceDiagram
     Note over App,AR: SigV4 · bedrock:InvokeAgent on the alias ARN · alias in ACCEPT_INVOCATIONS
     AR->>SS: Load session history and memory summaries
     SS-->>AR: History
-    Note over AR: Guardrail, if configured, evaluates user messages and model responses (exact points not documented)
+    Note over AR,SS: Guardrail (if configured) filters user messages and model responses · exact points not documented
     opt Pre-processing enabled (the default)
         AR->>FM: Pre-processing prompt
         FM-->>AR: Input classified as valid

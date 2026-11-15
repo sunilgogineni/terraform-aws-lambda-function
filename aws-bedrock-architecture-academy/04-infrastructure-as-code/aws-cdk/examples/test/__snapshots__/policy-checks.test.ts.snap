@@ -1,0 +1,146 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`snapshot GuardrailL1Stack template is unchanged 1`] = `
+{
+  "Outputs": {
+    "GuardrailId": {
+      "Value": {
+        "Fn::GetAtt": [
+          "SupportGuardrail",
+          "GuardrailId",
+        ],
+      },
+    },
+    "GuardrailVersionNumber": {
+      "Value": {
+        "Fn::GetAtt": [
+          "SupportGuardrailVersion",
+          "Version",
+        ],
+      },
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "SupportGuardrail": {
+      "Properties": {
+        "BlockedInputMessaging": "Sorry, I cannot help with that request.",
+        "BlockedOutputsMessaging": "Sorry, I cannot share that response.",
+        "ContentPolicyConfig": {
+          "FiltersConfig": [
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "SEXUAL",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "VIOLENCE",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "HATE",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "INSULTS",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "HIGH",
+              "Type": "MISCONDUCT",
+            },
+            {
+              "InputStrength": "HIGH",
+              "OutputStrength": "NONE",
+              "Type": "PROMPT_ATTACK",
+            },
+          ],
+        },
+        "Description": "Blocks harmful content and prompt attacks; anonymizes e-mail addresses and phone numbers",
+        "Name": "Snapshot-guardrail",
+        "SensitiveInformationPolicyConfig": {
+          "PiiEntitiesConfig": [
+            {
+              "Action": "ANONYMIZE",
+              "Type": "EMAIL",
+            },
+            {
+              "Action": "ANONYMIZE",
+              "Type": "PHONE",
+            },
+          ],
+        },
+        "TopicPolicyConfig": {
+          "TopicsConfig": [
+            {
+              "Definition": "Recommendations to buy, sell or hold specific financial products or securities.",
+              "Examples": [
+                "Which stock should I buy this week?",
+              ],
+              "Name": "InvestmentAdvice",
+              "Type": "DENY",
+            },
+          ],
+        },
+        "WordPolicyConfig": {
+          "ManagedWordListsConfig": [
+            {
+              "Type": "PROFANITY",
+            },
+          ],
+        },
+      },
+      "Type": "AWS::Bedrock::Guardrail",
+    },
+    "SupportGuardrailVersion": {
+      "Properties": {
+        "Description": "Release 1",
+        "GuardrailIdentifier": {
+          "Fn::GetAtt": [
+            "SupportGuardrail",
+            "GuardrailId",
+          ],
+        },
+      },
+      "Type": "AWS::Bedrock::GuardrailVersion",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

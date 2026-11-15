@@ -66,12 +66,10 @@ the AWS SDK model and from AWS's own
 
 ## 2. Why it exists
 
-Embedding a table row by row produces chunks that cannot be summed, joined or filtered reliably.
-Without a structured knowledge base you would write and secure your own text-to-SQL layer: schema
-extraction, prompt design, query execution with a least-privilege identity and answer synthesis.
-Without GraphRAG you would run an entity-extraction pipeline, model a graph, load it and write the
-traversal. Kendra knowledge bases existed so that teams with a tuned Kendra index did not have to
-re-ingest everything into a second store.
+Embedded table rows cannot be summed, joined or filtered reliably. Without a structured knowledge
+base you would build and secure your own text-to-SQL layer. Without GraphRAG you would run entity
+extraction, model and load a graph, and write the traversal. Kendra knowledge bases spared teams with
+a tuned Kendra index a second ingestion.
 
 ## 3. When to use it
 
@@ -105,24 +103,20 @@ flowchart TD
 ```
 
 **What this shows** — three questions, asked in order. Blue: start · red: decision · purple:
-customer-managed shapes in this chapter · grey dashed: a path on a service closed to new customers ·
-green: the default.
+shapes in this chapter · grey dashed: a service closed to new customers · green: the default.
 
-1. If the answer is computed from rows, a structured knowledge base runs real SQL against the data.
-2. If the answer depends on relationships across documents, GraphRAG adds graph traversal to vector search.
-3. A Kendra knowledge base makes sense only where the index already exists and the account is an existing Kendra customer.
+1. Answers computed from rows need real SQL.
+2. Answers that depend on links between documents gain from graph traversal.
+3. Kendra only where the index exists and the account already uses Kendra.
 4. Everything else starts on the Managed Knowledge Base.
 
-**Variations** — a multi-step question over documents can also go to
-[agentic retrieval](../agentic-retrieval/01-agentic-retrieval.md) on a managed knowledge base, which
-decomposes the question instead of keeping a graph. Measure both with
-[Model and RAG evaluation](../model-evaluation/01-model-evaluation.md) before you commit.
+**Variations** — [agentic retrieval](../agentic-retrieval/01-agentic-retrieval.md) on a managed
+knowledge base also handles multi-step questions, by decomposing them instead of keeping a graph.
+Compare both with [Model and RAG evaluation](../model-evaluation/01-model-evaluation.md).
 
-Concrete fits:
-
-- **Structured** — analysts ask about data already in Amazon Redshift or registered in the AWS Glue Data Catalog; an agent needs a "query the warehouse" tool; you want to show users the SQL before running it (`GenerateQuery`).
-- **GraphRAG** — compliance, research or incident corpora where the same people, products or suppliers recur across many documents and answers must connect them.
-- **Kendra** — an existing Kendra customer bridging an application to Bedrock while it migrates.
+- **Structured** — analysts ask about data in Amazon Redshift or the AWS Glue Data Catalog; an agent needs a "query the warehouse" tool; users should see the SQL first (`GenerateQuery`).
+- **GraphRAG** — compliance, research or incident corpora where the same people, products or suppliers recur across documents.
+- **Kendra** — an existing Kendra customer bridging to Bedrock while migrating.
 
 ## 4. When not to use it
 
@@ -188,19 +182,19 @@ flowchart LR
 | Cylinder | Data at rest in your account |
 | Orange / green / purple / grey dashed | Your compute · Bedrock · your data · a service closed to new customers |
 
-**What this shows** — one run-time endpoint in front of three different back ends. Everything that
-holds data stays in your account; Bedrock reaches it with the knowledge base service role.
+**What this shows** — one run-time endpoint in front of three back ends. Data stays in your
+account; Bedrock reaches it with the knowledge base service role.
 
-1. The application calls the same run-time API as for any knowledge base.
-2. On a SQL knowledge base the question, the ingested schema and your generation context become SQL.
-3. **Our reading:** the SQL runs through the Amazon Redshift Data API, because the documented service-role policy grants `redshift-data:ExecuteStatement` and the statement-result actions.
-4. The database identity should hold `SELECT` only.
-5. GraphRAG ingestion reads documents from Amazon S3.
-6. A foundation model extracts entities from each chunk.
-7. Chunks, documents and entities become linked nodes in Neptune Analytics, next to the vectors.
-8. At query time a vector search finds chunks, then the graph supplies related ones.
-9. A Kendra knowledge base calls the Kendra index with the service role.
-10. `RetrieveAndGenerate` places rows or passages in the prompt.
+1. The application calls the usual knowledge base run-time API.
+2. SQL: the question, ingested schema and generation context become SQL.
+3. **Our reading:** the SQL runs through the Redshift Data API — the documented role policy grants `redshift-data:ExecuteStatement`.
+4. The database identity holds `SELECT` only.
+5. GraphRAG ingestion reads documents from Amazon S3,
+6. extracts entities from each chunk with a model,
+7. and writes linked nodes next to the vectors.
+8. GraphRAG retrieval: vector search, then graph traversal.
+9. Kendra: the service role calls the index.
+10. `RetrieveAndGenerate` adds a model call.
 11. The caller receives rows, chunks or an answer.
 
 **Variations** — the two halves of a vector knowledge base are drawn in full in
@@ -260,14 +254,12 @@ second. Sources: [Generate a query for structured data](https://docs.aws.amazon.
 
 ### Kendra GenAI index knowledge bases
 
-You point `kendraIndexArn` at a Kendra **GenAI Enterprise Edition** index. Through the API the index
-must already exist, and data sources cannot be created with Bedrock API operations — only in the
-console or with Kendra's own `CreateDataSource`. The service role needs `kendra:Retrieve` and
-`kendra:DescribeIndex`. `Retrieve` returns the standard result shape plus Kendra fields such as
-`x-amz-kendra-document-title` and `x-amz-kendra-score-confidence`, and Kendra document attributes
-become filterable metadata. The query page documents `Retrieve` only; the `RetrieveAndGenerate`
-response schema has a `kendraDocumentLocation`, and AWS's sample notebook calls it on a Kendra
-knowledge base.
+`kendraIndexArn` points at an existing Kendra **GenAI Enterprise Edition** index. Data sources are
+Kendra's: created in the console or with Kendra's `CreateDataSource`, never with Bedrock API
+operations. The service role needs `kendra:Retrieve` and `kendra:DescribeIndex`. `Retrieve` adds
+Kendra fields such as `x-amz-kendra-score-confidence`, and Kendra document attributes become
+filterable metadata. Only `Retrieve` is documented on the query page; the `RetrieveAndGenerate`
+response schema has a `kendraDocumentLocation`, and AWS's sample notebook calls it.
 Sources: [Create a Kendra GenAI index knowledge base](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-kendra-genai-index-create.html),
 [Query a Kendra GenAI index knowledge base](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-kendra.html),
 [Service role permissions](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-permissions.html),
@@ -282,11 +274,11 @@ Sources: [Create a Kendra GenAI index knowledge base](https://docs.aws.amazon.co
 > Source: [Amazon Kendra availability change](https://docs.aws.amazon.com/kendra/latest/dg/kendra-availability-change.html)
 
 **What it means for a new design.** **Our reading:** an account that was not a Kendra customer by
-2026-07-30 cannot create the index this knowledge base type requires, so the type is closed to it.
-For an existing Kendra customer the knowledge base keeps working but will not improve; treat it as a
-bridge and plan the move to a Managed Knowledge Base. Whether an existing customer can still create a
-*new* Kendra knowledge base in Bedrock is **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW** (register
-item U3; neither the Kendra notice nor the Bedrock pages state it).
+2026-07-30 cannot create the index this type requires, so the type is closed to it. For existing
+customers it keeps working but will not improve: a bridge while you move to a Managed Knowledge
+Base. Whether an existing customer can still create a *new* Kendra knowledge base is **UNVERIFIED —
+REQUIRES DOCUMENTATION REVIEW** (register item U3; neither the Kendra notice nor the Bedrock pages
+say).
 
 > [!WARNING]
 > **Common mistake** — the Kendra migration guide shows `RetrieveAndGenerate` against a managed
@@ -336,17 +328,16 @@ sequenceDiagram
     RT-->>App: output.text and citations with row content and sqlLocation.query
 ```
 
-1. The caller needs `bedrock:RetrieveAndGenerate`; nothing about the database is in the request.
+1. The caller needs `bedrock:RetrieveAndGenerate`; the request names no database.
 2. SQL generation uses cross-Region inference inside your geography.
 3. The SQL runs as the knowledge base's database identity, never the caller's.
 4. Rows return; at most 10 reach the model.
-5. The citations let you show users the exact SQL behind the answer.
+5. Citations carry the exact SQL, so users can check the answer.
 
-**Error paths.** `ValidationException` (400) for malformed input; `AccessDeniedException` (403) for
-missing caller permissions; `DependencyFailedException` (424) or `BadGatewayException` (502) when
-something Bedrock calls fails; `ThrottlingException` (429) above the quota. **Our reading:** a
-missing `GRANT` or an expired time-out surfaces as a dependency failure; the pages read do not map
-database errors to API errors.
+**Error paths.** `ValidationException` (400), `AccessDeniedException` (403),
+`DependencyFailedException` (424) or `BadGatewayException` (502) when a dependency fails, and
+`ThrottlingException` (429). **Our reading:** a missing `GRANT` or a time-out surfaces as a
+dependency failure; the pages read do not map database errors to API errors.
 
 ```mermaid
 ---
@@ -376,9 +367,9 @@ sequenceDiagram
     RT-->>App: Chunks with graph-derived context
 ```
 
-1. Ingestion is the normal job of [chapter 4](04-ingestion-parsing-chunking.md) with one extra model call per chunk.
-2. **Our reading:** each document's nodes are replaced when it changes; AWS describes the graph as automatically created and updated but not the update mechanics.
-3. Retrieval needs no new request fields; the graph step is part of the knowledge base.
+1. Ingestion is the job of [chapter 4](04-ingestion-parsing-chunking.md) plus one model call per chunk.
+2. AWS says the graph is created and updated automatically; how a changed document's nodes are replaced is not documented.
+3. Retrieval needs no new request fields.
 
 ## 7. Dependencies
 
@@ -395,14 +386,14 @@ sequenceDiagram
 
 ## 8. Security considerations
 
-- **Generated SQL is untrusted code.** "Executing arbitrary SQL queries can be a security risk for any Text-to-SQL application." AWS recommends restricted roles, read-only databases and sandboxing, and says: grant `SELECT` and do not grant `CREATE`, `UPDATE` or `DELETE`.
-- **One identity for every caller.** The query runs as `IAMR:<service role name>`, a database user or the secret's user. **Our reading:** row-level security keyed to the end user cannot apply, so anyone with `bedrock:Retrieve` on the knowledge base sees every table you granted. Create one knowledge base per audience with its own grants.
+- **Generated SQL is untrusted code.** "Executing arbitrary SQL queries can be a security risk for any Text-to-SQL application." AWS recommends restricted roles, read-only databases and sandboxing: grant `SELECT`, never `CREATE`, `UPDATE` or `DELETE`.
+- **One identity for every caller.** Queries run as `IAMR:<service role name>`, a database user or the secret's user. **Our reading:** end-user row-level security cannot apply, so anyone with `bedrock:Retrieve` on the knowledge base sees every granted table. Use one knowledge base per audience.
 - **Caller permissions.** `GenerateQuery` needs `bedrock:GetKnowledgeBase`, `bedrock:GenerateQuery` and `sqlworkbench:GetSqlRecommendations`; `Retrieve` is scoped to the knowledge base ARN; `RetrieveAndGenerate` is documented on `*`.
-- **Service role.** Same trust policy as [chapter 3](03-customer-managed-knowledge-bases.md). Scope `redshift-data:ExecuteStatement`, the credential action and `neptune-graph:*` statements to one workgroup, cluster or graph; scope `kendra:Retrieve` to one index.
-- **Data movement.** SQL generation keeps data stored in the source Region, but prompts and outputs may be processed elsewhere in the geography. With a cross-Region graph construction profile, "data is stored only in the source Region"; the destination is used for inference only.
-- **Encryption.** A Neptune Analytics graph accepts a customer managed key (`kms_key_identifier` in Terraform); Redshift and Kendra use their own encryption settings.
-- **Logging.** Knowledge base log deliveries "are not supported" for a structured data store or a Kendra GenAI index. **Our reading:** audit the database's own query history and CloudTrail instead.
-- **Retrieved text and rows** reach the model unscreened; see [Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md).
+- **Service role.** Trust policy as in [chapter 3](03-customer-managed-knowledge-bases.md). Scope the Redshift, `neptune-graph:` and `kendra:` statements to one workgroup, cluster, graph or index.
+- **Data movement.** SQL generation may process prompts elsewhere in your geography; data stays stored in the source Region. The same holds for a graph construction model called through a cross-Region profile.
+- **Encryption.** A Neptune Analytics graph accepts a customer managed key (`kms_key_identifier` in Terraform).
+- **Logging.** Knowledge base log deliveries "are not supported" for a structured data store or a Kendra GenAI index. **Our reading:** audit the database's query history and CloudTrail instead.
+- **Rows and passages reach the model unscreened** — see [Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md).
 
 Sources: [Query engine permissions](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-prereq-structured.html),
 [Generate a query](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-generate-query.html),
@@ -413,8 +404,8 @@ Sources: [Query engine permissions](https://docs.aws.amazon.com/bedrock/latest/u
 
 - **Callers** use `bedrock-agent-runtime` publicly or through the interface endpoint `com.amazonaws.<region>.bedrock-agent-runtime`; see [Private connectivity for Bedrock](../../02-related-aws-services/networking/01-private-connectivity-for-bedrock.md).
 - **Neptune Analytics.** "Amazon Bedrock will create a networking connection" to the graph; you configure neither public connectivity nor private endpoints for it.
-- **Amazon Redshift.** AWS does not describe the network path. **Our reading:** because the documented permissions are Redshift Data API actions, Bedrock reaches the engine through that AWS API rather than a connection into your VPC. Test with your workgroup's settings before relying on it.
-- **Cross-Region processing** for SQL generation and for graph construction models given as inference profiles — see [Cross-Region inference](../inference/04-cross-region-inference.md).
+- **Amazon Redshift.** The network path is not documented. **Our reading:** the permissions are Redshift Data API actions, so Bedrock uses that AWS API, not a connection into your VPC. Test it with your workgroup.
+- **Cross-Region processing** — see [Cross-Region inference](../inference/04-cross-region-inference.md).
 
 ## 10. Pricing dimensions
 
@@ -746,8 +737,7 @@ output "database_user_to_create" {
 
 Notes on the example:
 
-- The policy statements follow the documented service-role policy. The documentation shows the `ExecuteStatement` resource for a provisioned cluster; scoping it to the workgroup ARN follows AWS's [structured knowledge base helper](https://github.com/aws-samples/amazon-bedrock-samples/blob/main/rag/knowledge-bases/features-examples/utils/structured_knowledge_base.py).
-- `REDSHIFT_METADATA` with no further configuration is how that AWS helper creates the data source. Whether the provider accepts it at apply time is untested here.
+- The statements follow the documented service-role policy, which shows `ExecuteStatement` on a provisioned cluster; scoping it to the workgroup ARN, and the bare `REDSHIFT_METADATA` data source, follow AWS's [structured knowledge base helper](https://github.com/aws-samples/amazon-bedrock-samples/blob/main/rag/knowledge-bases/features-examples/utils/structured_knowledge_base.py). Neither is tested against the real API here.
 - `inclusion = "INCLUDE"` limits SQL generation to the tables you list.
 - Nothing is queryable until the database user exists, holds `SELECT`, and a sync has completed.
 

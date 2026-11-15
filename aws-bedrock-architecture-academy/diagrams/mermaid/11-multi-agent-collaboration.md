@@ -141,26 +141,25 @@ network path in your VPC is involved.
 
 **Walkthrough**
 
-1–3. The application calls `InvokeAgent` on the supervisor's alias, here through an interface endpoint.
-4. The alias resolves to an immutable supervisor version, which holds the collaborator associations.
-5. Amazon Bedrock assumes the supervisor's service role.
-6. In routing mode one routing-classifier prompt picks a collaborator; in supervisor mode the
-   orchestration prompt lists the collaborators and their collaboration instructions.
-7. Guardrails apply per agent: the supervisor's guardrail does not cover a collaborator.
-8. The supervisor invokes a collaborator **alias**. With `TO_COLLABORATOR`, the full session history
-   goes with it; `sessionAttributes` passed to the supervisor are forwarded to all collaborators.
-9. The collaborator alias resolves to its own version.
-10. The collaborator assumes its own service role.
-11. It runs its own agent sequence, here calling its action group.
-12. Its answer returns to the supervisor — as an observation in supervisor mode, as the final
-    response in routing mode.
-13. In supervisor mode the supervisor may call further collaborators, in sequence or in parallel.
-14–16. The orders collaborator resolves its version, queries its knowledge base under its own role
-    and answers.
-17. One response stream reaches the application; trace events from every agent carry
-    `collaboratorName` and a `callerChain` of the alias ARNs that forwarded the request.
-18–19. Metrics go to `AWS/Bedrock/Agents`; `InvokeAgent` is a CloudTrail data event. The application
-    returns the answer.
+- **1–3.** The application calls `InvokeAgent` on the supervisor's alias, here through an interface endpoint.
+- **4.** The alias resolves to an immutable supervisor version, which holds the collaborator associations.
+- **5.** Amazon Bedrock assumes the supervisor's service role.
+- **6.** In routing mode one routing-classifier prompt picks a collaborator; in supervisor mode the
+  orchestration prompt lists the collaborators and their collaboration instructions.
+- **7.** Each agent has its own guardrail configuration. **Our reading:** the supervisor's guardrail
+  does not filter what a collaborator writes as the final response in routing mode.
+- **8.** The supervisor invokes a collaborator **alias**. With `TO_COLLABORATOR`, the full session
+  history goes with it; `sessionAttributes` passed to the supervisor are forwarded to all collaborators.
+- **9–11.** The collaborator resolves its own version, assumes its own service role and runs its own
+  agent sequence, here calling its action group.
+- **12.** Its answer returns to the supervisor — as an observation in supervisor mode, as the final
+  response in routing mode.
+- **13–16.** In supervisor mode the supervisor may call further collaborators, in sequence or in
+  parallel; the orders collaborator queries its knowledge base under its own role and answers.
+- **17.** One response stream reaches the application; trace events from every agent carry
+  `collaboratorName` and a `callerChain` of the alias ARNs that forwarded the request.
+- **18–19.** Metrics go to `AWS/Bedrock/Agents`; `InvokeAgent` is a CloudTrail data event. The
+  application returns the answer.
 
 ### Component roles
 

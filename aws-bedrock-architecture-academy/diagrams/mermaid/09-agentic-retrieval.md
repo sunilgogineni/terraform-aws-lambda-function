@@ -129,10 +129,12 @@ account, your VPC, AWS-managed service). Edges with the same number are alternat
 
 **What this shows** — three trust zones and one identity. The application's IAM role is the only
 credential on the diagram: AWS documents that the *calling identity* needs every permission the run
-uses (retrieval, document expansion, model invocation, memory, guardrail, instruction), so each
-dashed box the loop touches is authorised against the caller, not against a service role. Memory,
-the guardrail and the retrieval instruction are optional resources in your account; the knowledge
-bases and the managed planner sit inside the AWS-managed boundary.
+uses (retrieval, document expansion, model invocation, memory, guardrail, instruction), and that
+this operation's metrics are published with the caller's credentials through a forward access
+session. **Our reading:** every resource the loop touches is reached on the caller's authority, not
+a service role's, so the caller's policy is the boundary of what one request can read. Memory, the
+guardrail and the retrieval instruction are optional resources in your account; the knowledge bases
+and the managed planner sit inside the AWS-managed boundary.
 
 **Walkthrough**
 
@@ -206,7 +208,7 @@ sequenceDiagram
     participant FM as Planner and answer model
     participant KB as Managed knowledge bases (1 to 5)
     App->>RT: AgenticRetrieveStream (messages, retrievers, agenticRetrieveConfiguration)
-    Note over App,RT: TLS and SigV4 · every downstream permission is checked against the caller
+    Note over App,RT: TLS and SigV4 · the caller's role needs every permission the run uses
     RT->>RT: Validate instruction, guardrail type, memory fields and mode
     opt memoryConfiguration with sessionBinding
         RT->>MEM: ListEvents for actorId and sessionId
@@ -329,6 +331,7 @@ case no `memoryRetrieve` action appears. A chunk found by several sub-queries ap
 - [AgenticRetrieveStream API reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_AgenticRetrieveStream.html) — `POST /agenticRetrieveStream`, request and response syntax, exception events.
 - [AgenticRetrieveConfiguration](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_AgenticRetrieveConfiguration.html) — `foundationModelType`, `maxAgentIteration` minimum, reranking defaults.
 - [AgenticRetrieveBedrockGuardrailConfiguration](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_AgenticRetrieveBedrockGuardrailConfiguration.html) — guardrail ID and version on edge 11.
+- [Create and manage retrieval instructions](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-agentic-retrieve-instruction.html) — review, `ACTIVE` state, `DRAFT` and numbered versions, "it isn't a guardrail" (edge 4).
 - [Single-shot and agentic retrieval with Amazon Bedrock Managed Knowledge Base](https://aws.amazon.com/blogs/machine-learning/single-shot-and-agentic-retrieval-with-amazon-bedrock-managed-knowledge-base/) (2026-11-09) — `maxAgentIteration` 0 to 5, iteration counting, speculative retrieval.
 - [Agentic retrieval for Amazon Bedrock Managed Knowledge Base](https://aws.amazon.com/blogs/machine-learning/agentic-retrieval-for-amazon-bedrock-managed-knowledge-base/) (2026-07-23) — trace steps, deduplication, suggested iteration values.
 - [Observability for managed knowledge bases](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-observability.html) — `TotalIterationCount` and the forward access session on edge 14.
