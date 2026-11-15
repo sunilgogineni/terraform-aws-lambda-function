@@ -135,6 +135,14 @@ interrupted when errors are reported", and note that errors cannot be acknowledg
 > matching is not supported yet. `validateScope(scope)` runs a pack directly in a test.
 > Sources: cdk-nag 3.0.2 `README.md` and `lib/nag-pack.d.ts` (installed package); [Validate templates with cloudformation-validate](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-validate.html) for the built-in plugin that runs alongside it.
 
+Because cdk-nag findings now arrive through the validation report, they are not construct
+annotations. In our tests an unacknowledged finding made `cdk synth` exit with code 1 and made
+`app.synth()` throw `Validation failed` — including inside `Annotations.fromStack()`, which
+synthesizes. Test a pack with `validateScope`, as below, or by expecting the throw; the
+chapter 6–9 examples show the same wiring in
+[`examples/test/policy-checks.test.ts`](examples/test/policy-checks.test.ts)
+([examples README](examples/README.md)).
+
 ## Architecture diagram
 
 ```mermaid

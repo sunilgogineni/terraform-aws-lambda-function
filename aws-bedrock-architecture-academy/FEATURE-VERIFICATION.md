@@ -209,7 +209,7 @@ lists 22 Regions (21 commercial plus AWS GovCloud (US-West)).
 | Harness | ✅ `aws_bedrockagentcore_harness` | ✅ `Harness`, `HarnessEndpoint` | L1 only |
 | Gateway | ✅ `aws_bedrockagentcore_gateway` (no argument for the AWS WAF failure mode) | ✅ `Gateway` | L1 · stable L2 `Gateway` |
 | Gateway target | ✅ `aws_bedrockagentcore_gateway_target` | ✅ `GatewayTarget` | L1 · stable L2 `GatewayTarget` |
-| Gateway rule / rate limit | ✅ `aws_bedrockagentcore_gateway_rule` | ✅ `GatewayRule`, `GatewayRateLimit` | L1 only |
+| Gateway rule / rate limit | Rule ✅ `aws_bedrockagentcore_gateway_rule` · rate limit ❌ (no resource in 6.73.0) | ✅ `GatewayRule`, `GatewayRateLimit` | L1 only |
 | Memory | ✅ `aws_bedrockagentcore_memory`, `aws_bedrockagentcore_memory_strategy` | ✅ `Memory` | L1 · stable L2 `Memory` |
 | Workload identity | ✅ `aws_bedrockagentcore_workload_identity` | ✅ `WorkloadIdentity` | L1 · stable L2 `WorkloadIdentity` |
 | Credential providers | ✅ `aws_bedrockagentcore_api_key_credential_provider`, `aws_bedrockagentcore_oauth2_credential_provider` | ✅ `ApiKeyCredentialProvider`, `OAuth2CredentialProvider` | L1 · stable L2 for both |

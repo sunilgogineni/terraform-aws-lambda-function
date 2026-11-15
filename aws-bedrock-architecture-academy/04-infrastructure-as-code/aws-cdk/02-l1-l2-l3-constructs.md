@@ -67,11 +67,15 @@ with `Name: 'bad name!' does not match pattern '^[0-9a-zA-Z-_]+$'` (rule `F3031`
 ### What exists for Bedrock in 2.277.0
 
 Counts come from the installed library ([generated reference](../../references/cdk-and-cloudformation-bedrock.md)).
+The AWS Agent Registry module is not in that generated reference, and the verification matrix
+still lists the Registry as having no CloudFormation or CDK support; the installed 2.277.0
+package does contain its two L1 types.
 
 | Module | L1 types | L2 resource constructs | Stability |
 |:--|--:|:--|:--|
 | `aws-cdk-lib/aws-bedrock` | 23 | None. Only `FoundationModel` and `ProvisionedModel` helpers that reference existing models | Stable |
 | `aws-cdk-lib/aws-bedrockagentcore` | 27 | 14, for example `Runtime`, `Gateway`, `Memory`, `Policy`, `Evaluator` | Stable |
+| `aws-cdk-lib/aws-agentregistry` | 2 (`CfnRegistry`, `CfnRegistryRecord` for `AWS::AgentRegistry::Registry` and `RegistryRecord`) | None | Stable (L1 only) |
 | `@aws-cdk/aws-bedrock-alpha` | — | `Agent`, `AgentAlias`, `ApplicationInferenceProfile`, `Guardrail`, `GuardrailVersion`, `KnowledgeBase`, `Prompt`, `PromptVersion` | Experimental |
 
 > [!IMPORTANT]

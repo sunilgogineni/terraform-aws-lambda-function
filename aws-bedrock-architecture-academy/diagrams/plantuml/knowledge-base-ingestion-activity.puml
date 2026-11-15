@@ -35,14 +35,13 @@ skinparam noteBackgroundColor #FFFFFF
 skinparam noteBorderColor #888888
 skinparam legendBackgroundColor #FFFFFF
 skinparam legendBorderColor #888888
-skinparam swimlaneWidth same
 
-|#E8F1FB|Scheduler or pipeline step\nIAM role|
+|#F5F9FE|Scheduler or pipeline step\nIAM role|
 start
 :StartIngestionJob (knowledgeBaseId, dataSourceId)
 HTTPS · SigV4 · bedrock:StartIngestionJob; <<#E8F1FB>>
 
-|#E6F4EA|Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
+|#F5FBF6|Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
 :Return HTTP 202 · ingestionJobId · status STARTING; <<#E6F4EA>>
 note right
   Only one job runs per data source

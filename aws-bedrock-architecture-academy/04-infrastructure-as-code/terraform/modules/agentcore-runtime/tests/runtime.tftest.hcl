@@ -97,6 +97,15 @@ run "trust_policy_and_scoped_resources" {
   }
 
   assert {
+    condition = (
+      one([for s in jsondecode(output.execution_policy_json).Statement : s.Action if s.Sid == "SpanDeliveryToRuntimeLogGroups"]) == ["logs:PutResourcePolicy"]
+      && one([for s in jsondecode(output.execution_policy_json).Statement : s.Resource if s.Sid == "SpanDeliveryToRuntimeLogGroups"])
+      == ["arn:aws:logs:us-east-1:111122223333:log-group:/aws/bedrock-agentcore/runtimes/support_agent-*"]
+    )
+    error_message = "logs:PutResourcePolicy is granted, as documented, only on this runtime's own log groups."
+  }
+
+  assert {
     condition = contains(
       one([for s in jsondecode(output.execution_policy_json).Statement : s.Resource if s.Sid == "GetAgentAccessToken"]),
       "arn:aws:bedrock-agentcore:us-east-1:111122223333:workload-identity-directory/default/workload-identity/support_agent-*"

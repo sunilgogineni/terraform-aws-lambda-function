@@ -1,0 +1,172 @@
+@startuml
+' =============================================================================
+' Multi-account deployment — organization, organizational units, accounts and the pipeline
+' UML deployment diagram
+'
+' Mermaid source set : diagrams/mermaid/25-multi-account-aws.md is planned and not yet
+'                      written. This view is built from 03-architecture-patterns/README.md
+'                      (the multi-account pattern), ARCHITECTURE-DECISIONS.md ADR-013
+'                      (one AWS account per environment), ADR-011 (state per environment),
+'                      ADR-014 (OIDC, Actions pinned by commit SHA), and the chapters
+'                      00-foundations/aws-fundamentals/05-organizations-control-tower.md and
+'                      04-infrastructure-as-code/terraform/04-state-backends-locking.md.
+'                      Diagram sets 18 and 21 supply the guardrail-enforcement and SCP facts.
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      OU names and the placement of the state bucket are academy choices.
+'                      No AWS icons; nothing is included from the network.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/organizations/latest/userguide/orgs_getting-started_concepts.html
+'   https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html
+'   https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_bedrock.html
+'   https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_delegated_admin.html
+'   https://docs.aws.amazon.com/controltower/latest/userguide/how-control-tower-works.html
+'   https://docs.aws.amazon.com/controltower/latest/userguide/account-factory.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-enforcements.html
+'   https://developer.hashicorp.com/terraform/language/backend/s3
+'   https://raw.githubusercontent.com/aws-actions/configure-aws-credentials/main/README.md
+'
+' What UML adds: accounts as execution nodes inside organizational units, and the
+' pipeline's role chain as numbered communication paths.
+' =============================================================================
+!pragma layout smetana
+title Multi-account generative AI platform — organization, accounts and deployment pipeline (UML deployment)
+
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+skinparam nodesep 50
+skinparam ranksep 60
+
+!$CLIENT   = "#E8F1FB;line:1F6FEB;text:0B1F33"
+!$COMPUTE  = "#FDEBD0;line:D97706;text:3B2300"
+!$AI       = "#E6F4EA;line:1E8E3E;text:0B2E13"
+!$DATA     = "#EDE7F6;line:6A1B9A;text:2A0A3D"
+!$SECURITY = "#FDECEA;line:C62828;text:3D0A0A"
+!$OBS      = "#FFF8E1;line:B28704;text:3D2E00"
+!$EXTERNAL = "#F1F3F4;line:5F6368;line.dashed;text:202124"
+
+actor "Developer" as dev $CLIENT
+actor "Platform administrator" as admin $CLIENT
+
+node ci $EXTERNAL [
+  <b>CI service, for example GitHub Actions</b>
+  ----
+  OIDC identity provider · no long-lived AWS keys
+  third-party Actions pinned by full commit SHA
+]
+
+frame "AWS Organization · all features enabled" as org {
+
+  node mgmt $SECURITY [
+    <b>Management account</b>
+    ----
+    AWS Organizations: root, OUs, SCPs, Amazon Bedrock policies
+    AWS Control Tower: landing zone, controls, Account Factory
+    AWS IAM Identity Center: single sign-on
+    ----
+    not restricted by SCPs or RCPs · keep it empty of workloads
+  ]
+
+  frame "Security OU" as secOu {
+    node logAcct $OBS [
+      <b>Log archive account</b>
+      ----
+      Amazon S3: organization trail log files
+    ]
+    node auditAcct $SECURITY [
+      <b>Audit account</b>
+      ----
+      AWS Config aggregator
+      delegated administrator for security services
+    ]
+  }
+
+  frame "Shared services OU (academy naming)" as sharedOu {
+    node toolAcct $COMPUTE [
+      <b>Deployment (tooling) account</b>
+      ----
+      pipeline role, assumed through OIDC
+      ----
+      Terraform state bucket: one state object per
+      environment and component · use_lockfile ·
+      versioning · SSE-KMS
+    ]
+  }
+
+  frame "Workloads — non-production OU\nSCP: Region deny with an inference-profile exception" as nonProdOu {
+    node devAcct $AI [
+      <b>Development account</b>
+      ----
+      deploy role trusts the tooling account
+      application · Amazon Bedrock Runtime
+    ]
+    node testAcct $AI [
+      <b>Test account</b>
+      ----
+      deploy role trusts the tooling account
+      application · Amazon Bedrock Runtime
+    ]
+    node stagingAcct $AI [
+      <b>Staging account</b>
+      ----
+      deploy role trusts the tooling account
+      application · Amazon Bedrock Runtime
+    ]
+  }
+
+  frame "Workloads — production OU\nSCP · Amazon Bedrock policy: enforced guardrail" as prodOu {
+    node prodAcct $AI [
+      <b>Production account</b>
+      ----
+      deploy role trusts the tooling account
+      application · Amazon Bedrock Runtime
+      Bedrock quotas per account and Region:
+      test load cannot starve production
+    ]
+  }
+}
+
+dev --> ci : 1. pull request · merge
+ci --> toolAcct : 2. assume the pipeline role\nthrough OIDC
+toolAcct --> devAcct : 3. assume deploy role\napply · dev
+toolAcct --> testAcct : 4. promote · test
+toolAcct --> stagingAcct : 5. promote · staging
+toolAcct --> prodAcct : 6. promote · production\n(approval gate: academy recommendation)
+admin --> mgmt : sign in · enable controls\nrequest accounts
+mgmt ..> nonProdOu : SCPs inherited by every account
+mgmt ..> prodOu : SCPs and Amazon Bedrock policy inherited
+prodAcct ..> logAcct : organization trail · log files
+prodAcct ..> auditAcct : AWS Config compliance data
+
+note as nState
+  <b>Pipeline run (steps 3 to 6)</b>
+  The run reads and writes its environment's
+  state object and a .tflock lock object, then
+  applies in the target account with that
+  account's deploy role. Each environment has its
+  own state and its own deploy role (ADR-011, ADR-013)
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | frame | organization or organizational unit (OU) |
+  | node | AWS account (execution environment) |
+  | solid arrow, numbered | deployment path: role assumption and apply |
+  | dashed arrow | policy inheritance or log delivery |
+  |<#F1F3F4> grey dashed | outside AWS |
+  |<#FDECEA> red | governance and security accounts |
+  |<#FDEBD0> orange | deployment tooling |
+  |<#E6F4EA> green | workload accounts running Amazon Bedrock |
+  |<#FFF8E1> yellow | log archive |
+  SCP deny at any level wins for every account below. A Geographic profile needs every
+  destination Region allowed; a Global profile needs aws:RequestedRegion "unspecified".
+  Every workload account delivers trail logs and Config data; arrows drawn for production only.
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

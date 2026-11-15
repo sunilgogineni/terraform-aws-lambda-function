@@ -189,8 +189,9 @@ terraform test          # 8 runs, mock provider, no AWS credentials
 The tests in [`tests/runtime.tftest.hcl`](tests/runtime.tftest.hcl) cover: VPC-mode defaults,
 the trust conditions and the scoped log, metric and workload-identity resources, `PUBLIC` mode
 with models and user-ID tokens, a JWT authorizer with a digest-pinned image and a pinned endpoint
-version, and four rejection cases (image without tag or digest, VPC mode without subnets,
-wildcard model ARN, invalid name, `DEFAULT` endpoint and empty description).
+version, and four rejection runs (image without tag or digest; VPC mode without subnets;
+wildcard model ARN; hyphenated name, `DEFAULT` endpoint and empty description). One assertion
+checks that `logs:PutResourcePolicy` is granted only on this runtime's own log groups.
 
 ## Limitations
 
