@@ -23,7 +23,7 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Think of Bedrock as a shared workshop full of expensive machines. IAM is the badge reader on every machine. Your badge says which machines you may switch on (actions and resources) and under which conditions — "only through the safety cage" (a guardrail), "only on the standard power supply" (a service tier), "only in this building" (a Region).
+Think of Bedrock as a workshop of expensive machines with a badge reader on each. Your badge says which machines you may switch on (actions and resources) and under which conditions — "only inside the safety cage" (a guardrail), "only on standard power" (a service tier), "only in this building" (a Region).
 
 People do not carry permanent badges. They sign in at reception (IAM Identity Center), which hands them a day badge for one role in one account. Machines that need to fetch materials on their own — a knowledge base reading your documents — get their own badge (a service role) that only lets them do that one job. The reader on the Bedrock machine sees the badge, never the person behind it.
 
@@ -59,7 +59,7 @@ Other resource types you will meet: `guardrail` and `guardrail-profile` (for `Ap
 | `bedrock:InlineAgentName` | String | Inline agent name | Agents Classic only |
 | `bedrock:ThirdPartyKnowledgeBaseCredentialsSecretArn` | ARN | Secrets Manager secret of a third-party vector store | Used with `bedrock:AssociateThirdPartyKnowledgeBase` |
 
-The `InvokeModel` row lists `bedrock:GuardrailIdentifier`, `bedrock:InferenceProfileArn`, `bedrock:ModelArn`, `bedrock:ProjectArn`, `bedrock:PromptRouterArn` and `bedrock:ServiceTier`; the `InvokeModelWithResponseStream` row lists the same keys except `bedrock:ModelArn` and `bedrock:ProjectArn`. The reference spells `bedrock:BearerTokenType` while the User Guide writes `bedrock:bearerTokenType`; condition key names are not case-sensitive, so both match ([policy checks reference](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-reference-policy-checks.html)).
+`InvokeModel` accepts the first five rows' keys; `InvokeModelWithResponseStream` accepts them except `bedrock:ModelArn` and `bedrock:ProjectArn`. The reference spells `bedrock:BearerTokenType`, the User Guide `bedrock:bearerTokenType`; condition key names are not case-sensitive ([policy checks reference](https://docs.aws.amazon.com/IAM/latest/UserGuide/access-analyzer-reference-policy-checks.html)).
 
 > [!NOTE]
 > **Documented fact** — For a Global cross-Region inference profile, Amazon Bedrock evaluates authorisation three times: on the inference profile, on the foundation model in the source Region, and on the Region-agnostic ARN `arn:aws:bedrock:::foundation-model/…`, for which `aws:RequestedRegion` is `unspecified`. `bedrock:InferenceProfileArn` is populated for the two foundation-model evaluations but not for the profile evaluation. A deny on `"aws:RequestedRegion": "us-west-2"` therefore does not stop Global routing to us-west-2.
@@ -149,7 +149,7 @@ flowchart LR
     classDef external fill:#F1F3F4,stroke:#5F6368,color:#202124,stroke-dasharray:4 3
 ```
 
-**What this shows** — The four kinds of identity that reach Bedrock: a person through an Identity Center role, a workload through its execution role, a holder of an API key, and Bedrock itself through a service role. Every arrow into the managed boundary is evaluated by IAM against an IAM principal. This is our drawing, not an official AWS diagram.
+**What this shows** — The four kinds of identity that reach Bedrock — a person through an Identity Center role, a workload role, an API-key holder, and Bedrock itself through a service role — each evaluated by IAM as an IAM principal. This is our drawing, not an official AWS diagram.
 
 **Walkthrough**
 
@@ -169,11 +169,11 @@ flowchart LR
 ## Implementation details
 
 1. **Workload roles first.** Use the tested [bedrock-invocation-role module](../../04-infrastructure-as-code/terraform/modules/bedrock-invocation-role/README.md): it grants named models in named Regions, adds the Region-less ARNs for Global profiles, and can require a profile and a guardrail. Its README lists the documented rules it encodes.
-2. **Do not give workloads managed policies.** `AmazonBedrockFullAccess` grants `bedrock:*` on `*`; `AmazonBedrockLimitedAccess` invokes "on all resources". They suit people in sandboxes, not production roles.
+2. **Keep managed policies for people.** `AmazonBedrockFullAccess` grants `bedrock:*` on `*` and `AmazonBedrockLimitedAccess` invokes on all resources — acceptable in sandboxes, not for production roles.
 3. **Restrict tiers and keys with denies.** `bedrock:ServiceTier` accepts `reserved`, `priority`, `default` and `flex`; AWS's own example denies all four to force the system default ([identity-based policy examples](https://docs.aws.amazon.com/bedrock/latest/userguide/security_iam_id-based-policy-examples-agent.html)).
 4. **Treat API keys as an exception.** Deny `iam:CreateServiceSpecificCredential` for most principals; where long-term keys are allowed, cap `iam:ServiceSpecificCredentialAgeDays` and scope `iam:ServiceSpecificCredentialServiceName` to `bedrock.amazonaws.com` ([API keys](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html)).
-5. **AgentCore Identity tokens.** `BedrockAgentCoreFullAccess` includes `GetWorkloadAccessTokenForUserId`, which issues tokens for caller-supplied user IDs without verifying an identity-provider token. AWS recommends denying it in production and granting `GetWorkloadAccessTokenForJWT` ([AgentCore Runtime permissions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-permissions.html)).
-6. **Reference permission-set roles carefully.** Deleting all assignments deletes the role; a new assignment gets a new suffix, which breaks key policies and resource policies that named the old ARN. Match with `aws:PrincipalArn` and `ArnLike` on `AWSReservedSSO_<name>_*` instead ([referencing permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/referencingpermissionsets.html)).
+5. **AgentCore Identity tokens.** `BedrockAgentCoreFullAccess` includes `GetWorkloadAccessTokenForUserId`, which trusts a caller-supplied user ID; AWS recommends denying it in production in favour of `GetWorkloadAccessTokenForJWT` ([AgentCore Runtime permissions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-permissions.html)).
+6. **Reference permission-set roles by pattern.** Re-assigning a permission set recreates its role with a new suffix, breaking policies that named the old ARN; match `aws:PrincipalArn` with `ArnLike` on `AWSReservedSSO_<name>_*` ([referencing permission sets](https://docs.aws.amazon.com/singlesignon/latest/userguide/referencingpermissionsets.html)).
 
 **Permission sets for a Bedrock platform**
 
@@ -313,7 +313,7 @@ The last deny is AWS's documented SCP for disabling Global cross-Region inferenc
 ## Cost considerations
 
 - IAM, IAM Identity Center and AWS STS have no additional charge ([What is IAM?](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html)).
-- IAM is your strongest cost control on Bedrock: `bedrock:ServiceTier` stops the priority tier, which the [feature register](../../FEATURE-VERIFICATION.md) records at about 75% above the default price, and named model ARNs stop expensive models.
+- IAM is a strong cost control: `bedrock:ServiceTier` stops the priority tier (about 75% above default, per the [feature register](../../FEATURE-VERIFICATION.md)) and named model ARNs stop expensive models.
 - A leaked credential becomes an inference bill; GuardDuty AI Protection detects this pattern — see [GuardDuty, Security Hub, AWS Config and Macie](04-guardduty-security-hub-config-macie.md).
 
 ## Knowledge check

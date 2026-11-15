@@ -13,9 +13,8 @@
 > Source: [Amazon Bedrock Agents Classic maintenance mode](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-classic-maintenance-mode.html)
 
 This set documents an inherited team of Agents Classic agents — one **supervisor** that the
-application invokes and several **collaborators**, each a complete agent with its own model, tools,
-knowledge bases, guardrail and service role — and, in the Variations section, an AgentCore-based
-equivalent for new work. It answers two questions: **"how does one request travel through a team of
+application invokes and several **collaborators**, each a complete agent — and, in the Variations
+section, an AgentCore-based equivalent for new work. It answers two questions: **"how does one request travel through a team of
 agents, and with whose permissions?"** and **"which parts of that can AgentCore reproduce today, and
 which parts must I design?"**
 
@@ -142,9 +141,7 @@ network path in your VPC is involved.
 
 **Walkthrough**
 
-1. The user signs in to your application.
-2. The application calls `InvokeAgent` on the supervisor's alias.
-3. The call reaches `bedrock-agent-runtime`, here through an interface endpoint.
+1–3. The application calls `InvokeAgent` on the supervisor's alias, here through an interface endpoint.
 4. The alias resolves to an immutable supervisor version, which holds the collaborator associations.
 5. Amazon Bedrock assumes the supervisor's service role.
 6. In routing mode one routing-classifier prompt picks a collaborator; in supervisor mode the
@@ -158,13 +155,12 @@ network path in your VPC is involved.
 12. Its answer returns to the supervisor — as an observation in supervisor mode, as the final
     response in routing mode.
 13. In supervisor mode the supervisor may call further collaborators, in sequence or in parallel.
-14. The orders collaborator alias resolves to its version.
-15. The orders collaborator queries its knowledge base under its own role.
-16. Its answer returns to the supervisor.
+14–16. The orders collaborator resolves its version, queries its knowledge base under its own role
+    and answers.
 17. One response stream reaches the application; trace events from every agent carry
     `collaboratorName` and a `callerChain` of the alias ARNs that forwarded the request.
-18. Metrics go to the `AWS/Bedrock/Agents` namespace; `InvokeAgent` is a CloudTrail data event.
-19. The application returns the answer.
+18–19. Metrics go to `AWS/Bedrock/Agents`; `InvokeAgent` is a CloudTrail data event. The application
+    returns the answer.
 
 ### Component roles
 
