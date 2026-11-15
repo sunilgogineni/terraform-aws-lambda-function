@@ -41,7 +41,8 @@ run "managed_embedding_defaults" {
   assert {
     condition = (
       aws_bedrockagent_data_source.this.data_source_configuration[0].type == "MANAGED_KNOWLEDGE_BASE_CONNECTOR" &&
-      length(aws_bedrockagent_data_source.this.data_source_configuration[0].s3_configuration) == 0
+      length(aws_bedrockagent_data_source.this.data_source_configuration[0].s3_configuration) == 0 &&
+      aws_bedrockagent_data_source.this.data_deletion_policy == "DELETE"
     )
     error_message = "The S3 source must use the managed connector, not s3_configuration."
   }

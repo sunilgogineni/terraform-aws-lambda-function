@@ -295,6 +295,7 @@ the same label wherever they touch these points.
 | U22 | AgentCore Policy details | Reported, not re-checked: a third effect `suppressOutput`; dates of guardrails-in-policy and temporal policies; natural-language authoring price unit (per 1,000 vs per million tokens); which language `StartPolicyGeneration` emits; CDK README claims about `SANDBOX` networking; Browser and Code Interpreter filesystem configuration in Terraform |
 | U23 | AgentCore Gateway, Observability and Optimization details | Reported, not re-checked: Gateway 3LO URL-elicitation error `-32042` (found only in an AWS ML blog); whether Lambda tool spans join the agent trace; Optimization GA month (register says July 2026, release notes reportedly June) |
 | U24 | Amazon Bedrock Managed Agents (preview) | GA date, GA pricing and the final IAM action names |
+| U25 | Late author reports (2026-11-15) | Received after this verification pass and not yet checked: CloudFormation hook configuration size (two figures), `CfnRuntime` properties missing from the live CloudFormation page, Redis Enterprise Cloud not supported by `AWS::Bedrock::KnowledgeBase`, `KnowledgeBaseConfiguration` update behaviour vs create-only schema, Hook annotations and invocation summary; notes from the compute/networking, CDK and Terraform chapter authors |
 
 ## Conflicts between sources
 

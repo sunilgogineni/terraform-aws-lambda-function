@@ -190,6 +190,17 @@ variable "deletion_protection_threshold" {
   }
 }
 
+variable "data_deletion_policy" {
+  description = "What happens to the indexed content of this data source when the data source is deleted: DELETE or RETAIN."
+  type        = string
+  default     = "DELETE"
+
+  validation {
+    condition     = contains(["DELETE", "RETAIN"], var.data_deletion_policy)
+    error_message = "data_deletion_policy must be DELETE or RETAIN."
+  }
+}
+
 variable "media_extraction" {
   description = "Extract and index content from images (standalone and embedded in PDF and Office files), audio and video."
   type = object({

@@ -1,0 +1,161 @@
+@startuml
+' =============================================================================
+' Amazon Bedrock Guardrails — evaluation of one Converse or ConverseStream request
+' UML activity diagram
+'
+' Mermaid source set : diagrams/mermaid/18-guardrails.md (views B, C1, C2 and C3)
+' Chapters           : 01-amazon-bedrock/guardrails/01-guardrails.md,
+'                      01-amazon-bedrock/guardrails/02-automated-reasoning-and-enforcement.md
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      The guardrail lane is a conceptual model of documented behaviour.
+'                      No AWS icons; nothing is included from the network.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-how.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-converse-api.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-streaming.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions-id.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-enforcements.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-tiers.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-guardrails-cw-metrics.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html
+'
+' What UML adds over the Mermaid view: the three sequence views (blocked input,
+' masked output, streaming) become one control flow with explicit decisions,
+' and the parallel policy evaluation is a fork.
+' =============================================================================
+!pragma layout smetana
+title Amazon Bedrock Guardrails — evaluation of one Converse or ConverseStream request (UML activity)
+
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam ActivityBorderColor #555555
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #555555
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+
+|#FFFBF5|Your application\nexecution role|
+start
+:Converse or ConverseStream with guardrailConfig
+(guardrail ID, numbered version, trace)
+TLS · SigV4; <<#FDEBD0>>
+
+|#F5FBF6|Amazon Bedrock Runtime\nguardrail evaluation and model invocation|
+:Authorize bedrock:InvokeModel and bedrock:ApplyGuardrail
+IAM identity policy and SCP · bedrock:GuardrailIdentifier; <<#FDECEA>>
+if (Allowed?) then (no)
+  :AccessDeniedException
+  (for example the role names another guardrail than its IAM deny allows); <<#FDECEA>>
+  stop
+else (yes)
+endif
+
+:Collect the applicable guardrails
+request guardrail (pinned version)
++ account-level enforced guardrail configuration
++ organisation guardrail from the BEDROCK_POLICY; <<#FDECEA>>
+note right
+  The effect is the union of every applicable guardrail.
+  Standard tier: evaluation can be routed to destination Regions
+  of the guardrail profile in the same geography
+end note
+:Select the input to assess
+only guardContent blocks, if any exist; <<#FDECEA>>
+fork
+  :Content filters
+  text and image · prompt attacks; <<#FDECEA>>
+fork again
+  :Denied topics; <<#FDECEA>>
+fork again
+  :Word filters; <<#FDECEA>>
+fork again
+  :Sensitive information filters; <<#FDECEA>>
+fork again
+  :Other configured policies; <<#FDECEA>>
+end fork
+note right
+  Input is evaluated first, in parallel
+  for each configured policy
+end note
+
+if (Any policy action BLOCKED on the input?) then (yes)
+  |Amazon Bedrock Runtime\nguardrail evaluation and model invocation|
+  :Model not called
+  (documented: the foundation model inference is discarded); <<#E6F4EA>>
+  :Return the blocked-input message
+  stopReason guardrail_intervened · usage 0 tokens in the documented example; <<#E6F4EA>>
+else (no)
+  |Amazon Bedrock Runtime\nguardrail evaluation and model invocation|
+  :Invoke the foundation model; <<#E6F4EA>>
+    :Foundation model generates the output; <<#E6F4EA>>
+  |Amazon Bedrock Runtime\nguardrail evaluation and model invocation|
+  if (ConverseStream with streamProcessingMode async?) then (yes)
+    :Release contentBlockDelta chunks at once; <<#E6F4EA>>
+        :Assess the output in the background; <<#FDECEA>>
+    note right
+      Chunks may contain inappropriate content until the scan completes.
+      After a violation, later chunks are blocked.
+      Sensitive information cannot be masked in this mode
+    end note
+  else (no: Converse, or sync streaming — the default)
+        :Assess the output
+    (streaming: buffered chunks before release); <<#FDECEA>>
+    if (Action on the output?) then (BLOCKED)
+      :Replace the answer with the blocked-output message; <<#FDECEA>>
+    elseif (ANONYMIZED) then
+      :Replace sensitive values with placeholders; <<#FDECEA>>
+      note right
+        Same stopReason as a block: guardrail_intervened.
+        The trace shows action ANONYMIZED and still
+        holds the unmasked value — do not log it
+      end note
+    else (none)
+      :Leave the answer unchanged; <<#E6F4EA>>
+    endif
+  endif
+  |Amazon Bedrock Runtime\nguardrail evaluation and model invocation|
+  :Return the answer, masked answer or message
+  trace in the response (metadata event when streaming); <<#E6F4EA>>
+endif
+
+|Amazon Bedrock Runtime\nguardrail evaluation and model invocation|
+fork
+  :Metrics in AWS/Bedrock/Guardrails
+  InvocationsIntervened · InvocationThrottles · FindingCounts; <<#FFF8E1>>
+fork again
+  :CloudTrail data event for ApplyGuardrail
+  (when the trail selects guardrail data events); <<#FFF8E1>>
+fork again
+  :Model invocation log record (when enabled)
+  blocked content in plain text · masking does not apply; <<#FFF8E1>>
+end fork
+
+|Your application\nexecution role|
+:Read stopReason and the trace action; <<#FDEBD0>>
+stop
+
+floating note left
+  Not assessed by the guardrail: toolResult blocks,
+  tool definitions and toolUse.input. Add ApplyGuardrail
+  on tool output. ApplyGuardrail alone (source INPUT
+  or OUTPUT) works for any model, including models
+  outside Amazon Bedrock. No guardrail on bedrock-mantle.
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | swimlane | who performs the action (red actions: guardrail evaluation) |
+  | fork bar | actions that run in parallel |
+  | diamond | decision on documented behaviour |
+  |<#FDEBD0> orange | your compute |
+  |<#E6F4EA> green | Amazon Bedrock and the model |
+  |<#FDECEA> red | security control or denial |
+  |<#FFF8E1> yellow | telemetry and audit record |
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

@@ -37,7 +37,7 @@ State is Terraform's inventory: "the thing at this address is that real object".
 | Rule | Effect | Bedrock use |
 |:--|:--|:--|
 | `prevent_destroy = true` | Any plan that destroys the object fails | `aws_bedrock_custom_model` — destroying it deletes the model the job produced |
-| `create_before_destroy = true` | Replacement creates the new object first | `aws_bedrock_inference_profile` — no update API, so changes replace it; needs a different name for the new one |
+| `create_before_destroy = true` | Replacement creates the new object first | `aws_bedrock_inference_profile` — no update API, so changes replace it; give the new copy a new name in case names must be unique |
 | `ignore_changes = [...]` | Listed attributes are set at create, ignored at update | `aws_bedrockagentcore_agent_runtime.agent_runtime_artifact` when an application pipeline rolls out images |
 | `replace_triggered_by = [...]` | Replace when a referenced *managed resource* changes | `aws_bedrock_guardrail_version` — publish a new version whenever the DRAFT changes |
 | `precondition` / `postcondition` | Custom checks before or after the object is planned | Reject the guardrail STANDARD tier without `cross_region_config` |
@@ -161,7 +161,25 @@ flowchart TD
 
 > **Code status:** validated with `terraform validate` and `terraform validate -query` (Terraform 1.17.2, provider 6.73.0), TFLint 0.66 · mock-tested: `terraform test`, 3 runs pass · plan outputs below come from local runs against the built-in `terraform_data` resource only · `terraform query` and `-generate-config-out` are **illustrative** (they need AWS credentials) · **never planned or applied against AWS** · never deployed
 
-Variables (`guardrails`, `existing_guardrail_ids`, `agent_runtime_role_arn`, `agent_image_uri`, `custom_model`) are typed inputs; `versions.tf` is the academy standard.
+Variables (`guardrails`, `existing_guardrail_ids`, `agent_runtime_role_arn`, `agent_image_uri`, `custom_model`) are typed inputs; `versions.tf` is the academy standard. The one that shapes the example:
+
+```hcl
+# variables.tf (excerpt)
+variable "guardrails" {
+  description = "Guardrails keyed by name. Each one gets a published, numbered version."
+  type = map(object({
+    description           = string
+    tier                  = optional(string, "CLASSIC") # CLASSIC or STANDARD
+    guardrail_profile_arn = optional(string)            # required by the STANDARD tier
+  }))
+}
+
+variable "existing_guardrail_ids" {
+  description = "Guardrails created outside Terraform, keyed like var.guardrails, to adopt with import blocks. Values are guardrail IDs."
+  type        = map(string)
+  default     = {}
+}
+```
 
 ```hcl
 # main.tf

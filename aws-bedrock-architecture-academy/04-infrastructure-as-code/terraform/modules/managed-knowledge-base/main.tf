@@ -211,9 +211,10 @@ resource "aws_bedrockagent_knowledge_base" "this" {
 # --- Data source: Amazon S3 through the managed connector -----------------------------------
 
 resource "aws_bedrockagent_data_source" "this" {
-  knowledge_base_id = aws_bedrockagent_knowledge_base.this.id
-  name              = "${var.name}-s3"
-  description       = "Amazon S3 documents (s3://${var.source_bucket_name}) for managed knowledge base ${var.name}"
+  knowledge_base_id    = aws_bedrockagent_knowledge_base.this.id
+  name                 = "${var.name}-s3"
+  description          = "Amazon S3 documents (s3://${var.source_bucket_name}) for managed knowledge base ${var.name}"
+  data_deletion_policy = var.data_deletion_policy
 
   data_source_configuration {
     type = "MANAGED_KNOWLEDGE_BASE_CONNECTOR"
