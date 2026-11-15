@@ -1,0 +1,28 @@
+{
+  "name": "@academy/bedrock-constructs",
+  "version": "1.0.0",
+  "description": "Reusable AWS CDK constructs for Amazon Bedrock building blocks (learning examples, never deployed by the authors).",
+  "private": true,
+  "main": "lib/index.ts",
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "aws-cdk-lib": "^2.277.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.15.0",
+    "@swc/jest": "^0.2.39",
+    "@types/jest": "^30",
+    "@types/node": "^24.10.1",
+    "aws-cdk-lib": "2.277.0",
+    "constructs": "^10.0.0",
+    "jest": "^30",
+    "typescript": "~7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

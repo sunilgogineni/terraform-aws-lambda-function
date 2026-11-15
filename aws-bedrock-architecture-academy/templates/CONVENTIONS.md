@@ -226,6 +226,12 @@ Every code block or code directory states its status:
 ### AWS CDK
 
 - TypeScript, `aws-cdk-lib` pinned to an exact version in `package.json`, `constructs` `^10`.
+- Project setup mirrors the official `cdk init app --language typescript` template shipped with
+  CDK CLI 2.1148.1: `typescript` `~7.0.2`, Jest 30 with the `@swc/jest` transform, `tsx` to run
+  the app, `"noEmit": true`, and `"app": "npx tsx bin/<name>.ts"` in `cdk.json`. Copy
+  `package.json`, `tsconfig.json` and `jest.config.js` from
+  [`aws-cdk/construct-library/`](../04-infrastructure-as-code/aws-cdk/construct-library/) — do
+  **not** use `ts-jest` or `ts-node` (they do not support TypeScript 7).
 - Stacks are environment-agnostic unless the chapter is about environments.
 - Unit tests use `aws-cdk-lib/assertions`.
 - No Docker bundling and no context lookups, so `cdk synth` works offline with no credentials.
