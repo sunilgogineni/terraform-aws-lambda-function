@@ -12,12 +12,14 @@ that can read only what the connector needs.
 [Module catalog](../README.md) · [Terraform chapters](../../README.md) · [Managed Knowledge Base](../../../../01-amazon-bedrock/knowledge-bases/02-managed-knowledge-base.md) · [Knowledge Bases overview](../../../../01-amazon-bedrock/knowledge-bases/01-knowledge-bases-overview.md) · [Agentic retrieval](../../../../01-amazon-bedrock/agentic-retrieval/01-agentic-retrieval.md) · [`knowledge-base-s3-vectors`](../knowledge-base-s3-vectors/README.md)
 
 > [!IMPORTANT]
-> **Status** — Generally available since 2026-06-17 in nine Regions (GovCloud (US-West) without
-> service-managed models, ACLs or SaaS connectors), and the type AWS recommends.
-> `RetrieveAndGenerate` does not work on it; use `Retrieve` or `AgenticRetrieveStream`.
-> Sources: [GA announcement](https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-bedrock-managed-knowledge-base/) (as recorded in the [feature register](../../../../FEATURE-VERIFICATION.md)),
-> [Knowledge Bases overview](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html),
-> [Managed Knowledge Base chapter](../../../../01-amazon-bedrock/knowledge-bases/02-managed-knowledge-base.md#regions-and-govcloud)
+> **Status** — GA since 2026-06-17 (per the academy's [feature register](../../../../FEATURE-VERIFICATION.md))
+> and the type AWS recommends. Available in nine Regions; in AWS GovCloud (US-West) there are no
+> service-managed embedding models (set `embedding_model_type = "CUSTOM"`), no ACLs and only the
+> S3 and Custom connectors. `RetrieveAndGenerate` does not work on it; use `Retrieve` or
+> `AgenticRetrieveStream`.
+> Sources: [Knowledge Bases overview](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html),
+> [Supported AWS Regions](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-regions.html),
+> [Managed Knowledge Base chapter](../../../../01-amazon-bedrock/knowledge-bases/02-managed-knowledge-base.md)
 
 ## What it creates
 
