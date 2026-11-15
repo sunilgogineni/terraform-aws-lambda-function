@@ -108,29 +108,18 @@ labelling them "not testable". `bootstrap-toolchain.sh` installs them when Go an
 
 ## Pending corrections to the verification matrix
 
-Authors reported these while researching. Each must be re-checked on the cited page and then
-applied to [`FEATURE-VERIFICATION.md`](FEATURE-VERIFICATION.md). Chapters already written state
-the corrected facts; the matrix has not been updated yet.
-
-| # | Topic | Reported finding | Source |
-|--:|:--|:--|:--|
-| P1 | AgentCore Policy | Docs also describe **Dogwood**, a Cedar-compatible policy language; matrix names only Cedar | [Policy](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html) |
-| P2 | Managed Knowledge Base connectors | The build page says 7 native connectors (no Salesforce or Zendesk); matrix lists 9 from the document history — a source conflict to record | [Build a managed KB](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-build-managed.html) |
-| P3 | Application inference profiles | One page says they are rejected by Responses **and** Chat Completions on either endpoint; another lists Chat Completions as supported — a source conflict | [Cost management with profiles](https://docs.aws.amazon.com/bedrock/latest/userguide/cost-mgmt-application-inference-profiles.html) |
-| P4 | Provisioned Throughput | Two purchase modes, "by Tokens" and "by Model Units"; matrix covers model units only | [Purchase Provisioned Throughput](https://docs.aws.amazon.com/bedrock/latest/userguide/prov-thru-purchase.html) |
-| P5 | Provisioned Throughput and custom models | One page says custom models must use Provisioned Throughput; another offers on-demand deployment — a source conflict | [Provisioned Throughput](https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html) |
-| P6 | Service tiers | A capacity page describes Reserved in "model units" with per-tier limits, conflicting with the service-tiers page | [Service tiers](https://docs.aws.amazon.com/bedrock/latest/userguide/service-tiers-inference.html) |
-| P7 | Terraform batch jobs | `aws_bedrock_model_invocation_job.model_invocation_type` is read-only, so Converse-format jobs cannot be created with Terraform 6.73.0; the resource has no `tags` | [Generated Terraform reference](references/terraform-aws-provider-bedrock.md) |
-| P8 | Projects row | The 2026-09-21 cross-model daily token quota is a `bedrock-runtime` quota, not a Projects feature | [Document history](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-ug-doc-history.html) |
-| P9 | Authentication | Add long-term API keys (IAM user plus service-specific credential) and the `CallWithBearerToken` action | [API keys](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html) |
-| P10 | Invocation logging | Model invocation logging covers `bedrock-runtime` only; `bedrock-mantle` traffic is not captured | [Model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html) |
-| P11 | Missing features | Data retention modes; latency-optimized inference (preview); "Bedrock Managed Agents, powered by OpenAI" (preview); `InvokeModelWithBidirectionalStream`, `StartAsyncInvoke`, `CountTokens` | [Data retention](https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html), [Latency-optimized inference](https://docs.aws.amazon.com/bedrock/latest/userguide/latency-optimized-inference.html), [API reference](references/bedrock-api-operations.md) |
-| P12 | Regions | The General Reference lists `bedrock-runtime` in 22 Regions; the user guide says everywhere Bedrock is offered — a source conflict | [Bedrock endpoints and quotas](https://docs.aws.amazon.com/general/latest/gr/bedrock.html) |
-| P13 | U11 (AgentCore network modes) | Can be closed: the VPC page documents VPC mode for Runtime, Code Interpreter and Browser | [AgentCore VPC](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agentcore-vpc.html) |
-| P14 | Registry PrivateLink | The AgentCore endpoint page lists three service names and no Registry row; matrix says Registry has PrivateLink | [AgentCore interface endpoints](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/vpc-interface-endpoints.html) |
-| P15 | Resource-based policies | The Bedrock IAM page names only guardrails (and guardrail profiles) as supporting resource-based policies, yet `AWS::Bedrock::KnowledgeBasePolicy` exists — clarify | [Bedrock and IAM](https://docs.aws.amazon.com/bedrock/latest/userguide/security_iam_service-with-iam.html) |
-| P16 | U4 (third-party vector stores) | The service-role page still documents Pinecone and Redis Enterprise Cloud; the query-configuration page still names MongoDB | [KB permissions](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-permissions.html), [Query configuration](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-config.html) |
-| P17 | Stale AWS pages | Some pages still say "request model access" or that Global profiles are "only supported on Claude Sonnet 4"; chapters follow the newer pages and say so | [Inference profiles support](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html) |
+The seventeen corrections reported during Phases 3–4 (P1–P17), and the further notes authors filed
+in Session 2, were re-checked on the cited pages and applied to
+[`FEATURE-VERIFICATION.md`](FEATURE-VERIFICATION.md) on **2026-11-15**: rows were corrected, new
+rows were added, conflicts C5–C22 were recorded, open items U6, U7 and U11 were closed and U15–U24
+were added. None was rejected outright, but three were applied differently from how they were
+reported: **P1** — the Policy page describes Dogwood as a second open-source policy language; the
+"Cedar-compatible" wording could not be confirmed, so the matrix does not use it. **P2** — the nine
+connectors stay: Salesforce and Zendesk were added on 2026-09-23 and have their own connector
+pages, so the build page's "7" is recorded as stale (C5). **P14** — Registry does have PrivateLink,
+through its own `agent-registry` and `agent-registry-control` endpoints rather than the AgentCore
+ones. Session 2 notes that could not be re-checked on an official page are listed as open items
+rather than applied.
 
 ## Known gaps
 

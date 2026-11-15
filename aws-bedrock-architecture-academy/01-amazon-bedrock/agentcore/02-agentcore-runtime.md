@@ -472,6 +472,14 @@ data "aws_iam_policy_document" "runtime_permissions" {
     resources = ["${local.log_prefix}:/aws/bedrock-agentcore/runtimes/*"]
   }
 
+  # Lets AgentCore allow X-Ray to deliver spans to this agent's own log group.
+  statement {
+    sid       = "SpanDestinationPolicy"
+    effect    = "Allow"
+    actions   = ["logs:PutResourcePolicy"]
+    resources = ["${local.log_prefix}:/aws/bedrock-agentcore/runtimes/${var.agent_runtime_name}-*"]
+  }
+
   statement {
     sid       = "DescribeLogGroups"
     effect    = "Allow"

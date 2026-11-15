@@ -1,6 +1,6 @@
 # AgentCore overview
 
-> **Level:** Intermediate · **Verified:** 2026-11-15 · **Feature status:** GA (Payments in preview; Optimization Insights in preview) · **Time:** ~20 min
+> **Level:** Intermediate · **Verified:** 2026-11-15 · **Feature status:** GA (no new Optimization Insights jobs since 2026-10-16) · **Time:** ~20 min
 
 Amazon Bedrock AgentCore is the AWS platform for running agents in production: thirteen services that host agent code, connect it to tools, give it identity and memory, and observe and govern what it does. This chapter is the map; the eleven chapters after it are the territory.
 
@@ -51,15 +51,15 @@ The overview page lists thirteen services. Status comes from the [feature regist
 | Code Interpreter | GA | Isolated sandbox for code the agent writes (Python, JavaScript, TypeScript) | [AgentCore Browser and Code Interpreter](08-agentcore-browser-and-code-interpreter.md) |
 | Policy | GA | Deterministic rules evaluated on every tool call through a Gateway | [AgentCore Policy](09-agentcore-policy.md) |
 | Evaluations | GA | Scores sessions, traces and spans with built-in or custom evaluators | [AgentCore Evaluations and Optimization](10-agentcore-evaluations-and-optimization.md) |
-| Optimization | Recommendations, batch evaluation and A/B tests GA; Insights in preview | Turns traces into prompt and tool-description recommendations and tests them | [AgentCore Evaluations and Optimization](10-agentcore-evaluations-and-optimization.md) |
+| Optimization | Recommendations, batch evaluation and A/B tests GA; Insights: no new jobs since 2026-10-16 (redesign) | Turns traces into prompt and tool-description recommendations and tests them | [AgentCore Evaluations and Optimization](10-agentcore-evaluations-and-optimization.md) |
 | Registry (AWS Agent Registry) | GA | Governed catalog of agents, MCP servers, tools and skills | [AWS Agent Registry](11-agentcore-registry.md) |
-| Payments | Preview since May 2026 | Microtransaction payments (x402 and MPP) through wallet providers | [AgentCore Payments, Web Search and Web Answer](12-agentcore-payments-and-web-search.md) |
+| Payments | GA since 2026-08-18 (preview from May 2026) | Microtransaction payments (x402 and MPP) through wallet providers | [AgentCore Payments, Web Search and Web Answer](12-agentcore-payments-and-web-search.md) |
 
 Web Search and Web Answer are priced as separate AgentCore features but are not in the list of thirteen; they are covered with Payments.
 
 > [!IMPORTANT]
-> **Status** — Whether Payments has moved from preview to general availability is **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: the release notes record the preview (May 2026) and no later GA entry was found; the pricing page lists Payments without a preview label.
-> Source: [Release notes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html), [AgentCore pricing](https://aws.amazon.com/bedrock/agentcore/pricing/)
+> **Status** — Payments is generally available since 2026-08-18, after a preview that began in May 2026. Optimization Insights accepts no new batch or recurring jobs since 2026-10-16 while AWS redesigns it.
+> Source: [Payments GA announcement](https://aws.amazon.com/about-aws/whats-new/2026/08/bedrock-agentcore-payments-ga/), [Release notes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/doc-history.html), [Recurring insights report](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/insights-recurring-report.html)
 
 Policy deserves one clarification. The Policy page says policies are written in Cedar and can also be authored in Dogwood, an open-source language; the overview page describes Dogwood as Cedar-compatible. The [Policy chapter](09-agentcore-policy.md) explains the difference.
 
@@ -177,7 +177,7 @@ Source: [Supported AWS Regions](https://docs.aws.amazon.com/bedrock-agentcore/la
 | AgentCore Python SDK | Python primitives for Runtime, Memory, tools, Identity and Evaluations; `BedrockAgentCoreApp` wraps your agent | You write the agent in Python |
 | AWS SDK and AWS CLI | The full API surface: `bedrock-agentcore-control` and `bedrock-agentcore` | Any other language, automation, or operations the helpers do not cover |
 | AgentCore MCP server | Lets a coding assistant create, deploy and test AgentCore agents | You work from an MCP-capable IDE |
-| IaC | Terraform `aws_bedrockagentcore_*`, CloudFormation `AWS::BedrockAgentCore::*`, CDK L1 and stable L2 constructs | Anything that must be reviewed, repeated and promoted |
+| IaC | Terraform `aws_bedrockagentcore_*`, CloudFormation `AWS::BedrockAgentCore::*`, CDK L1 and stable L2 constructs (AWS Agent Registry: `aws_agentregistry_registry`, `AWS::AgentRegistry::*`) | Anything that must be reviewed, repeated and promoted |
 
 Source: [Understand the available interfaces](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/develop-agents.html). The register also lists a TypeScript SDK and marks the earlier starter toolkit as deprecated. IaC coverage per service is in [Terraform coverage for Amazon Bedrock](../../04-infrastructure-as-code/terraform/10-terraform-for-bedrock.md) and [CDK coverage for Amazon Bedrock](../../04-infrastructure-as-code/aws-cdk/09-cdk-for-bedrock.md).
 

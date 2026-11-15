@@ -37,6 +37,8 @@ skinparam legendBackgroundColor #FFFFFF
 skinparam legendBorderColor #888888
 skinparam interfaceBackgroundColor #FFFFFF
 skinparam interfaceBorderColor #333333
+skinparam nodesep 70
+skinparam ranksep 60
 
 !$CLIENT   = "#E8F1FB;line:1F6FEB;text:0B1F33"
 !$EDGE     = "#E0F7FA;line:00838F;text:00363A"
@@ -57,10 +59,8 @@ package "AWS account 111122223333 · Region us-east-1" as account {
 
   package "Amazon Bedrock AgentCore — AWS-managed service boundary" as agentcore {
     component "AgentCore data plane\ninbound authorizer: SigV4 or JWT" as dp $EDGE
-    () "InvokeAgentRuntime" as iInvokeRuntime
-    () "InvokeHarness" as iInvokeHarness
-    dp -up- iInvokeRuntime
-    dp -up- iInvokeHarness
+    () "InvokeAgentRuntime\nInvokeHarness" as iInvoke
+    dp -up- iInvoke
 
     component "AgentCore Runtime\nyour agent code" as runtime $COMPUTE
     component "AgentCore harness\nmanaged agent loop" as harness $COMPUTE
@@ -105,8 +105,7 @@ package "AWS account 111122223333 · Region us-east-1" as account {
 }
 
 client ..> idp : authenticate · OIDC
-client ..> iInvokeRuntime : HTTPS · JWT or SigV4\nsession ID header
-client ..> iInvokeHarness : HTTPS · JWT or SigV4
+client ..> iInvoke : HTTPS · JWT or SigV4\nsession ID header
 dp --> runtime : route by session ID
 dp --> harness : route by session ID
 runtime --> session : starts a microVM\nper new session
@@ -128,10 +127,13 @@ cw ..> evals : telemetry scored
 evals ..> optim : results feed recommendations
 dp ..> trail : API events
 
-note bottom of agentcore
-  Thirteen services: Runtime, harness, Gateway, Identity, Memory, Code Interpreter, Browser,
-  Observability, Evaluations, Optimization, Policy, Registry and Payments (preview).
-  Each can be used without the others. The harness and Memory are in 16 of the 22 AgentCore Regions.
+note as nServices
+  Thirteen services: Runtime, harness, Gateway, Identity, Memory,
+  Code Interpreter, Browser, Observability, Evaluations, Optimization,
+  Policy, Registry and Payments (preview). Each can be used without
+  the others. The harness and Memory are in 16 of the 22 AgentCore Regions.
+  The session never holds tool credentials: it asks the Gateway,
+  and the Gateway asks Identity.
 end note
 
 legend right

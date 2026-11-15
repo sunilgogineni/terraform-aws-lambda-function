@@ -216,7 +216,7 @@ sequenceDiagram
 | JWT (`CUSTOM_JWT`) | Validates a bearer token against your identity provider's discovery URL, with allowed audiences, clients, scopes and custom claims | End users and external MCP clients |
 | IAM (`AWS_IAM`) | SigV4; the caller needs `bedrock-agentcore:InvokeGateway` on the gateway ARN | Agents and services inside AWS |
 | Authenticate only (`AUTHENTICATE_ONLY`) | Offloaded: the gateway authenticates but leaves the authorization decision to the target, a policy engine or an interceptor | Targets that authorize by themselves |
-| None (`NONE`) | No authorization at the gateway | Development and testing only |
+| None (`NONE`) | No authentication or authorization at the gateway | Only a gateway you intend to make public, with your own throttling and checks — AWS says not to use it for testing convenience ([inbound authorization](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html); the core-concepts page still says "development and testing") |
 
 **Outbound authorization** — how the gateway proves itself to a target. Credentials come from the gateway's own role or from AgentCore Identity; the agent never sees them.
 
@@ -498,7 +498,7 @@ A deployed gateway bills per call and per indexed tool; remove it with `terrafor
 | Renaming a target | Tool names change; allow-lists, policies and tests break | Choose short, stable target names |
 | Vague tool descriptions | The model picks the wrong tool, and semantic search ranks badly | Write descriptions for a model: what the tool does and when to use it |
 | One broad service role for every target | Any authorized caller can reach everything the role can | Scope the role; split gateways by trust level; add Policy |
-| `NONE` authorization left on after testing | Anyone with the URL can call your tools | Use JWT or IAM; `NONE` is for development |
+| `NONE` authorization used as a testing shortcut | Anyone with the URL can call your tools | Use JWT or IAM, even in development; `NONE` only for deliberately public gateways |
 | Expecting semantic search or `tools/list` to cover HTTP targets | Tools are missing | Only MCP targets are aggregated and indexed |
 | MCP server changed, gateway not synchronized | Stale tool catalogue | Call `SynchronizeGatewayTargets` |
 | Relying on rate limits to block an attacker | Requests pass when a limit cannot be evaluated | Rate limits fail open; use authorization and Policy |

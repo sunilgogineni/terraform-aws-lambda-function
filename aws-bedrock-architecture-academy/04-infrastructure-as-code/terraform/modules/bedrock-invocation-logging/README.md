@@ -154,8 +154,9 @@ Grant readers access deliberately: a principal needs `logs:` read actions on the
 
 > [!WARNING]
 > **Common mistake** — Declaring this module (or the resource) in two root modules for the same
-> account and Region. There is only one logging configuration per Region; the last apply wins
-> and the other configuration drifts on every plan.
+> account and Region. There is only one logging configuration per Region, so each apply
+> overwrites the other's settings; the provider documentation warns against defining it in more
+> than one configuration.
 
 ## Testing
 

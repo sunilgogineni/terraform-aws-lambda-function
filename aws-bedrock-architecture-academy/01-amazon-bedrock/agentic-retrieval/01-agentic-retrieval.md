@@ -297,7 +297,8 @@ read do not describe. Sources:
 
 ## 8. Security considerations
 
-The documented identity policy for the caller:
+The documented identity policy for the caller, plus the metrics permission from the
+observability page:
 
 > **Code status:** illustrative · **never deployed**
 
@@ -319,10 +320,23 @@ The documented identity policy for the caller:
       "Effect": "Allow",
       "Action": "bedrock:InvokeModelWithResponseStream",
       "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "cloudwatch:PutMetricData",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "cloudwatch:namespace": "AWS/Bedrock/KnowledgeBases" }
+      }
     }
   ]
 }
 ```
+
+- `cloudwatch:PutMetricData` is needed because `AgenticRetrieveStream` metrics (such as
+  `TotalIterationCount`) are published with the caller's credentials. Publishing is best effort:
+  without the permission the metrics are silently missing, but the request still succeeds.
+  Source: [Observability for managed knowledge bases](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-observability.html)
 
 - `bedrock:AgenticRetrieveStream` is documented with `Resource: "*"`. **Our reading:** the
   per-knowledge-base control is therefore the `bedrock:Retrieve` statement — list knowledge base

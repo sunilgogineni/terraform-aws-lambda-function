@@ -32,16 +32,15 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Calling a model is like phoning an expert who charges by the word. You want the call to come from
-an authorised line (an IAM role), to name the right expert without hard-wiring their number into
-your code (the model ID as configuration), to have a recording for audit (invocation logs), and to
-hang up politely and try again later if the line is busy (retries with backoff), without waiting
-on hold forever (timeouts) or letting the expert talk for an hour (`maxTokens`).
+Calling a model is like phoning an expert who charges by the word. The call should come from an
+authorised line (an IAM role), look the expert up in a directory rather than a number written into
+your code (the model ID as configuration), be recorded (invocation logs), and back off politely
+when the line is busy (retries), without waiting forever (timeouts) or letting the expert talk
+for an hour (`maxTokens`).
 
-**The problem.** A first call to Bedrock usually works with an administrator's credentials, a
-hard-coded model ID and default SDK settings. In production the same code fails in ways that are
-hard to see: access denied after a model is retired, throttling at modest traffic, requests that
-hang behind a network device, and no record of what was sent.
+**The problem.** A first call usually works with an administrator's credentials, a hard-coded
+model ID and default SDK settings. In production the same code fails quietly: access denied after
+a model is retired, throttling at modest traffic, hung connections, and no record of what was sent.
 
 ### Conceptual view
 
@@ -85,18 +84,16 @@ its token usage, and Bedrock writes a log record into your account.
 
 The pattern has five parts, all inside one account and one source Region.
 
-1. **A caller with its own role.** The role allows `bedrock:InvokeModel` on the inference profile
-   **and** on the foundation model in every Region the profile can route to; a
-   `bedrock:InferenceProfileArn` condition makes the models reachable only through that profile.
-   Add `bedrock:InvokeModelWithResponseStream` only if you stream.
-2. **Configuration.** Model or profile ID, `maxTokens`, timeouts and guardrail version are read
-   at start-up, never compiled in.
-3. **A tuned SDK client.** Standard retry mode with bounded attempts, a read timeout below the
-   caller's own deadline, and TCP keep-alive.
+1. **A caller with its own role**, allowed `bedrock:InvokeModel` on the inference profile **and**
+   on the foundation model in every Region the profile can route to, with a
+   `bedrock:InferenceProfileArn` condition. Add `bedrock:InvokeModelWithResponseStream` only to stream.
+2. **Configuration** read at start-up: model or profile ID, `maxTokens`, timeouts, guardrail version.
+3. **A tuned SDK client**: standard retries with bounded attempts, a read timeout below the
+   caller's deadline, TCP keep-alive.
 4. **Converse on `bedrock-runtime`** ([ADR-007](../../ARCHITECTURE-DECISIONS.md#adr-007-converse-on-bedrock-runtime-is-the-default-inference-api-in-examples)),
-   with `requestMetadata` tags so each log record names the application.
-5. **Model invocation logging** to CloudWatch Logs or Amazon S3, plus CloudTrail and CloudWatch
-   metrics for who called what and how often.
+   with `requestMetadata` tags naming the application in each log record.
+5. **Records**: model invocation logging to CloudWatch Logs or Amazon S3, plus CloudTrail and
+   CloudWatch metrics.
 
 > [!NOTE]
 > **Documented fact** — Model invocation logging is disabled by default. Destinations must be in
@@ -254,10 +251,9 @@ sequenceDiagram
     end
 ```
 
-Steps 1–2: one logical call may be several HTTP attempts; the SDK, not your code, waits between
-them. Steps 3–5: errors here cost no generation, so they are safe to retry. Steps 6–7: a
-guardrail block returns a normal 200 with `stopReason` `guardrail_intervened`. Steps 8–11: the
-answer returns with token usage, which you log and meter. Step 12: the log record is
+Steps 2–5: one logical call may be several HTTP attempts, and the SDK waits between them; these
+errors cost no generation. Steps 6–7: a guardrail block is a normal 200 with `stopReason`
+`guardrail_intervened`. Steps 8–12: the answer returns with token usage; the log record is
 asynchronous. Steps 13–14: a read timeout is the dangerous case — the model may have finished and
 billed, so a blind retry can pay twice.
 
@@ -265,15 +261,13 @@ billed, so a blind retry can pay twice.
 
 Configure in the order a builder meets each setting:
 
-1. **Pick the target.** Use a system-defined inference profile ID as `modelId` where the model is
-   offered through one; resolve its destination models with the Terraform data source
-   `aws_bedrock_inference_profile` (see [Example](#example)).
-2. **Scope the role.** Profile ARN plus each destination model ARN, conditioned on
-   `bedrock:InferenceProfileArn`; for Global profiles also the Region-less model ARN.
-3. **Bound the work.** `maxTokens` near the real need; the read timeout below the caller's
-   deadline (for example below the function timeout behind a 29-second front door); a handful of
-   attempts.
-4. **Turn on logging** once per account and Region; decide who owns it in a shared account.
+1. **Pick the target** — a system-defined inference profile ID where the model offers one; look
+   up its destination models with the data source `aws_bedrock_inference_profile` ([Example](#example)).
+2. **Scope the role** — profile ARN plus each destination model ARN (and the Region-less ARN for
+   Global profiles), conditioned on `bedrock:InferenceProfileArn`.
+3. **Bound the work** — `maxTokens` near the real need; read timeout below the caller's deadline;
+   a handful of attempts.
+4. **Turn on logging** once per account and Region, owned by whoever owns the account.
 5. **Alarm** on throttles, server errors and token usage.
 
 > [!NOTE]

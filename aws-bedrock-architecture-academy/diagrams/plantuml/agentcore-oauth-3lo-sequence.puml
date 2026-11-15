@@ -1,0 +1,119 @@
+@startuml
+' =============================================================================
+' AgentCore Gateway and Identity — 3-legged OAuth tool call: consent, then the cached-token path
+' UML sequence diagram
+'
+' Mermaid source set : diagrams/mermaid/14-agentcore-gateway-and-identity.md (view C)
+' Chapters           : 01-amazon-bedrock/agentcore/04-agentcore-gateway.md,
+'                      01-amazon-bedrock/agentcore/05-agentcore-identity.md
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      No AWS icons; nothing is included from the network.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-outbound-auth.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-using-auth-ex-3lo.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-MCPservers.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-mcp-elicitation.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/oauth2-authorization-url-session-binding.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-authentication.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-terminology.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-data-encryption.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-core-concepts.html
+'   https://aws.amazon.com/blogs/machine-learning/connecting-mcp-servers-to-amazon-bedrock-agentcore-gateway-using-authorization-code-flow/
+'
+' What UML adds over the Mermaid view: the trust boundary of every participant as a
+' box, and the two calls as separate groups so the detour through consent is visible.
+' =============================================================================
+!pragma layout smetana
+title AgentCore Gateway and Identity — 3-legged OAuth tool call, consent, then the cached token (UML sequence)
+
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+skinparam ArrowColor #333333
+skinparam sequenceLifeLineBorderColor #888888
+skinparam sequenceGroupBorderColor #666666
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+
+autonumber
+box "Internet — outside your trust boundary" #F1F3F4
+  actor "User's browser" as U #E8F1FB
+end box
+box "Your AWS account" #FFFBF5
+  participant "Your agent application\nMCP client · return URL handler" as A #FDEBD0
+end box
+box "Amazon Bedrock AgentCore — AWS-managed service boundary" #F5FBF6
+  participant "AgentCore Gateway\nMCP endpoint /mcp" as G #E0F7FA
+  participant "AgentCore Policy\npolicy engine" as P #FDECEA
+  participant "AgentCore Identity\ntoken vault" as I #FDECEA
+end box
+box "Third party — outside your trust boundary" #F1F3F4
+  participant "Third-party authorization server" as AS #F1F3F4
+  participant "Third-party API" as API #F1F3F4
+end box
+
+note over U, A : The user is signed in. The application holds the user's JWT from the external identity provider
+
+group First call — no stored token for this user
+  A -> G : tools/list (Bearer JWT)
+  G --> A : Cached tool definitions. No downstream token needed
+  A -> G : tools/call crm___list_contacts (Bearer JWT)
+  note over A, G : JWT checked: signature, issuer, expiry, audience, client, scopes
+  opt Policy engine attached
+    G -> P : Authorize principal, tool and input
+    P --> G : Permit
+  end
+  G -> I : Get workload access token (gateway identity, user JWT)
+  I --> G : Workload access token
+  G -> I : GetResourceOauth2Token (authorization code grant, scopes, return URL)
+  I --> G : No token for this user. Authorization URL and session URI
+  G --> A : JSON-RPC error -32042 with a URL elicitation
+  A --> U : Show the authorization URL to the user
+end
+
+group Consent and session binding — the URL and session are valid for 10 minutes
+  U -> AS : Open the URL, sign in and consent
+  AS --> U : Redirect to the credential provider callback URL with a code
+  U -> I : Callback with the authorization code
+  I --> U : Redirect to your return URL with the session URI
+  U -> A : Request to the return URL (session URI)
+  A -> I : CompleteResourceTokenAuth (session URI, user JWT)
+  note over A, I #FDECEA : The application first checks — from its own authenticated session,\nnever from a query parameter — that the signed-in user started this flow
+  I -> AS : Exchange the code for tokens (client secret from AWS Secrets Manager)
+  AS --> I : Access token and refresh token
+  note over I : Stored in the token vault under the gateway workload\nidentity and the user. Encrypted with AWS KMS
+end
+
+group Next call — cached-token path, no user interaction
+  A -> G : tools/call crm___list_contacts again (Bearer JWT)
+  note over G, I : Inbound check, policy and workload access token repeat as in steps 3 to 7
+  G -> I : GetResourceOauth2Token
+  I --> G : Cached access token
+  G -> API : HTTPS request with the Bearer access token
+  API --> G : Response
+  G --> A : MCP tool result
+end
+
+note across
+  Missing or invalid JWT: 401 with a WWW-Authenticate header (resource_metadata, scope); valid token without the scopes: 403 insufficient_scope.
+  In ENFORCE mode a forbid ends the call at the policy step. The authorization code never passes through your application or the agent.
+  Refresh tokens are used automatically; a revocation at the provider is not visible — send forceAuthentication true in _meta to start again.
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | solid arrow | request or redirect followed by the browser |
+  | dashed arrow | response |
+  | group | one phase of the flow |
+  |<#F1F3F4> grey box | outside your trust boundary |
+  |<#FDEBD0> orange | your compute |
+  |<#E0F7FA> teal | entry point |
+  |<#FDECEA> red | security control |
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml
