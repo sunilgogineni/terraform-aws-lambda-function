@@ -38,7 +38,7 @@ CloudTrail is the visitors' book at reception: name, time, which door, whether t
 | Flows, prompts | Management | `InvokeFlow`; `RenderPrompt` (permission-only) | `AWS::Bedrock::FlowAlias`, `AWS::Bedrock::FlowExecution`; see the conflict note below |
 | `bedrock-mantle` | `ListModels`, `GetModel`, fine-tuning jobs, Projects | `CreateInference` (Responses, Chat Completions, embeddings, Messages), `GetInference`, `CancelInference`, `DeleteInference`, `CountTokens`, files | `AWS::BedrockMantle::Project` (the only value) |
 | AgentCore Gateway | Gateway and target management | `InvokeGateway` | `AWS::BedrockAgentCore::Gateway` |
-| AgentCore Runtime and harness | Create, update, delete, get, list | `InvokeAgentRuntime`, `InvokeAgentRuntimeCommand`, `InvokeAgentRuntimeCommandShell` | `AWS::BedrockAgentCore::Runtime` (harness events too) |
+| AgentCore Runtime and harness | Control-plane operations (for the harness: `CreateHarness`, `UpdateHarness`, `DeleteHarness`, `GetHarness`, `ListHarnesses`) | `InvokeAgentRuntime`, `InvokeAgentRuntimeCommand`, `InvokeAgentRuntimeCommandShell` | `AWS::BedrockAgentCore::Runtime` (harness events too) |
 
 Sources: [Bedrock CloudTrail](https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html), [bedrock-mantle CloudTrail](https://docs.aws.amazon.com/bedrock/latest/userguide/logging-cloudtrail-mantle.html), [Gateway event types](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-event-types.html), [harness operations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness-operations.html).
 

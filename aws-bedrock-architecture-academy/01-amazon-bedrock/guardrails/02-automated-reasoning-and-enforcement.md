@@ -339,8 +339,8 @@ Checked against [the Terraform reference](../../references/terraform-aws-provide
 
 > **Code status:** `terraform fmt` ✅ · `terraform validate` ✅ (provider 6.73.0) · TFLint ✅ · `terraform test` ✅ 4 runs with a mock provider · **never planned or applied against AWS**
 
-Run it in the management account (or a delegated guardrail account for account-level enforcement
-only), once per Region you enforce.
+Run it in the management account, once per Region you enforce. For account-level enforcement alone,
+run it in that account with `org_policy_target_ids = []`.
 
 `variables.tf`
 

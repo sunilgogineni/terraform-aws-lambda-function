@@ -39,7 +39,7 @@ walls back unless you change the drawing.
 | | Direct update (`UpdateStack`) | Change set (`CreateChangeSet` → `ExecuteChangeSet`) |
 |:--|:--|:--|
 | Preview | None | Full list of resource changes, optionally property-level (`--include-property-values`) |
-| Validation | Pre-deployment validation, FAIL-mode checks only | All checks, including WARN-mode ones |
+| Validation | Pre-deployment validation: property syntax and name conflicts | The same, plus the WARN-mode checks |
 | Approval gate | No | Yes — execution is a separate API call and IAM permission |
 | Parameter Store values | Read at update time | Fixed when the change set is created |
 | Types | Update | `CREATE`, `UPDATE`, `IMPORT` |
@@ -87,9 +87,10 @@ Sources: Template Reference pages for [Guardrail](https://docs.aws.amazon.com/AW
 > [!IMPORTANT]
 > **Status** — Pre-deployment validation launched for change sets in November 2025 and, since
 > 2026-06-30, runs on every `CreateStack`, `UpdateStack` and `CreateChangeSet` by default.
-> Property syntax and resource name conflicts are **FAIL** checks (the operation stops, or the
-> change set is `FAILED`). S3 bucket emptiness, service quotas, AWS Config recorder conflicts and
-> ECR repository delete readiness are **WARN** checks, the last three on change sets only.
+> Property syntax and resource name conflicts are **FAIL** checks on all three operations (the
+> operation stops, or the change set is `FAILED`). S3 bucket emptiness, service quotas, AWS Config
+> recorder conflicts and ECR repository delete readiness are **WARN** checks that the user guide
+> lists for change set creation only.
 > Results come from `DescribeEvents` (events with `EventType` `VALIDATION_ERROR`), not from
 > `DescribeStackEvents`. `DisableValidation` skips the checks for one operation.
 > Sources: [Validate stack deployments](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/validate-stack-deployments.html),
@@ -106,7 +107,7 @@ Validation reduces common failures; it does not guarantee success.
 | Default | A failed create rolls back (`ROLLBACK_COMPLETE`, after which only delete is allowed); a failed update rolls back to the previous state |
 | `OnFailure` on create (`ROLLBACK`, `DELETE`, `DO_NOTHING`) / `OnStackFailure` on change sets | What to do when creation fails |
 | *Preserve successfully provisioned resources* (`--disable-rollback`) | Stops at the first failure in each independent path, leaves the stack `CREATE_FAILED` or `UPDATE_FAILED`, then you **Retry**, **Update** or **Roll back** |
-| `RetainExceptOnCreate` (parameter) | Keeps resources on rollback except those created by the failed operation |
+| `RetainExceptOnCreate` (API parameter) | Applies the `RetainExceptOnCreate` deletion behaviour without editing the template ([DeletionPolicy](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-attribute-deletionpolicy.html)) |
 | Rollback triggers | Up to five CloudWatch alarms watched during the operation and for 0–180 minutes after it |
 | `ContinueUpdateRollback` | Recovers `UPDATE_ROLLBACK_FAILED`, optionally skipping resources or with `--force-rollback` |
 | Express mode (2026-06-30) | Completes when configuration is applied, not when resources are stable; **rollback disabled by default** |
@@ -393,7 +394,7 @@ aws cloudformation detect-stack-drift --stack-name academy-guardrail-dev
 <summary>Answers</summary>
 
 1. The resource may be replaced, depending on a value from another resource's attribute that is only known at execution.
-2. A standard change set compares templates only, so it does not show the console edit; whether the value is overwritten depends on whether that property is part of the update. A drift-aware change set shows the property as drifted, with actual and previous values, and will set it back to the template value unless you change the template.
+2. A standard change set compares only templates, so it neither shows nor deliberately handles the console edit. A drift-aware change set shows the property as drifted, with actual and previous values, and sets it back to the template value on execution unless you first change the template.
 3. `ContinueUpdateRollback`; skipped resources no longer match the template and later updates can fail.
 4. It compares only properties set explicitly in the template.
 5. `Modify` with `Replacement: True` for the profile and a dependent change for the IAM policy; any client that stored the old profile ARN breaks.
