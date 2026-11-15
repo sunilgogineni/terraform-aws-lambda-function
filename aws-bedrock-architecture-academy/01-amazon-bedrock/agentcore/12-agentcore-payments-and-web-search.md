@@ -28,7 +28,14 @@ Three AgentCore capabilities connect an agent to the open web. **Payments** lets
 
 **Plain language.** Give the agent a prepaid card with a spending limit that it cannot raise. When a website answers "402 Payment Required", the agent asks AgentCore to sign a payment of a few cents, then retries with the proof.
 
-**Precisely.** Payments orchestrates the agent side of two HTTP-native protocols. With **x402**, the merchant's `402` response carries a payment payload (scheme, network, amount, asset, `payTo`); `ProcessPayment` with `paymentType` `CRYPTO_X402` returns a signed proof for the `X-PAYMENT` header. Schemes `exact` (fixed price) and `upto` (metered up to a ceiling, settled through the Permit2 contract) are supported. With **MPP** (Machine Payments Protocol), you forward the merchant's `WWW-Authenticate: Payment` challenge and send the returned credential in the `Authorization` header. Status `PROOF_GENERATED` means the transaction was signed. Your agent, not AgentCore, retries the merchant request. Sources: [Core concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-concepts.html), [Process a payment](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-process-payment.html).
+**Precisely.** Payments handles the agent side of two HTTP-native protocols:
+
+| Protocol | Merchant sends | `ProcessPayment` input | Agent retries with |
+|:--|:--|:--|:--|
+| **x402** (`CRYPTO_X402`) | `402` with a payload: scheme, network, amount, asset, `payTo`. Schemes `exact` (fixed) and `upto` (metered to a ceiling, settled through Permit2) | The payload and x402 version (1 or 2) | Signed proof in the `X-PAYMENT` header |
+| **MPP** (`MPP`) | `402` with a `WWW-Authenticate: Payment` challenge | The challenge, verbatim | Credential in the `Authorization` header |
+
+Status `PROOF_GENERATED` means the transaction was signed. Your agent, not AgentCore, retries the merchant request. Sources: [Core concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-concepts.html), [Process a payment](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-process-payment.html).
 
 | Resource | What it is |
 |:--|:--|
@@ -252,7 +259,15 @@ sequenceDiagram
     G-->>C: content (markdown with citation markers) and structuredContent
 ```
 
-Error paths for the API: `ValidationException` (empty or long query, more than 100 domains, `publishedAfter` later than `publishedBefore`, unknown field, body over 32 KiB), `AccessDeniedException` (missing permission or a VPC endpoint policy), `ResourceNotFoundException` (wrong `webSearchId`), `ThrottlingException` (retry with backoff). Web Answer reports failures in the tool result with `isError` `true`; disjoint include lists fail validation. Sources: [Troubleshoot Web Search](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/web-search-api-troubleshooting.html), [Web Answer](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-connector-web-answer-tool.html).
+| Error path | Cause |
+|:--|:--|
+| `ValidationException` (400) | Empty or over-long query, more than 100 domains, `publishedAfter` after `publishedBefore`, unknown field, body over 32 KiB; for Web Answer, disjoint include lists |
+| `AccessDeniedException` (403) | Missing `bedrock-agentcore:InvokeWebSearch`, or a VPC endpoint policy denies it |
+| `ResourceNotFoundException` (404) | `webSearchId` is not `web-search.v1` |
+| `ThrottlingException` (429) | Over the 10 TPS quota — retry with exponential backoff |
+| Web Answer `isError` `true` | The tool could not answer; the text describes why |
+
+Sources: [Troubleshoot Web Search](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/web-search-api-troubleshooting.html), [Web Answer](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-connector-web-answer-tool.html).
 
 ## 7. Dependencies
 
@@ -272,12 +287,14 @@ Error paths for the API: `ValidationException` (empty or long query, more than 1
 
 Documented preventive controls ([Security in AgentCore payments](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-security-best-practices.html), [IAM roles](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-iam-roles.html)):
 
-- **Five-role pattern.** Administrator (managers, connectors, credential providers), management (instruments and sessions, explicitly denied `ProcessPayment`), payment execution, a service role that AgentCore assumes to retrieve credentials, and the `AWSMarketplaceManageSubscriptions` managed policy for Coinbase. Never put `CreatePaymentSession` and `ProcessPayment` in one role — the caller could open a new session with a larger budget.
-- **User identity.** On an IAM-authorized manager, your backend asserts `X-Amzn-Bedrock-AgentCore-Payments-User-Id` and AgentCore does not verify it. Never let users or agents set it.
-- **Payees.** Never let the model generate `payTo` addresses; prefer verified addresses from the Bazaar through Gateway; constrain payees with Cedar policies; do not cache addresses across sessions; screen recipients.
-- **Credentials.** Keep wallet secrets only in AgentCore Identity; for Privy, deny `secretsmanager:GetSecretValue` to every principal except the service role and rotate the app secret and authorization key every 90 days. Rotate Quick create credentials with `RotatePaymentConnectorCredentials`; rotating the Coinbase wallet secret affects every connector on the project and can make `ProcessPayment` fail for up to a minute.
-- **Personal data.** Instrument creation can link the end user's e-mail address to the wallet, so user data reaches the wallet provider; cover it in your privacy assessment.
-- **Detection.** Enable CloudTrail for all Payments calls and use the vended logs and spans to watch success rates and spend.
+| Control | What the documentation says to do |
+|:--|:--|
+| Five-role pattern | Administrator (managers, connectors, credential providers); management (instruments and sessions, explicit `Deny` on `ProcessPayment`); payment execution; a service role AgentCore assumes to retrieve credentials; `AWSMarketplaceManageSubscriptions` on the administrator for Coinbase. Never put `CreatePaymentSession` and `ProcessPayment` in one role — the caller could open a session with a larger budget |
+| User identity | On an IAM-authorized manager your backend asserts `X-Amzn-Bedrock-AgentCore-Payments-User-Id` and AgentCore does not verify it — never let users or agents set it |
+| Payees | Never let the model generate `payTo` addresses; prefer Bazaar-verified addresses through Gateway; constrain payees with Cedar policies; do not cache addresses across sessions; screen recipients |
+| Credentials | Wallet secrets only in AgentCore Identity. Privy: deny `secretsmanager:GetSecretValue` to all but the service role, rotate app secret and authorization key every 90 days. Quick create: `RotatePaymentConnectorCredentials`; a Coinbase wallet-secret rotation affects every connector on the project and can fail `ProcessPayment` for up to a minute |
+| Personal data | Instrument creation can link the end user's e-mail address to the wallet — that data reaches the wallet provider |
+| Detection | CloudTrail for all Payments calls; vended logs and spans for success rates and spend |
 
 For Web Search and Web Answer: results are third-party web content — treat them as untrusted input to the model ([Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md)); put allow and deny lists at the **target** level where the agent cannot change them; and keep secrets and personal data out of queries, which leave your account for the AWS-owned service. Web Answer is not a substitute for professional advice.
 

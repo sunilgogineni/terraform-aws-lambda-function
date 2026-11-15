@@ -3,9 +3,9 @@
 > **Level:** Intermediate · **Verified:** 2026-11-15 · **Feature status:** GA · **Time:** ~35 min
 
 Every Bedrock platform repeats the same building blocks — an encrypted guardrail, a least-privilege
-invocation role, a knowledge base service role. CloudFormation offers seven ways to reuse them, and
-they differ in *when* the reused piece is expanded, *who* controls its version and *where* it is
-deployed. This chapter compares them and builds a guardrail module.
+invocation role. CloudFormation offers seven ways to reuse them, differing in *when* the piece is
+expanded, *who* controls its version and *where* it is deployed. This chapter compares them and
+builds a guardrail module.
 
 ## Learning objectives
 
@@ -80,11 +80,9 @@ resource registers a new version, and deleting it marks the version `DEPRECATED`
 ### Nested stacks and StackSets
 
 A nested stack is an `AWS::CloudFormation::Stack` resource whose `TemplateURL` points to another
-template; it is a separate stack with its own events, limits and outputs, and
-`aws cloudformation package` uploads local child templates for you. One operation on a nested
-hierarchy can touch at most 2,500 resources. A **StackSet** deploys one template as stack instances
-across accounts and Regions, with self-managed IAM roles or service-managed permissions through
-AWS Organizations (which also allows automatic deployment to new accounts). Both are covered in
+template — a separate stack with its own events and outputs; one operation on a nested hierarchy can
+touch at most 2,500 resources. A **StackSet** deploys one template to many accounts and Regions,
+with self-managed roles or service-managed permissions through AWS Organizations. Both are covered in
 [Nested stacks and StackSets](03-nested-stacks-and-stacksets.md); the academy's StackSet example
 is [`templates/04-stackset-guardrail-baseline.yaml`](templates/04-stackset-guardrail-baseline.yaml).
 Sources: [Nested stacks](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html),
@@ -92,13 +90,11 @@ Sources: [Nested stacks](https://docs.aws.amazon.com/AWSCloudFormation/latest/Us
 
 ### Macros and transforms
 
-A **macro** is a Lambda function registered with `AWS::CloudFormation::Macro`. A macro named in the
-`Transform` section receives the whole template; one called with `Fn::Transform` receives its
-sibling nodes. Macros run before intrinsic functions are evaluated, are not processed recursively,
-cannot use `Fn::ImportValue`, exist only in the account that defines them, and cannot return
-modules. Because a macro can add resources (including IAM), AWS strongly advises a change set;
-creating a stack directly needs `CAPABILITY_AUTO_EXPAND`. StackSets with service-managed
-permissions cannot use templates that reference macros.
+A **macro** is a Lambda function registered with `AWS::CloudFormation::Macro`. In the `Transform`
+section it receives the whole template; through `Fn::Transform`, its sibling nodes. Macros run
+before intrinsic functions, are not recursive, cannot use `Fn::ImportValue`, exist only in their own
+account and cannot return modules. Because they can add resources (including IAM), use a change set;
+creating a stack directly needs `CAPABILITY_AUTO_EXPAND`. Service-managed StackSets cannot use them.
 
 **Transforms** are macros hosted by CloudFormation, free and available in every account:
 `AWS::Include` inserts snippets from S3, `AWS::Serverless` expands AWS SAM syntax, and
@@ -111,9 +107,9 @@ permissions cannot use templates that reference macros.
 
 ### Service Catalog, the CDK and SAM
 
-**AWS Service Catalog** turns a CloudFormation template (or a Terraform configuration) into a
+**AWS Service Catalog** turns a CloudFormation template (or Terraform configuration) into a
 *product* in a *portfolio*; a launched product is a stack. Launch constraints provision with a role
-the user does not hold, and template constraints narrow parameter values
+the user does not hold; template constraints narrow parameter values
 ([Service Catalog overview](https://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html)).
 The **AWS CDK** reuses code — construct libraries that synthesize to CloudFormation — and a CDK
 synthesis can even produce a module fragment
@@ -128,7 +124,8 @@ and, for comparison, [Terraform modules](../terraform/03-modules.md).
   expires after 30 days), builds a template of up to 500 resources, and imports them into a stack
   or, with `cdk migrate`, a CDK app. It supports only types that Cloud Control API supports in the
   Region ([IaC generator](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/generate-IaC.html)).
-  **Our reading:** useful for adopting a guardrail or knowledge base first created in the console.
+  **Our reading:** useful for adopting Bedrock resources first created in the console — if their
+  types are on the supported list, which we did not check.
 - **Git sync** watches a template and a *stack deployment file* in GitHub, GitHub Enterprise,
   GitLab, GitLab self-managed or Bitbucket and updates the stack on each commit; it can comment on
   pull requests. It is available in 17 Regions
@@ -205,10 +202,10 @@ processing; it states only that a macro cannot return modules and a module canno
 
 ### Comparison matrix
 
-| Mechanism | Unit of reuse | Resolved | Versioned by | Cross-account | Good Bedrock fit |
+| Mechanism | Unit of reuse | Resolved | Versioned by | Cross-account | Academy example use |
 |:--|:--|:--|:--|:--|:--|
 | Module | Template fragment + schema | At stack operation, into your stack | Registry default version per account and Region | Register in each account | Standard encrypted guardrail; invocation role |
-| Nested stack | Whole template | As a child stack | The `TemplateURL` object you point to | No (same account) | Splitting a large knowledge base stack |
+| Nested stack | Whole template | As a child stack | The `TemplateURL` object you point to | No — part of the parent's stack hierarchy | Splitting a large knowledge base stack |
 | StackSet | Whole template | As stacks in target accounts | The StackSet's template | Yes | Guardrail baseline in every workload account |
 | Macro | Lambda code | Before intrinsic functions | Your Lambda deployment | Define per account | Generating per-model IAM statements |
 | Transform | AWS-hosted macro | Same as macros | AWS | Everywhere | `Fn::ForEach` over model IDs |
@@ -251,9 +248,8 @@ flowchart TD
     classDef compute fill:#FDEBD0,stroke:#D97706,color:#3B2300
 ```
 
-**What this shows** — The academy's order of questions: distribution first, then audience, then
-authoring language, then template mechanics. The answers combine: a StackSet can deploy a template
-that uses modules, and a Service Catalog product can be a CDK-synthesized template.
+**What this shows** — Our order of questions: distribution, audience, authoring language, then
+template mechanics. Answers combine: a StackSet can deploy a template that uses modules.
 
 > [!TIP]
 > **Academy recommendation** — Treat a module like a library release: keep the fragment in Git,
@@ -355,11 +351,10 @@ module and references resources inside it:
 ```
 
 > [!WARNING]
-> **Common mistake** — Trusting a clean lint of a module consumer. We replaced
-> `BaselineGuardrail.Guardrail.GuardrailArn` with a non-existent `BaselineGuardrail.NoSuchResource.Whatever`
-> and added an unknown module property: cfn-lint 1.60.1 still reported nothing. It does flag
-> `UpdatePolicy` on a module (rule E5001). Errors in module references surface only when
-> CloudFormation processes the template — create a change set in a test account.
+> **Common mistake** — Trusting a clean lint of a module consumer. With a reference to a
+> non-existent resource inside the module and an unknown module property, cfn-lint 1.60.1 still
+> reported nothing (it does flag `UpdatePolicy` on a module, rule E5001). Such errors surface only
+> when CloudFormation processes the template — create a change set in a test account.
 
 ## Common mistakes
 
@@ -383,7 +378,7 @@ module and references resources inside it:
 
 - Modules and CloudFormation-hosted transforms are free; you pay for the resources they create.
 - A macro's Lambda invocations are billed to the function owner ([Macros](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html)).
-- Nested stacks and StackSets have no separate charge for AWS resource types; every stack instance creates billable resources in its account.
+- CloudFormation adds no charge for `AWS::*` resource types, so nested stacks and StackSets cost what their resources cost — in every account a StackSet reaches ([CloudFormation pricing](https://aws.amazon.com/cloudformation/pricing/)).
 
 ## Knowledge check
 
@@ -394,9 +389,9 @@ module and references resources inside it:
 <details>
 <summary>Answers</summary>
 
-1. The first registered version stays the default until you set another, and stacks only pick up the default on their next operation (not with *use previous template*).
-2. A StackSet to reach all accounts, deploying a template that uses the module; set the same default module version in every target account and Region, or the deployments differ.
-3. The consumer template contains only the module reference; the guardrail appears in the processed template. Check the fragment itself in CI and use a `RESOURCE`-target Hook.
+1. The first registered version stays the default until you change it; and stacks pick up the default only on their next operation (not with *use previous template*).
+2. A StackSet deploying a template that uses the module — with the same default module version in every target account and Region.
+3. The consumer contains only the module reference; the guardrail appears in the processed template. Check the fragment in CI and use a `RESOURCE`-target Hook.
 
 </details>
 
@@ -412,4 +407,4 @@ Official sources opened while writing this chapter:
 - [Macros](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros.html), [Macro overview](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros-overview.html), [Create a macro definition](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-macros-author.html), [Transform reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/transform-reference.html), [`AWS::LanguageExtensions`](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/transform-aws-languageextensions.html).
 - [What is Service Catalog?](https://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html) and [Service Catalog overview](https://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html).
 - [IaC generator](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/generate-IaC.html) and [Git sync](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/git-sync.html).
-- [CloudFormation quotas](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html) and [CloudFormation best practices](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/best-practices.html).
+- [CloudFormation quotas](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html), [CloudFormation pricing](https://aws.amazon.com/cloudformation/pricing/) and [CloudFormation best practices](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/best-practices.html) (which recommends modules, StackSets and Guard).

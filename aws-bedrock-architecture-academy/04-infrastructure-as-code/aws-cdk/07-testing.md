@@ -258,7 +258,7 @@ Official sources opened while writing this chapter:
 - [Testing AWS CDK applications](https://docs.aws.amazon.com/cdk/v2/guide/testing.html) — fine-grained assertions versus snapshot tests.
 - [Assertions module](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.assertions-readme.html) — read from the installed `aws-cdk-lib` 2.277.0 README: matchers, `Capture`, `Annotations`, `Tags`, Jest clean-up.
 - [Template and Policy Validation](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib-readme.html) — `Validations`, built-in CloudFormation validation, plugin reports (installed README).
-- [cdk-nag](https://github.com/cdklabs/cdk-nag) — README and MIGRATION guide of version 3.0.2 (installed package).
+- [cdk-nag README](https://raw.githubusercontent.com/cdklabs/cdk-nag/main/README.md) — version 3 usage with `Validations`; the MIGRATION guide was read in the installed 3.0.2 package.
 - [integ-tests README](https://raw.githubusercontent.com/aws/aws-cdk/main/packages/@aws-cdk/integ-tests-alpha/README.md) — experimental status, `IntegTest`, `awsApiCall`, `ExpectedResult`.
 - [integ-runner README](https://raw.githubusercontent.com/aws/aws-cdk-cli/main/packages/@aws-cdk/integ-runner/README.md) — snapshot workflow and update behaviour.
 - [Best practices for developing and deploying cloud infrastructure with the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/best-practices.html) — unit test your infrastructure; assert that logical IDs of stateful resources stay static.
