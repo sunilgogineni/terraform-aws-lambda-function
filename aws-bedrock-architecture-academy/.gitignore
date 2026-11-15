@@ -1,0 +1,66 @@
+# Scoped to the academy only. The parent repository's .gitignore is left untouched.
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+*.auto.tfvars
+terraform.tfvars
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Node / AWS CDK
+node_modules/
+cdk.out/
+cdk.context.json
+*.js.map
+*.d.ts
+!jest.config.js
+dist/
+coverage/
+.npm/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Lambda build output
+build/
+*.zip
+
+# Pulumi
+Pulumi.*.yaml.bak
+.pulumi/
+
+# Local environment and secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials
+.aws/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Validation scratch
+.validation/

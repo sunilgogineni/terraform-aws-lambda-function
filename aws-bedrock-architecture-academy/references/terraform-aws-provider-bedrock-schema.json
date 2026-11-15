@@ -1,0 +1,6418 @@
+{
+ "action_schemas": {},
+ "data_source_schemas": {
+  "aws_bedrock_custom_model": {
+   "attributes": {
+    "base_model_arn": "computed",
+    "creation_time": "computed",
+    "hyperparameters": "computed",
+    "id": "computed",
+    "job_arn": "computed",
+    "job_name": "computed",
+    "job_tags": "computed",
+    "model_arn": "computed",
+    "model_id": "required",
+    "model_kms_key_arn": "computed",
+    "model_name": "computed",
+    "model_tags": "computed",
+    "output_data_config": "computed",
+    "region": "optional,computed",
+    "training_data_config": "computed",
+    "training_metrics": "computed",
+    "validation_data_config": "computed",
+    "validation_metrics": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_custom_models": {
+   "attributes": {
+    "id": "computed",
+    "model_summaries": "computed",
+    "region": "optional,computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_foundation_model": {
+   "attributes": {
+    "customizations_supported": "computed",
+    "id": "computed",
+    "inference_types_supported": "computed",
+    "input_modalities": "computed",
+    "model_arn": "computed",
+    "model_id": "required",
+    "model_name": "computed",
+    "output_modalities": "computed",
+    "provider_name": "computed",
+    "region": "optional,computed",
+    "response_streaming_supported": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_foundation_model_agreement_offers": {
+   "attributes": {
+    "model_id": "required",
+    "offer_type": "optional",
+    "offers": "computed",
+    "region": "optional,computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_foundation_models": {
+   "attributes": {
+    "by_customization_type": "optional",
+    "by_inference_type": "optional",
+    "by_output_modality": "optional",
+    "by_provider": "optional",
+    "id": "computed",
+    "model_summaries": "computed",
+    "region": "optional,computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_inference_profile": {
+   "attributes": {
+    "created_at": "computed",
+    "description": "computed",
+    "inference_profile_arn": "computed",
+    "inference_profile_id": "required",
+    "inference_profile_name": "computed",
+    "models": "computed",
+    "region": "optional,computed",
+    "status": "computed",
+    "type": "computed",
+    "updated_at": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_inference_profiles": {
+   "attributes": {
+    "inference_profile_summaries": "computed",
+    "region": "optional,computed",
+    "type": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_use_case_for_model_access": {
+   "attributes": {
+    "form_data": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagent_agent_versions": {
+   "attributes": {
+    "agent_id": "required",
+    "region": "optional,computed"
+   },
+   "blocks": {
+    "agent_version_summaries": {
+     "attributes": {
+      "agent_name": "computed",
+      "agent_status": "computed",
+      "agent_version": "computed",
+      "created_at": "computed",
+      "description": "computed",
+      "updated_at": "computed"
+     },
+     "blocks": {
+      "guardrail_configuration": {
+       "attributes": {
+        "guardrail_identifier": "computed",
+        "guardrail_version": "computed"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_opensearchserverless_access_policy": {
+   "attributes": {
+    "description": "computed",
+    "id": "computed",
+    "name": "required",
+    "policy": "computed",
+    "policy_version": "computed",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_collection": {
+   "attributes": {
+    "arn": "computed",
+    "collection_endpoint": "computed",
+    "created_date": "computed",
+    "dashboard_endpoint": "computed",
+    "description": "computed",
+    "failure_code": "computed",
+    "failure_message": "computed",
+    "id": "optional,computed",
+    "kms_key_arn": "computed",
+    "last_modified_date": "computed",
+    "name": "optional,computed",
+    "region": "optional,computed",
+    "standby_replicas": "computed",
+    "tags": "computed",
+    "type": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_collection_group": {
+   "attributes": {
+    "arn": "computed",
+    "capacity_limits": "computed",
+    "created_date": "computed",
+    "description": "computed",
+    "generation": "computed",
+    "id": "optional,computed",
+    "name": "optional,computed",
+    "region": "optional,computed",
+    "standby_replicas": "computed",
+    "tags": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_collection_groups": {
+   "attributes": {
+    "collection_group_summaries": "computed",
+    "region": "optional,computed"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_lifecycle_policy": {
+   "attributes": {
+    "created_date": "computed",
+    "description": "computed",
+    "id": "computed",
+    "last_modified_date": "computed",
+    "name": "required",
+    "policy": "computed",
+    "policy_version": "computed",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_security_config": {
+   "attributes": {
+    "config_version": "computed",
+    "created_date": "computed",
+    "description": "computed",
+    "id": "required",
+    "last_modified_date": "computed",
+    "region": "optional,computed",
+    "type": "computed"
+   },
+   "blocks": {
+    "iam_federation_options": {
+     "attributes": {
+      "group_attribute": "computed",
+      "user_attribute": "computed"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "iam_identity_center_options": {
+     "attributes": {
+      "group_attribute": "computed",
+      "instance_arn": "computed",
+      "user_attribute": "computed"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "saml_options": {
+     "attributes": {
+      "group_attribute": "computed",
+      "metadata": "computed",
+      "session_timeout": "computed",
+      "user_attribute": "computed"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_opensearchserverless_security_policy": {
+   "attributes": {
+    "created_date": "computed",
+    "description": "computed",
+    "id": "optional,computed",
+    "last_modified_date": "computed",
+    "name": "required",
+    "policy": "computed",
+    "policy_version": "computed",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_vpc_endpoint": {
+   "attributes": {
+    "created_date": "computed",
+    "id": "optional,computed",
+    "name": "computed",
+    "region": "optional,computed",
+    "security_group_ids": "computed",
+    "subnet_ids": "computed",
+    "vpc_endpoint_id": "required",
+    "vpc_id": "computed"
+   },
+   "blocks": {}
+  }
+ },
+ "ephemeral_resource_schemas": {
+  "aws_bedrockruntime_apply_guardrail": {
+   "attributes": {
+    "action": "computed",
+    "action_reason": "computed",
+    "assessments": "computed,sensitive",
+    "guardrail_coverage": "computed",
+    "guardrail_identifier": "required",
+    "guardrail_version": "required",
+    "output": "computed,sensitive",
+    "region": "optional,computed",
+    "source": "required",
+    "usage": "computed"
+   },
+   "blocks": {
+    "content": {
+     "attributes": {},
+     "blocks": {
+      "text": {
+       "attributes": {
+        "qualifiers": "optional",
+        "text": "required,sensitive"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  }
+ },
+ "generated": "2026-11-15",
+ "list_resource_schemas": {
+  "aws_bedrock_evaluation_job": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_guardrail_resource_policy": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_model_invocation_job": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_browser_profile": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_evaluator": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_gateway_rule": {
+   "attributes": {
+    "gateway_identifier": "required",
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_harness": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_online_evaluation_config": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_policy": {
+   "attributes": {
+    "policy_engine_id": "required",
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_policy_engine": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_registry": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_resource_policy": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockdataautomation_blueprint": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockdataautomation_library": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockdataautomation_project": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_access_policy": {
+   "attributes": {
+    "region": "optional",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_collection": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_collection_group": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_lifecycle_policy": {
+   "attributes": {
+    "region": "optional",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_security_config": {
+   "attributes": {
+    "region": "optional",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_security_policy": {
+   "attributes": {
+    "region": "optional",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_vpc_endpoint": {
+   "attributes": {
+    "region": "optional"
+   },
+   "blocks": {}
+  }
+ },
+ "provider": "hashicorp/aws",
+ "resource_schemas": {
+  "aws_bedrock_custom_model": {
+   "attributes": {
+    "base_model_identifier": "required",
+    "custom_model_arn": "computed",
+    "custom_model_kms_key_id": "optional",
+    "custom_model_name": "required",
+    "customization_type": "optional,computed",
+    "hyperparameters": "required",
+    "id": "computed,deprecated",
+    "job_arn": "computed",
+    "job_name": "required",
+    "job_status": "computed",
+    "region": "optional,computed",
+    "role_arn": "required",
+    "tags": "optional",
+    "tags_all": "computed",
+    "training_metrics": "computed",
+    "validation_metrics": "computed"
+   },
+   "blocks": {
+    "output_data_config": {
+     "attributes": {
+      "s3_uri": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    },
+    "training_data_config": {
+     "attributes": {
+      "s3_uri": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "validation_data_config": {
+     "attributes": {},
+     "blocks": {
+      "validator": {
+       "attributes": {
+        "s3_uri": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "vpc_config": {
+     "attributes": {
+      "security_group_ids": "required",
+      "subnet_ids": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrock_enforced_guardrail_configuration": {
+   "attributes": {
+    "config_id": "computed",
+    "guardrail_arn": "required",
+    "guardrail_id": "computed",
+    "guardrail_version": "required",
+    "owner": "computed",
+    "region": "optional,computed"
+   },
+   "blocks": {
+    "model_enforcement": {
+     "attributes": {
+      "excluded_models": "required",
+      "included_models": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "selective_content_guarding": {
+     "attributes": {
+      "messages": "optional",
+      "system": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrock_evaluation_job": {
+   "attributes": {
+    "application_type": "optional,computed",
+    "created_at": "computed",
+    "customer_encryption_key_id": "optional",
+    "failure_messages": "computed",
+    "job_arn": "computed",
+    "job_description": "optional",
+    "job_name": "required",
+    "job_type": "computed",
+    "last_modified_time": "computed",
+    "region": "optional,computed",
+    "role_arn": "required",
+    "skip_destroy": "optional",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "evaluation_config": {
+     "attributes": {},
+     "blocks": {
+      "automated": {
+       "attributes": {},
+       "blocks": {
+        "custom_metric_config": {
+         "attributes": {},
+         "blocks": {
+          "custom_metric": {
+           "attributes": {},
+           "blocks": {
+            "custom_metric_definition": {
+             "attributes": {
+              "instructions": "required",
+              "name": "required"
+             },
+             "blocks": {
+              "rating_scale": {
+               "attributes": {
+                "definition": "required"
+               },
+               "blocks": {
+                "value": {
+                 "attributes": {
+                  "float_value": "optional",
+                  "string_value": "optional"
+                 },
+                 "blocks": {},
+                 "nesting_mode": "list"
+                }
+               },
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "evaluator_model_config": {
+           "attributes": {},
+           "blocks": {
+            "bedrock_evaluator_model": {
+             "attributes": {
+              "model_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "dataset_metric_config": {
+         "attributes": {
+          "metric_names": "required",
+          "task_type": "required"
+         },
+         "blocks": {
+          "dataset": {
+           "attributes": {
+            "name": "required"
+           },
+           "blocks": {
+            "dataset_location": {
+             "attributes": {
+              "s3_uri": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "evaluator_model_config": {
+         "attributes": {},
+         "blocks": {
+          "bedrock_evaluator_model": {
+           "attributes": {
+            "model_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "human": {
+       "attributes": {},
+       "blocks": {
+        "custom_metric": {
+         "attributes": {
+          "description": "optional",
+          "name": "required",
+          "rating_method": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "dataset_metric_config": {
+         "attributes": {
+          "metric_names": "required",
+          "task_type": "required"
+         },
+         "blocks": {
+          "dataset": {
+           "attributes": {
+            "name": "required"
+           },
+           "blocks": {
+            "dataset_location": {
+             "attributes": {
+              "s3_uri": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "human_workflow_config": {
+         "attributes": {
+          "flow_definition_arn": "required",
+          "instructions": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "inference_config": {
+     "attributes": {},
+     "blocks": {
+      "model": {
+       "attributes": {},
+       "blocks": {
+        "bedrock_model": {
+         "attributes": {
+          "inference_params": "optional",
+          "model_identifier": "required"
+         },
+         "blocks": {
+          "performance_config": {
+           "attributes": {
+            "latency": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "precomputed_inference_source": {
+         "attributes": {
+          "inference_source_identifier": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "rag_config": {
+       "attributes": {},
+       "blocks": {
+        "knowledge_base_config": {
+         "attributes": {},
+         "blocks": {
+          "retrieve_and_generate_config": {
+           "attributes": {
+            "knowledge_base_id": "required",
+            "model_arn": "required"
+           },
+           "blocks": {
+            "retrieval_configuration": {
+             "attributes": {},
+             "blocks": {
+              "vector_search_configuration": {
+               "attributes": {
+                "number_of_results": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "retrieve_config": {
+           "attributes": {
+            "knowledge_base_id": "required"
+           },
+           "blocks": {
+            "knowledge_base_retrieval_configuration": {
+             "attributes": {},
+             "blocks": {
+              "vector_search_configuration": {
+               "attributes": {
+                "number_of_results": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "precomputed_rag_source_config": {
+         "attributes": {},
+         "blocks": {
+          "retrieve_and_generate_source_config": {
+           "attributes": {
+            "rag_source_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "retrieve_source_config": {
+           "attributes": {
+            "rag_source_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "output_data_config": {
+     "attributes": {
+      "s3_uri": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrock_foundation_model_agreement": {
+   "attributes": {
+    "model_id": "required",
+    "offer_token": "required",
+    "region": "optional,computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrock_guardrail": {
+   "attributes": {
+    "blocked_input_messaging": "required",
+    "blocked_outputs_messaging": "required",
+    "created_at": "computed",
+    "description": "optional,computed",
+    "guardrail_arn": "computed",
+    "guardrail_id": "computed",
+    "kms_key_arn": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "updated_at": "computed",
+    "version": "computed"
+   },
+   "blocks": {
+    "content_policy_config": {
+     "attributes": {
+      "tier_config": "optional,computed"
+     },
+     "blocks": {
+      "filters_config": {
+       "attributes": {
+        "input_action": "optional",
+        "input_enabled": "optional",
+        "input_modalities": "optional",
+        "input_strength": "required",
+        "output_action": "optional",
+        "output_enabled": "optional",
+        "output_modalities": "optional",
+        "output_strength": "required",
+        "type": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "set"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "contextual_grounding_policy_config": {
+     "attributes": {},
+     "blocks": {
+      "filters_config": {
+       "attributes": {
+        "threshold": "required",
+        "type": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "cross_region_config": {
+     "attributes": {
+      "guardrail_profile_identifier": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "sensitive_information_policy_config": {
+     "attributes": {},
+     "blocks": {
+      "pii_entities_config": {
+       "attributes": {
+        "action": "required",
+        "input_action": "optional,computed",
+        "input_enabled": "optional,computed",
+        "output_action": "optional,computed",
+        "output_enabled": "optional,computed",
+        "type": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "regexes_config": {
+       "attributes": {
+        "action": "required",
+        "description": "optional,computed",
+        "input_action": "optional,computed",
+        "input_enabled": "optional,computed",
+        "name": "required",
+        "output_action": "optional,computed",
+        "output_enabled": "optional,computed",
+        "pattern": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    },
+    "topic_policy_config": {
+     "attributes": {
+      "tier_config": "optional,computed"
+     },
+     "blocks": {
+      "topics_config": {
+       "attributes": {
+        "definition": "required",
+        "examples": "optional,computed",
+        "name": "required",
+        "type": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "word_policy_config": {
+     "attributes": {},
+     "blocks": {
+      "managed_word_lists_config": {
+       "attributes": {
+        "input_action": "optional",
+        "input_enabled": "optional",
+        "output_action": "optional",
+        "output_enabled": "optional",
+        "type": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "words_config": {
+       "attributes": {
+        "input_action": "optional",
+        "input_enabled": "optional",
+        "output_action": "optional",
+        "output_enabled": "optional",
+        "text": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrock_guardrail_resource_policy": {
+   "attributes": {
+    "policy": "required",
+    "region": "optional,computed",
+    "resource_arn": "required"
+   },
+   "blocks": {}
+  },
+  "aws_bedrock_guardrail_version": {
+   "attributes": {
+    "description": "optional",
+    "guardrail_arn": "required",
+    "region": "optional,computed",
+    "skip_destroy": "optional",
+    "version": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrock_inference_profile": {
+   "attributes": {
+    "arn": "computed",
+    "created_at": "computed",
+    "description": "optional",
+    "id": "computed",
+    "models": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "type": "computed",
+    "updated_at": "computed"
+   },
+   "blocks": {
+    "model_source": {
+     "attributes": {
+      "copy_from": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrock_model_invocation_job": {
+   "attributes": {
+    "end_time": "computed",
+    "error_record_count": "computed",
+    "job_arn": "computed",
+    "job_expiration_time": "computed",
+    "job_name": "required",
+    "model_id": "required",
+    "model_invocation_type": "computed",
+    "processed_record_count": "computed",
+    "region": "optional,computed",
+    "role_arn": "required",
+    "skip_destroy": "optional",
+    "status": "computed",
+    "submit_time": "computed",
+    "success_record_count": "computed",
+    "timeout_duration_in_hours": "optional,computed",
+    "total_record_count": "computed"
+   },
+   "blocks": {
+    "input_data_config": {
+     "attributes": {},
+     "blocks": {
+      "s3_input_data_config": {
+       "attributes": {
+        "s3_bucket_owner": "optional,computed",
+        "s3_input_format": "optional,computed",
+        "s3_uri": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "output_data_config": {
+     "attributes": {},
+     "blocks": {
+      "s3_output_data_config": {
+       "attributes": {
+        "s3_bucket_owner": "optional,computed",
+        "s3_encryption_key_id": "optional,computed",
+        "s3_uri": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    },
+    "vpc_config": {
+     "attributes": {
+      "security_group_ids": "required",
+      "subnet_ids": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrock_model_invocation_logging_configuration": {
+   "attributes": {
+    "id": "computed,deprecated",
+    "region": "optional,computed"
+   },
+   "blocks": {
+    "logging_config": {
+     "attributes": {
+      "embedding_data_delivery_enabled": "optional,computed",
+      "image_data_delivery_enabled": "optional,computed",
+      "text_data_delivery_enabled": "optional,computed",
+      "video_data_delivery_enabled": "optional,computed"
+     },
+     "blocks": {
+      "cloudwatch_config": {
+       "attributes": {
+        "log_group_name": "required",
+        "role_arn": "required"
+       },
+       "blocks": {
+        "large_data_delivery_s3_config": {
+         "attributes": {
+          "bucket_name": "required",
+          "key_prefix": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "s3_config": {
+       "attributes": {
+        "bucket_name": "required",
+        "key_prefix": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrock_provisioned_model_throughput": {
+   "attributes": {
+    "commitment_duration": "optional",
+    "id": "computed,deprecated",
+    "model_arn": "required",
+    "model_units": "required",
+    "provisioned_model_arn": "computed",
+    "provisioned_model_name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrock_use_case_for_model_access": {
+   "attributes": {
+    "form_data": "required"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagent_agent": {
+   "attributes": {
+    "agent_arn": "computed",
+    "agent_collaboration": "optional,computed",
+    "agent_id": "computed",
+    "agent_name": "required",
+    "agent_resource_role_arn": "required",
+    "agent_version": "computed",
+    "customer_encryption_key_arn": "optional",
+    "description": "optional",
+    "foundation_model": "required",
+    "guardrail_configuration": "optional",
+    "id": "computed",
+    "idle_session_ttl_in_seconds": "optional,computed",
+    "instruction": "optional,computed",
+    "memory_configuration": "optional,computed",
+    "prepare_agent": "optional,computed",
+    "prepared_at": "computed",
+    "prompt_override_configuration": "optional,computed",
+    "region": "optional,computed",
+    "skip_resource_in_use_check": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_agent_action_group": {
+   "attributes": {
+    "action_group_id": "computed",
+    "action_group_name": "required",
+    "action_group_state": "optional,computed",
+    "agent_id": "required",
+    "agent_version": "required",
+    "description": "optional",
+    "id": "computed",
+    "parent_action_group_signature": "optional",
+    "prepare_agent": "optional,computed",
+    "region": "optional,computed",
+    "skip_resource_in_use_check": "optional,computed"
+   },
+   "blocks": {
+    "action_group_executor": {
+     "attributes": {
+      "custom_control": "optional",
+      "lambda": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "api_schema": {
+     "attributes": {
+      "payload": "optional"
+     },
+     "blocks": {
+      "s3": {
+       "attributes": {
+        "s3_bucket_name": "optional",
+        "s3_object_key": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "function_schema": {
+     "attributes": {},
+     "blocks": {
+      "member_functions": {
+       "attributes": {},
+       "blocks": {
+        "functions": {
+         "attributes": {
+          "description": "optional",
+          "name": "required"
+         },
+         "blocks": {
+          "parameters": {
+           "attributes": {
+            "description": "optional",
+            "map_block_key": "required",
+            "required": "optional",
+            "type": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "set"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_agent_alias": {
+   "attributes": {
+    "agent_alias_arn": "computed",
+    "agent_alias_id": "computed",
+    "agent_alias_name": "required",
+    "agent_id": "required",
+    "description": "optional",
+    "id": "computed",
+    "region": "optional,computed",
+    "routing_configuration": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_agent_collaborator": {
+   "attributes": {
+    "agent_id": "required",
+    "agent_version": "optional,computed",
+    "collaboration_instruction": "required",
+    "collaborator_id": "computed",
+    "collaborator_name": "required",
+    "id": "computed",
+    "prepare_agent": "optional,computed",
+    "region": "optional,computed",
+    "relay_conversation_history": "optional,computed"
+   },
+   "blocks": {
+    "agent_descriptor": {
+     "attributes": {
+      "alias_arn": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_agent_knowledge_base_association": {
+   "attributes": {
+    "agent_id": "required",
+    "agent_version": "optional,computed",
+    "description": "required",
+    "id": "computed",
+    "knowledge_base_id": "required",
+    "knowledge_base_state": "required",
+    "region": "optional,computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_data_source": {
+   "attributes": {
+    "data_deletion_policy": "optional,computed",
+    "data_source_id": "computed",
+    "description": "optional",
+    "id": "computed",
+    "knowledge_base_id": "required",
+    "name": "required",
+    "region": "optional,computed"
+   },
+   "blocks": {
+    "data_source_configuration": {
+     "attributes": {
+      "type": "required"
+     },
+     "blocks": {
+      "confluence_configuration": {
+       "attributes": {},
+       "blocks": {
+        "crawler_configuration": {
+         "attributes": {},
+         "blocks": {
+          "filter_configuration": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {
+            "pattern_object_filter": {
+             "attributes": {},
+             "blocks": {
+              "filters": {
+               "attributes": {
+                "exclusion_filters": "optional",
+                "inclusion_filters": "optional",
+                "object_type": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "source_configuration": {
+         "attributes": {
+          "auth_type": "required",
+          "credentials_secret_arn": "required",
+          "host_type": "required",
+          "host_url": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "managed_knowledge_base_connector_configuration": {
+       "attributes": {
+        "connector_parameters": "optional"
+       },
+       "blocks": {
+        "deletion_protection_configuration": {
+         "attributes": {
+          "deletion_protection_status": "required",
+          "deletion_protection_threshold": "optional,computed"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "media_extraction_configuration": {
+         "attributes": {},
+         "blocks": {
+          "audio_extraction_configuration": {
+           "attributes": {
+            "audio_extraction_status": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "image_extraction_configuration": {
+           "attributes": {
+            "image_extraction_status": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "video_extraction_configuration": {
+           "attributes": {
+            "video_extraction_status": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "sync_schedule": {
+         "attributes": {},
+         "blocks": {
+          "daily": {
+           "attributes": {},
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "monthly": {
+           "attributes": {},
+           "blocks": {
+            "day_of_month": {
+             "attributes": {
+              "day_number": "optional"
+             },
+             "blocks": {
+              "last_day_of_month": {
+               "attributes": {},
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "weekly": {
+           "attributes": {
+            "day_of_week": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "s3_configuration": {
+       "attributes": {
+        "bucket_arn": "required",
+        "bucket_owner_account_id": "optional",
+        "inclusion_prefixes": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "salesforce_configuration": {
+       "attributes": {},
+       "blocks": {
+        "crawler_configuration": {
+         "attributes": {},
+         "blocks": {
+          "filter_configuration": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {
+            "pattern_object_filter": {
+             "attributes": {},
+             "blocks": {
+              "filters": {
+               "attributes": {
+                "exclusion_filters": "optional",
+                "inclusion_filters": "optional",
+                "object_type": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "source_configuration": {
+         "attributes": {
+          "auth_type": "required",
+          "credentials_secret_arn": "required",
+          "host_url": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "share_point_configuration": {
+       "attributes": {},
+       "blocks": {
+        "crawler_configuration": {
+         "attributes": {},
+         "blocks": {
+          "filter_configuration": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {
+            "pattern_object_filter": {
+             "attributes": {},
+             "blocks": {
+              "filters": {
+               "attributes": {
+                "exclusion_filters": "optional",
+                "inclusion_filters": "optional",
+                "object_type": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "source_configuration": {
+         "attributes": {
+          "auth_type": "required",
+          "credentials_secret_arn": "required",
+          "domain": "required",
+          "host_type": "required",
+          "site_urls": "required",
+          "tenant_id": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "web_configuration": {
+       "attributes": {},
+       "blocks": {
+        "crawler_configuration": {
+         "attributes": {
+          "exclusion_filters": "optional",
+          "inclusion_filters": "optional",
+          "scope": "optional",
+          "user_agent": "optional"
+         },
+         "blocks": {
+          "crawler_limits": {
+           "attributes": {
+            "max_pages": "optional",
+            "rate_limit": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "source_configuration": {
+         "attributes": {},
+         "blocks": {
+          "url_configuration": {
+           "attributes": {},
+           "blocks": {
+            "seed_urls": {
+             "attributes": {
+              "url": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "server_side_encryption_configuration": {
+     "attributes": {
+      "kms_key_arn": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    },
+    "vector_ingestion_configuration": {
+     "attributes": {},
+     "blocks": {
+      "chunking_configuration": {
+       "attributes": {
+        "chunking_strategy": "required"
+       },
+       "blocks": {
+        "fixed_size_chunking_configuration": {
+         "attributes": {
+          "max_tokens": "required",
+          "overlap_percentage": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "hierarchical_chunking_configuration": {
+         "attributes": {
+          "overlap_tokens": "required"
+         },
+         "blocks": {
+          "level_configuration": {
+           "attributes": {
+            "max_tokens": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "semantic_chunking_configuration": {
+         "attributes": {
+          "breakpoint_percentile_threshold": "required",
+          "buffer_size": "required",
+          "max_token": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "context_enrichment_configuration": {
+       "attributes": {
+        "type": "required"
+       },
+       "blocks": {
+        "bedrock_foundation_model_configuration": {
+         "attributes": {
+          "model_arn": "required"
+         },
+         "blocks": {
+          "enrichment_strategy_configuration": {
+           "attributes": {
+            "method": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "custom_transformation_configuration": {
+       "attributes": {},
+       "blocks": {
+        "intermediate_storage": {
+         "attributes": {},
+         "blocks": {
+          "s3_location": {
+           "attributes": {
+            "uri": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "transformation": {
+         "attributes": {
+          "step_to_apply": "required"
+         },
+         "blocks": {
+          "transformation_function": {
+           "attributes": {},
+           "blocks": {
+            "transformation_lambda_configuration": {
+             "attributes": {
+              "lambda_arn": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "parsing_configuration": {
+       "attributes": {
+        "parsing_strategy": "required"
+       },
+       "blocks": {
+        "bedrock_data_automation_configuration": {
+         "attributes": {
+          "parsing_modality": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "bedrock_foundation_model_configuration": {
+         "attributes": {
+          "model_arn": "required",
+          "parsing_modality": "optional"
+         },
+         "blocks": {
+          "parsing_prompt": {
+           "attributes": {
+            "parsing_prompt_string": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrockagent_flow": {
+   "attributes": {
+    "arn": "computed",
+    "created_at": "computed",
+    "customer_encryption_key_arn": "optional",
+    "description": "optional",
+    "execution_role_arn": "required",
+    "id": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "updated_at": "computed",
+    "version": "computed"
+   },
+   "blocks": {
+    "definition": {
+     "attributes": {},
+     "blocks": {
+      "connection": {
+       "attributes": {
+        "name": "required",
+        "source": "required",
+        "target": "required",
+        "type": "required"
+       },
+       "blocks": {
+        "configuration": {
+         "attributes": {},
+         "blocks": {
+          "conditional": {
+           "attributes": {
+            "condition": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "data": {
+           "attributes": {
+            "source_output": "required",
+            "target_input": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "node": {
+       "attributes": {
+        "name": "required",
+        "type": "required"
+       },
+       "blocks": {
+        "configuration": {
+         "attributes": {},
+         "blocks": {
+          "agent": {
+           "attributes": {
+            "agent_alias_arn": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "collector": {
+           "attributes": {},
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "condition": {
+           "attributes": {},
+           "blocks": {
+            "condition": {
+             "attributes": {
+              "expression": "optional",
+              "name": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "inline_code": {
+           "attributes": {
+            "code": "required",
+            "language": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "input": {
+           "attributes": {},
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "iterator": {
+           "attributes": {},
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "knowledge_base": {
+           "attributes": {
+            "knowledge_base_id": "required",
+            "model_id": "required",
+            "number_of_results": "optional"
+           },
+           "blocks": {
+            "guardrail_configuration": {
+             "attributes": {
+              "guardrail_identifier": "required",
+              "guardrail_version": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "inference_configuration": {
+             "attributes": {},
+             "blocks": {
+              "text": {
+               "attributes": {
+                "max_tokens": "optional",
+                "stop_sequences": "optional",
+                "temperature": "optional",
+                "top_p": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "lambda_function": {
+           "attributes": {
+            "lambda_arn": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "lex": {
+           "attributes": {
+            "bot_alias_arn": "required",
+            "locale_id": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "output": {
+           "attributes": {},
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "prompt": {
+           "attributes": {},
+           "blocks": {
+            "guardrail_configuration": {
+             "attributes": {
+              "guardrail_identifier": "required",
+              "guardrail_version": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "source_configuration": {
+             "attributes": {},
+             "blocks": {
+              "inline": {
+               "attributes": {
+                "additional_model_request_fields": "optional",
+                "model_id": "required",
+                "template_type": "required"
+               },
+               "blocks": {
+                "inference_configuration": {
+                 "attributes": {},
+                 "blocks": {
+                  "text": {
+                   "attributes": {
+                    "max_tokens": "optional",
+                    "stop_sequences": "optional",
+                    "temperature": "optional",
+                    "top_p": "optional"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "list"
+                  }
+                 },
+                 "nesting_mode": "list"
+                },
+                "template_configuration": {
+                 "attributes": {},
+                 "blocks": {
+                  "chat": {
+                   "attributes": {},
+                   "blocks": {
+                    "input_variable": {
+                     "attributes": {
+                      "name": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "list"
+                    },
+                    "message": {
+                     "attributes": {
+                      "role": "required"
+                     },
+                     "blocks": {
+                      "content": {
+                       "attributes": {
+                        "text": "optional"
+                       },
+                       "blocks": {
+                        "cache_point": {
+                         "attributes": {
+                          "type": "required"
+                         },
+                         "blocks": {},
+                         "nesting_mode": "list"
+                        }
+                       },
+                       "nesting_mode": "list"
+                      }
+                     },
+                     "nesting_mode": "list"
+                    },
+                    "system": {
+                     "attributes": {
+                      "text": "optional"
+                     },
+                     "blocks": {
+                      "cache_point": {
+                       "attributes": {
+                        "type": "required"
+                       },
+                       "blocks": {},
+                       "nesting_mode": "list"
+                      }
+                     },
+                     "nesting_mode": "list"
+                    },
+                    "tool_configuration": {
+                     "attributes": {},
+                     "blocks": {
+                      "tool": {
+                       "attributes": {},
+                       "blocks": {
+                        "cache_point": {
+                         "attributes": {
+                          "type": "required"
+                         },
+                         "blocks": {},
+                         "nesting_mode": "list"
+                        },
+                        "tool_spec": {
+                         "attributes": {
+                          "description": "optional",
+                          "name": "required"
+                         },
+                         "blocks": {
+                          "input_schema": {
+                           "attributes": {
+                            "json": "optional"
+                           },
+                           "blocks": {},
+                           "nesting_mode": "list"
+                          }
+                         },
+                         "nesting_mode": "list"
+                        }
+                       },
+                       "nesting_mode": "list"
+                      },
+                      "tool_choice": {
+                       "attributes": {},
+                       "blocks": {
+                        "any": {
+                         "attributes": {},
+                         "blocks": {},
+                         "nesting_mode": "list"
+                        },
+                        "auto": {
+                         "attributes": {},
+                         "blocks": {},
+                         "nesting_mode": "list"
+                        },
+                        "tool": {
+                         "attributes": {
+                          "name": "required"
+                         },
+                         "blocks": {},
+                         "nesting_mode": "list"
+                        }
+                       },
+                       "nesting_mode": "list"
+                      }
+                     },
+                     "nesting_mode": "list"
+                    }
+                   },
+                   "nesting_mode": "list"
+                  },
+                  "text": {
+                   "attributes": {
+                    "text": "required"
+                   },
+                   "blocks": {
+                    "cache_point": {
+                     "attributes": {
+                      "type": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "list"
+                    },
+                    "input_variable": {
+                     "attributes": {
+                      "name": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "list"
+                    }
+                   },
+                   "nesting_mode": "list"
+                  }
+                 },
+                 "nesting_mode": "list"
+                }
+               },
+               "nesting_mode": "list"
+              },
+              "resource": {
+               "attributes": {
+                "prompt_arn": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "retrieval": {
+           "attributes": {},
+           "blocks": {
+            "service_configuration": {
+             "attributes": {},
+             "blocks": {
+              "s3": {
+               "attributes": {
+                "bucket_name": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "storage": {
+           "attributes": {},
+           "blocks": {
+            "service_configuration": {
+             "attributes": {},
+             "blocks": {
+              "s3": {
+               "attributes": {
+                "bucket_name": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "input": {
+         "attributes": {
+          "category": "optional",
+          "expression": "required",
+          "name": "required",
+          "type": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "output": {
+         "attributes": {
+          "name": "required",
+          "type": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_knowledge_base": {
+   "attributes": {
+    "arn": "computed",
+    "created_at": "computed",
+    "description": "optional",
+    "failure_reasons": "computed",
+    "id": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "role_arn": "required",
+    "tags": "optional",
+    "tags_all": "computed",
+    "updated_at": "computed"
+   },
+   "blocks": {
+    "knowledge_base_configuration": {
+     "attributes": {
+      "type": "required"
+     },
+     "blocks": {
+      "kendra_knowledge_base_configuration": {
+       "attributes": {
+        "kendra_index_arn": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "managed_knowledge_base_configuration": {
+       "attributes": {
+        "embedding_model_arn": "optional",
+        "embedding_model_type": "optional,computed"
+       },
+       "blocks": {
+        "embedding_model_configuration": {
+         "attributes": {},
+         "blocks": {
+          "bedrock_embedding_model_configuration": {
+           "attributes": {
+            "dimensions": "optional",
+            "embedding_data_type": "optional"
+           },
+           "blocks": {
+            "audio": {
+             "attributes": {},
+             "blocks": {
+              "segmentation_configuration": {
+               "attributes": {
+                "fixed_length_duration": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            },
+            "video": {
+             "attributes": {},
+             "blocks": {
+              "segmentation_configuration": {
+               "attributes": {
+                "fixed_length_duration": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "server_side_encryption_configuration": {
+         "attributes": {
+          "kms_key_arn": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "sql_knowledge_base_configuration": {
+       "attributes": {
+        "type": "required"
+       },
+       "blocks": {
+        "redshift_configuration": {
+         "attributes": {},
+         "blocks": {
+          "query_engine_configuration": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {
+            "provisioned_configuration": {
+             "attributes": {
+              "cluster_identifier": "required"
+             },
+             "blocks": {
+              "auth_configuration": {
+               "attributes": {
+                "database_user": "optional",
+                "type": "required",
+                "username_password_secret_arn": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            },
+            "serverless_configuration": {
+             "attributes": {
+              "workgroup_arn": "required"
+             },
+             "blocks": {
+              "auth_configuration": {
+               "attributes": {
+                "type": "required",
+                "username_password_secret_arn": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "query_generation_configuration": {
+           "attributes": {
+            "execution_timeout_seconds": "optional"
+           },
+           "blocks": {
+            "generation_context": {
+             "attributes": {},
+             "blocks": {
+              "curated_query": {
+               "attributes": {
+                "natural_language": "required",
+                "sql": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "table": {
+               "attributes": {
+                "description": "optional",
+                "inclusion": "optional",
+                "name": "required"
+               },
+               "blocks": {
+                "column": {
+                 "attributes": {
+                  "description": "optional",
+                  "inclusion": "optional",
+                  "name": "optional"
+                 },
+                 "blocks": {},
+                 "nesting_mode": "list"
+                }
+               },
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "storage_configuration": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {
+            "aws_data_catalog_configuration": {
+             "attributes": {
+              "table_names": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "redshift_configuration": {
+             "attributes": {
+              "database_name": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "vector_knowledge_base_configuration": {
+       "attributes": {
+        "embedding_model_arn": "required"
+       },
+       "blocks": {
+        "embedding_model_configuration": {
+         "attributes": {},
+         "blocks": {
+          "bedrock_embedding_model_configuration": {
+           "attributes": {
+            "dimensions": "optional",
+            "embedding_data_type": "optional"
+           },
+           "blocks": {
+            "audio": {
+             "attributes": {},
+             "blocks": {
+              "segmentation_configuration": {
+               "attributes": {
+                "fixed_length_duration": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            },
+            "video": {
+             "attributes": {},
+             "blocks": {
+              "segmentation_configuration": {
+               "attributes": {
+                "fixed_length_duration": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "supplemental_data_storage_configuration": {
+         "attributes": {},
+         "blocks": {
+          "storage_location": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {
+            "s3_location": {
+             "attributes": {
+              "uri": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "storage_configuration": {
+     "attributes": {
+      "type": "required"
+     },
+     "blocks": {
+      "mongo_db_atlas_configuration": {
+       "attributes": {
+        "collection_name": "required",
+        "credentials_secret_arn": "required",
+        "database_name": "required",
+        "endpoint": "required",
+        "endpoint_service_name": "optional",
+        "text_index_name": "optional",
+        "vector_index_name": "required"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "metadata_field": "required",
+          "text_field": "required",
+          "vector_field": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "neptune_analytics_configuration": {
+       "attributes": {
+        "graph_arn": "required"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "metadata_field": "required",
+          "text_field": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "opensearch_managed_cluster_configuration": {
+       "attributes": {
+        "domain_arn": "required",
+        "domain_endpoint": "required",
+        "vector_index_name": "required"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "metadata_field": "required",
+          "text_field": "required",
+          "vector_field": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "opensearch_serverless_configuration": {
+       "attributes": {
+        "collection_arn": "required",
+        "vector_index_name": "required"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "metadata_field": "required",
+          "text_field": "required",
+          "vector_field": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "pinecone_configuration": {
+       "attributes": {
+        "connection_string": "required",
+        "credentials_secret_arn": "required",
+        "namespace": "optional"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "metadata_field": "required",
+          "text_field": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "rds_configuration": {
+       "attributes": {
+        "credentials_secret_arn": "required",
+        "database_name": "required",
+        "resource_arn": "required",
+        "table_name": "required"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "custom_metadata_field": "optional",
+          "metadata_field": "required",
+          "primary_key_field": "required",
+          "text_field": "required",
+          "vector_field": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "redis_enterprise_cloud_configuration": {
+       "attributes": {
+        "credentials_secret_arn": "required",
+        "endpoint": "required",
+        "vector_index_name": "required"
+       },
+       "blocks": {
+        "field_mapping": {
+         "attributes": {
+          "metadata_field": "optional",
+          "text_field": "optional",
+          "vector_field": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "s3_vectors_configuration": {
+       "attributes": {
+        "index_arn": "optional",
+        "index_name": "optional",
+        "vector_bucket_arn": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagent_prompt": {
+   "attributes": {
+    "arn": "computed",
+    "created_at": "computed",
+    "customer_encryption_key_arn": "optional",
+    "default_variant": "optional",
+    "description": "optional",
+    "id": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "updated_at": "computed",
+    "version": "computed"
+   },
+   "blocks": {
+    "variant": {
+     "attributes": {
+      "additional_model_request_fields": "optional",
+      "model_id": "optional",
+      "name": "required",
+      "template_type": "required"
+     },
+     "blocks": {
+      "gen_ai_resource": {
+       "attributes": {},
+       "blocks": {
+        "agent": {
+         "attributes": {
+          "agent_identifier": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "inference_configuration": {
+       "attributes": {},
+       "blocks": {
+        "text": {
+         "attributes": {
+          "max_tokens": "optional",
+          "stop_sequences": "optional",
+          "temperature": "optional",
+          "top_p": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "metadata": {
+       "attributes": {
+        "key": "required",
+        "value": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "template_configuration": {
+       "attributes": {},
+       "blocks": {
+        "chat": {
+         "attributes": {},
+         "blocks": {
+          "input_variable": {
+           "attributes": {
+            "name": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "message": {
+           "attributes": {
+            "role": "required"
+           },
+           "blocks": {
+            "content": {
+             "attributes": {
+              "text": "optional"
+             },
+             "blocks": {
+              "cache_point": {
+               "attributes": {
+                "type": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "system": {
+           "attributes": {
+            "text": "optional"
+           },
+           "blocks": {
+            "cache_point": {
+             "attributes": {
+              "type": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "tool_configuration": {
+           "attributes": {},
+           "blocks": {
+            "tool": {
+             "attributes": {},
+             "blocks": {
+              "cache_point": {
+               "attributes": {
+                "type": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "tool_spec": {
+               "attributes": {
+                "description": "optional",
+                "name": "required"
+               },
+               "blocks": {
+                "input_schema": {
+                 "attributes": {
+                  "json": "optional"
+                 },
+                 "blocks": {},
+                 "nesting_mode": "list"
+                }
+               },
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            },
+            "tool_choice": {
+             "attributes": {},
+             "blocks": {
+              "any": {
+               "attributes": {},
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "auto": {
+               "attributes": {},
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "tool": {
+               "attributes": {
+                "name": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "text": {
+         "attributes": {
+          "text": "required"
+         },
+         "blocks": {
+          "cache_point": {
+           "attributes": {
+            "type": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "input_variable": {
+           "attributes": {
+            "name": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrockagentcore_agent_runtime": {
+   "attributes": {
+    "agent_runtime_arn": "computed",
+    "agent_runtime_id": "computed",
+    "agent_runtime_name": "required",
+    "agent_runtime_version": "computed",
+    "description": "optional",
+    "environment_variables": "optional",
+    "lifecycle_configuration": "optional,computed",
+    "platform_version": "optional,computed",
+    "region": "optional,computed",
+    "role_arn": "required",
+    "tags": "optional",
+    "tags_all": "computed",
+    "workload_identity_details": "computed"
+   },
+   "blocks": {
+    "agent_runtime_artifact": {
+     "attributes": {},
+     "blocks": {
+      "code_configuration": {
+       "attributes": {
+        "entry_point": "required",
+        "runtime": "required"
+       },
+       "blocks": {
+        "code": {
+         "attributes": {},
+         "blocks": {
+          "s3": {
+           "attributes": {
+            "bucket": "required",
+            "prefix": "required",
+            "version_id": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "container_configuration": {
+       "attributes": {
+        "container_uri": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "authorizer_configuration": {
+     "attributes": {},
+     "blocks": {
+      "custom_jwt_authorizer": {
+       "attributes": {
+        "allowed_audience": "optional",
+        "allowed_clients": "optional",
+        "allowed_scopes": "optional",
+        "discovery_url": "required"
+       },
+       "blocks": {
+        "allowed_workload_configuration": {
+         "attributes": {
+          "workload_identities": "optional"
+         },
+         "blocks": {
+          "hosting_environment": {
+           "attributes": {
+            "arn": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "custom_claim": {
+         "attributes": {
+          "inbound_token_claim_name": "required",
+          "inbound_token_claim_value_type": "required"
+         },
+         "blocks": {
+          "authorizing_claim_match_value": {
+           "attributes": {
+            "claim_match_operator": "required"
+           },
+           "blocks": {
+            "claim_match_value": {
+             "attributes": {
+              "match_value_string": "optional",
+              "match_value_string_list": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "set"
+        },
+        "private_endpoint": {
+         "attributes": {},
+         "blocks": {
+          "managed_vpc_resource": {
+           "attributes": {
+            "endpoint_ip_address_type": "required",
+            "routing_domain": "optional",
+            "security_group_ids": "optional",
+            "subnet_ids": "required",
+            "tags": "optional",
+            "vpc_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "self_managed_lattice_resource": {
+           "attributes": {
+            "resource_configuration_identifier": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_endpoint_overrides": {
+         "attributes": {
+          "domain": "required"
+         },
+         "blocks": {
+          "private_endpoint": {
+           "attributes": {},
+           "blocks": {
+            "managed_vpc_resource": {
+             "attributes": {
+              "endpoint_ip_address_type": "required",
+              "routing_domain": "optional",
+              "security_group_ids": "optional",
+              "subnet_ids": "required",
+              "tags": "optional",
+              "vpc_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "self_managed_lattice_resource": {
+             "attributes": {
+              "resource_configuration_identifier": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "filesystem_configuration": {
+     "attributes": {},
+     "blocks": {
+      "efs_access_point": {
+       "attributes": {
+        "access_point_arn": "required",
+        "mount_path": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "s3_files_access_point": {
+       "attributes": {
+        "access_point_arn": "required",
+        "mount_path": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "session_storage": {
+       "attributes": {
+        "mount_path": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "network_configuration": {
+     "attributes": {
+      "network_mode": "required"
+     },
+     "blocks": {
+      "network_mode_config": {
+       "attributes": {
+        "require_service_s3_endpoint": "computed",
+        "security_groups": "required",
+        "subnets": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "protocol_configuration": {
+     "attributes": {
+      "server_protocol": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "request_header_configuration": {
+     "attributes": {
+      "request_header_allowlist": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_agent_runtime_endpoint": {
+   "attributes": {
+    "agent_runtime_arn": "computed",
+    "agent_runtime_endpoint_arn": "computed",
+    "agent_runtime_id": "required",
+    "agent_runtime_version": "optional,computed",
+    "description": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_api_key_credential_provider": {
+   "attributes": {
+    "api_key": "optional,sensitive",
+    "api_key_secret_arn": "computed",
+    "api_key_secret_source": "optional,computed",
+    "api_key_wo": "optional,sensitive,write_only",
+    "api_key_wo_version": "optional",
+    "credential_provider_arn": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "api_key_secret_config": {
+     "attributes": {
+      "json_key": "required",
+      "secret_id": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrockagentcore_browser": {
+   "attributes": {
+    "browser_arn": "computed",
+    "browser_id": "computed",
+    "description": "optional",
+    "execution_role_arn": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "browser_signing": {
+     "attributes": {
+      "enabled": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "certificate": {
+     "attributes": {},
+     "blocks": {
+      "location": {
+       "attributes": {},
+       "blocks": {
+        "secrets_manager": {
+         "attributes": {
+          "secret_arn": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "enterprise_policy": {
+     "attributes": {
+      "type": "optional"
+     },
+     "blocks": {
+      "location": {
+       "attributes": {},
+       "blocks": {
+        "s3": {
+         "attributes": {
+          "bucket": "required",
+          "prefix": "required",
+          "version_id": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "network_configuration": {
+     "attributes": {
+      "network_mode": "required"
+     },
+     "blocks": {
+      "vpc_config": {
+       "attributes": {
+        "security_groups": "required",
+        "subnets": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "recording": {
+     "attributes": {
+      "enabled": "optional"
+     },
+     "blocks": {
+      "s3_location": {
+       "attributes": {
+        "bucket": "required",
+        "prefix": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_browser_profile": {
+   "attributes": {
+    "description": "optional",
+    "name": "required",
+    "profile_arn": "computed",
+    "profile_id": "computed",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_code_interpreter": {
+   "attributes": {
+    "code_interpreter_arn": "computed",
+    "code_interpreter_id": "computed",
+    "description": "optional",
+    "execution_role_arn": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "certificate": {
+     "attributes": {},
+     "blocks": {
+      "location": {
+       "attributes": {},
+       "blocks": {
+        "secrets_manager": {
+         "attributes": {
+          "secret_arn": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "network_configuration": {
+     "attributes": {
+      "network_mode": "required"
+     },
+     "blocks": {
+      "vpc_config": {
+       "attributes": {
+        "security_groups": "required",
+        "subnets": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_evaluator": {
+   "attributes": {
+    "created_at": "computed",
+    "description": "optional",
+    "evaluator_arn": "computed",
+    "evaluator_id": "computed",
+    "evaluator_name": "required",
+    "kms_key_arn": "optional",
+    "level": "required",
+    "locked_for_modification": "computed",
+    "region": "optional,computed",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "evaluator_config": {
+     "attributes": {},
+     "blocks": {
+      "code_based": {
+       "attributes": {},
+       "blocks": {
+        "lambda_config": {
+         "attributes": {
+          "lambda_arn": "required",
+          "lambda_timeout_in_seconds": "optional,computed"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "llm_as_a_judge": {
+       "attributes": {
+        "instructions": "required,sensitive"
+       },
+       "blocks": {
+        "model_config": {
+         "attributes": {},
+         "blocks": {
+          "bedrock_evaluator_model_config": {
+           "attributes": {
+            "additional_model_request_fields": "optional",
+            "model_id": "required"
+           },
+           "blocks": {
+            "inference_config": {
+             "attributes": {
+              "max_tokens": "optional",
+              "stop_sequences": "optional",
+              "temperature": "optional",
+              "top_p": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "rating_scale": {
+         "attributes": {},
+         "blocks": {
+          "categorical": {
+           "attributes": {
+            "definition": "required",
+            "label": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "numerical": {
+           "attributes": {
+            "definition": "required",
+            "label": "required",
+            "value": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_gateway": {
+   "attributes": {
+    "authorizer_type": "required",
+    "description": "optional",
+    "exception_level": "optional",
+    "gateway_arn": "computed",
+    "gateway_id": "computed",
+    "gateway_url": "computed",
+    "kms_key_arn": "optional",
+    "name": "required",
+    "protocol_type": "optional,computed",
+    "region": "optional,computed",
+    "role_arn": "required",
+    "tags": "optional",
+    "tags_all": "computed",
+    "workload_identity_details": "computed"
+   },
+   "blocks": {
+    "authorizer_configuration": {
+     "attributes": {},
+     "blocks": {
+      "custom_jwt_authorizer": {
+       "attributes": {
+        "allowed_audience": "optional",
+        "allowed_clients": "optional",
+        "allowed_scopes": "optional",
+        "discovery_url": "required"
+       },
+       "blocks": {
+        "allowed_workload_configuration": {
+         "attributes": {
+          "workload_identities": "optional"
+         },
+         "blocks": {
+          "hosting_environment": {
+           "attributes": {
+            "arn": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "custom_claim": {
+         "attributes": {
+          "inbound_token_claim_name": "required",
+          "inbound_token_claim_value_type": "required"
+         },
+         "blocks": {
+          "authorizing_claim_match_value": {
+           "attributes": {
+            "claim_match_operator": "required"
+           },
+           "blocks": {
+            "claim_match_value": {
+             "attributes": {
+              "match_value_string": "optional",
+              "match_value_string_list": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "set"
+        },
+        "private_endpoint": {
+         "attributes": {},
+         "blocks": {
+          "managed_vpc_resource": {
+           "attributes": {
+            "endpoint_ip_address_type": "required",
+            "routing_domain": "optional",
+            "security_group_ids": "optional",
+            "subnet_ids": "required",
+            "tags": "optional",
+            "vpc_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "self_managed_lattice_resource": {
+           "attributes": {
+            "resource_configuration_identifier": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_endpoint_overrides": {
+         "attributes": {
+          "domain": "required"
+         },
+         "blocks": {
+          "private_endpoint": {
+           "attributes": {},
+           "blocks": {
+            "managed_vpc_resource": {
+             "attributes": {
+              "endpoint_ip_address_type": "required",
+              "routing_domain": "optional",
+              "security_group_ids": "optional",
+              "subnet_ids": "required",
+              "tags": "optional",
+              "vpc_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "self_managed_lattice_resource": {
+             "attributes": {
+              "resource_configuration_identifier": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "interceptor_configuration": {
+     "attributes": {
+      "interception_points": "required"
+     },
+     "blocks": {
+      "input_configuration": {
+       "attributes": {
+        "pass_request_headers": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "interceptor": {
+       "attributes": {},
+       "blocks": {
+        "lambda": {
+         "attributes": {
+          "arn": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "policy_engine_configuration": {
+     "attributes": {
+      "arn": "required",
+      "mode": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "protocol_configuration": {
+     "attributes": {},
+     "blocks": {
+      "mcp": {
+       "attributes": {
+        "instructions": "optional",
+        "search_type": "optional",
+        "supported_versions": "optional"
+       },
+       "blocks": {
+        "session_configuration": {
+         "attributes": {
+          "session_timeout_in_seconds": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "streaming_configuration": {
+         "attributes": {
+          "enable_response_streaming": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_gateway_rule": {
+   "attributes": {
+    "description": "optional,computed",
+    "gateway_arn": "computed",
+    "gateway_identifier": "required",
+    "priority": "required",
+    "region": "optional,computed",
+    "rule_id": "computed",
+    "system": "computed"
+   },
+   "blocks": {
+    "action": {
+     "attributes": {},
+     "blocks": {
+      "configuration_bundle": {
+       "attributes": {},
+       "blocks": {
+        "static_override": {
+         "attributes": {
+          "bundle_arn": "required",
+          "bundle_version": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "weighted_override": {
+         "attributes": {},
+         "blocks": {
+          "traffic_split": {
+           "attributes": {
+            "description": "optional",
+            "metadata": "optional",
+            "name": "required",
+            "weight": "required"
+           },
+           "blocks": {
+            "configuration_bundle": {
+             "attributes": {
+              "bundle_arn": "required",
+              "bundle_version": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "route_to_target": {
+       "attributes": {},
+       "blocks": {
+        "static_route": {
+         "attributes": {
+          "target_name": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "weighted_route": {
+         "attributes": {},
+         "blocks": {
+          "traffic_split": {
+           "attributes": {
+            "description": "optional",
+            "metadata": "optional",
+            "name": "required",
+            "target_name": "required",
+            "weight": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "condition": {
+     "attributes": {},
+     "blocks": {
+      "match_paths": {
+       "attributes": {
+        "any_of": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "match_principals": {
+       "attributes": {},
+       "blocks": {
+        "any_of": {
+         "attributes": {},
+         "blocks": {
+          "iam_principal": {
+           "attributes": {
+            "arn": "required",
+            "operator": "optional,computed"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_gateway_target": {
+   "attributes": {
+    "description": "optional",
+    "gateway_identifier": "required",
+    "name": "required",
+    "region": "optional,computed",
+    "target_id": "computed"
+   },
+   "blocks": {
+    "credential_provider_configuration": {
+     "attributes": {},
+     "blocks": {
+      "api_key": {
+       "attributes": {
+        "credential_location": "optional",
+        "credential_parameter_name": "optional",
+        "credential_prefix": "optional",
+        "provider_arn": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "caller_iam_credentials": {
+       "attributes": {
+        "region": "optional",
+        "service": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "gateway_iam_role": {
+       "attributes": {
+        "region": "optional",
+        "service": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "jwt_passthrough": {
+       "attributes": {},
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "oauth": {
+       "attributes": {
+        "custom_parameters": "optional",
+        "default_return_url": "optional",
+        "grant_type": "optional",
+        "provider_arn": "required",
+        "scopes": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "metadata_configuration": {
+     "attributes": {
+      "allowed_query_parameters": "optional",
+      "allowed_request_headers": "optional",
+      "allowed_response_headers": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "private_endpoint": {
+     "attributes": {},
+     "blocks": {
+      "managed_vpc_resource": {
+       "attributes": {
+        "endpoint_ip_address_type": "required",
+        "routing_domain": "optional",
+        "security_group_ids": "optional",
+        "subnet_ids": "required",
+        "tags": "optional",
+        "vpc_identifier": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "self_managed_lattice_resource": {
+       "attributes": {
+        "resource_configuration_identifier": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "target_configuration": {
+     "attributes": {},
+     "blocks": {
+      "http": {
+       "attributes": {},
+       "blocks": {
+        "agentcore_runtime": {
+         "attributes": {
+          "arn": "required",
+          "qualifier": "optional"
+         },
+         "blocks": {
+          "schema": {
+           "attributes": {},
+           "blocks": {
+            "source": {
+             "attributes": {},
+             "blocks": {
+              "inline_payload": {
+               "attributes": {
+                "payload": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "s3": {
+               "attributes": {
+                "bucket_owner_account_id": "optional",
+                "uri": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "passthrough": {
+         "attributes": {
+          "endpoint": "required",
+          "protocol_type": "required",
+          "static_query_parameter_conflict_resolution": "optional",
+          "static_query_parameters": "optional"
+         },
+         "blocks": {
+          "schema": {
+           "attributes": {},
+           "blocks": {
+            "source": {
+             "attributes": {},
+             "blocks": {
+              "inline_payload": {
+               "attributes": {
+                "payload": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "s3": {
+               "attributes": {
+                "bucket_owner_account_id": "optional",
+                "uri": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "stickiness_configuration": {
+           "attributes": {
+            "composite_identifier": "optional",
+            "identifier": "required",
+            "timeout": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "inference": {
+       "attributes": {},
+       "blocks": {
+        "connector": {
+         "attributes": {},
+         "blocks": {
+          "source": {
+           "attributes": {
+            "connector_id": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "provider": {
+         "attributes": {
+          "endpoint": "required"
+         },
+         "blocks": {
+          "model_mapping": {
+           "attributes": {},
+           "blocks": {
+            "provider_prefix": {
+             "attributes": {
+              "separator": "optional",
+              "strip": "optional,computed"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "operation": {
+           "attributes": {
+            "path": "required",
+            "provider_path": "optional"
+           },
+           "blocks": {
+            "model": {
+             "attributes": {
+              "model": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "mcp": {
+       "attributes": {},
+       "blocks": {
+        "api_gateway": {
+         "attributes": {
+          "rest_api_id": "required",
+          "stage": "required"
+         },
+         "blocks": {
+          "api_gateway_tool_configuration": {
+           "attributes": {},
+           "blocks": {
+            "tool_filter": {
+             "attributes": {
+              "filter_path": "required",
+              "methods": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "set"
+            },
+            "tool_override": {
+             "attributes": {
+              "description": "optional",
+              "method": "required",
+              "name": "required",
+              "path": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "set"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "connector": {
+         "attributes": {
+          "enabled": "optional"
+         },
+         "blocks": {
+          "configuration": {
+           "attributes": {
+            "description": "optional",
+            "name": "required",
+            "parameter_values": "optional"
+           },
+           "blocks": {
+            "parameter_override": {
+             "attributes": {
+              "description": "optional",
+              "path": "required",
+              "visible": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          },
+          "source": {
+           "attributes": {
+            "connector_id": "required",
+            "version": "optional,computed"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "lambda": {
+         "attributes": {
+          "lambda_arn": "required"
+         },
+         "blocks": {
+          "tool_schema": {
+           "attributes": {},
+           "blocks": {
+            "inline_payload": {
+             "attributes": {
+              "description": "required",
+              "name": "required"
+             },
+             "blocks": {
+              "input_schema": {
+               "attributes": {
+                "description": "optional",
+                "type": "required"
+               },
+               "blocks": {
+                "items": {
+                 "attributes": {
+                  "description": "optional",
+                  "type": "required"
+                 },
+                 "blocks": {
+                  "items": {
+                   "attributes": {
+                    "description": "optional",
+                    "items_json": "optional",
+                    "properties_json": "optional",
+                    "type": "required"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "list"
+                  },
+                  "property": {
+                   "attributes": {
+                    "description": "optional",
+                    "items_json": "optional",
+                    "name": "required",
+                    "properties_json": "optional",
+                    "required": "optional,computed",
+                    "type": "required"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "set"
+                  }
+                 },
+                 "nesting_mode": "list"
+                },
+                "property": {
+                 "attributes": {
+                  "description": "optional",
+                  "name": "required",
+                  "required": "optional,computed",
+                  "type": "required"
+                 },
+                 "blocks": {
+                  "items": {
+                   "attributes": {
+                    "description": "optional",
+                    "type": "required"
+                   },
+                   "blocks": {
+                    "items": {
+                     "attributes": {
+                      "description": "optional",
+                      "items_json": "optional",
+                      "properties_json": "optional",
+                      "type": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "list"
+                    },
+                    "property": {
+                     "attributes": {
+                      "description": "optional",
+                      "items_json": "optional",
+                      "name": "required",
+                      "properties_json": "optional",
+                      "required": "optional,computed",
+                      "type": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "set"
+                    }
+                   },
+                   "nesting_mode": "list"
+                  },
+                  "property": {
+                   "attributes": {
+                    "description": "optional",
+                    "items_json": "optional",
+                    "name": "required",
+                    "properties_json": "optional",
+                    "required": "optional,computed",
+                    "type": "required"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "set"
+                  }
+                 },
+                 "nesting_mode": "set"
+                }
+               },
+               "nesting_mode": "list"
+              },
+              "output_schema": {
+               "attributes": {
+                "description": "optional",
+                "type": "required"
+               },
+               "blocks": {
+                "items": {
+                 "attributes": {
+                  "description": "optional",
+                  "type": "required"
+                 },
+                 "blocks": {
+                  "items": {
+                   "attributes": {
+                    "description": "optional",
+                    "items_json": "optional",
+                    "properties_json": "optional",
+                    "type": "required"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "list"
+                  },
+                  "property": {
+                   "attributes": {
+                    "description": "optional",
+                    "items_json": "optional",
+                    "name": "required",
+                    "properties_json": "optional",
+                    "required": "optional,computed",
+                    "type": "required"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "set"
+                  }
+                 },
+                 "nesting_mode": "list"
+                },
+                "property": {
+                 "attributes": {
+                  "description": "optional",
+                  "name": "required",
+                  "required": "optional,computed",
+                  "type": "required"
+                 },
+                 "blocks": {
+                  "items": {
+                   "attributes": {
+                    "description": "optional",
+                    "type": "required"
+                   },
+                   "blocks": {
+                    "items": {
+                     "attributes": {
+                      "description": "optional",
+                      "items_json": "optional",
+                      "properties_json": "optional",
+                      "type": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "list"
+                    },
+                    "property": {
+                     "attributes": {
+                      "description": "optional",
+                      "items_json": "optional",
+                      "name": "required",
+                      "properties_json": "optional",
+                      "required": "optional,computed",
+                      "type": "required"
+                     },
+                     "blocks": {},
+                     "nesting_mode": "set"
+                    }
+                   },
+                   "nesting_mode": "list"
+                  },
+                  "property": {
+                   "attributes": {
+                    "description": "optional",
+                    "items_json": "optional",
+                    "name": "required",
+                    "properties_json": "optional",
+                    "required": "optional,computed",
+                    "type": "required"
+                   },
+                   "blocks": {},
+                   "nesting_mode": "set"
+                  }
+                 },
+                 "nesting_mode": "set"
+                }
+               },
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            },
+            "s3": {
+             "attributes": {
+              "bucket_owner_account_id": "optional",
+              "uri": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "mcp_server": {
+         "attributes": {
+          "endpoint": "required",
+          "listing_mode": "optional,computed",
+          "resource_priority": "optional,computed"
+         },
+         "blocks": {
+          "mcp_tool_schema": {
+           "attributes": {},
+           "blocks": {
+            "inline_payload": {
+             "attributes": {
+              "payload": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "s3": {
+             "attributes": {
+              "bucket_owner_account_id": "optional",
+              "uri": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "open_api_schema": {
+         "attributes": {},
+         "blocks": {
+          "inline_payload": {
+           "attributes": {
+            "payload": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "s3": {
+           "attributes": {
+            "bucket_owner_account_id": "optional",
+            "uri": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "smithy_model": {
+         "attributes": {},
+         "blocks": {
+          "inline_payload": {
+           "attributes": {
+            "payload": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "s3": {
+           "attributes": {
+            "bucket_owner_account_id": "optional",
+            "uri": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_harness": {
+   "attributes": {
+    "allowed_tools": "optional,computed",
+    "arn": "computed",
+    "environment_actual": "computed",
+    "environment_variables": "optional,computed,sensitive",
+    "execution_role_arn": "required",
+    "harness_id": "computed",
+    "harness_name": "required",
+    "max_iterations": "optional,computed",
+    "max_tokens": "optional,computed",
+    "memory_actual": "computed",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "timeout_seconds": "optional,computed",
+    "truncation": "optional,computed"
+   },
+   "blocks": {
+    "authorizer_configuration": {
+     "attributes": {},
+     "blocks": {
+      "custom_jwt_authorizer": {
+       "attributes": {
+        "allowed_audience": "optional",
+        "allowed_clients": "optional",
+        "allowed_scopes": "optional",
+        "discovery_url": "required"
+       },
+       "blocks": {
+        "allowed_workload_configuration": {
+         "attributes": {
+          "workload_identities": "optional"
+         },
+         "blocks": {
+          "hosting_environment": {
+           "attributes": {
+            "arn": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "custom_claim": {
+         "attributes": {
+          "inbound_token_claim_name": "required",
+          "inbound_token_claim_value_type": "required"
+         },
+         "blocks": {
+          "authorizing_claim_match_value": {
+           "attributes": {
+            "claim_match_operator": "required"
+           },
+           "blocks": {
+            "claim_match_value": {
+             "attributes": {
+              "match_value_string": "optional",
+              "match_value_string_list": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "set"
+        },
+        "private_endpoint": {
+         "attributes": {},
+         "blocks": {
+          "managed_vpc_resource": {
+           "attributes": {
+            "endpoint_ip_address_type": "required",
+            "routing_domain": "optional",
+            "security_group_ids": "optional",
+            "subnet_ids": "required",
+            "tags": "optional",
+            "vpc_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "self_managed_lattice_resource": {
+           "attributes": {
+            "resource_configuration_identifier": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_endpoint_overrides": {
+         "attributes": {
+          "domain": "required"
+         },
+         "blocks": {
+          "private_endpoint": {
+           "attributes": {},
+           "blocks": {
+            "managed_vpc_resource": {
+             "attributes": {
+              "endpoint_ip_address_type": "required",
+              "routing_domain": "optional",
+              "security_group_ids": "optional",
+              "subnet_ids": "required",
+              "tags": "optional",
+              "vpc_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "self_managed_lattice_resource": {
+             "attributes": {
+              "resource_configuration_identifier": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "environment": {
+     "attributes": {},
+     "blocks": {
+      "agentcore_runtime_environment": {
+       "attributes": {
+        "agent_runtime_arn": "computed",
+        "agent_runtime_id": "computed",
+        "agent_runtime_name": "computed",
+        "lifecycle_configuration": "optional,computed"
+       },
+       "blocks": {
+        "filesystem_configuration": {
+         "attributes": {},
+         "blocks": {
+          "efs_access_point": {
+           "attributes": {
+            "access_point_arn": "required",
+            "mount_path": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "s3_files_access_point": {
+           "attributes": {
+            "access_point_arn": "required",
+            "mount_path": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "session_storage": {
+           "attributes": {
+            "mount_path": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "network_configuration": {
+         "attributes": {
+          "network_mode": "required"
+         },
+         "blocks": {
+          "network_mode_config": {
+           "attributes": {
+            "require_service_s3_endpoint": "computed",
+            "security_groups": "required",
+            "subnets": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "environment_artifact": {
+     "attributes": {},
+     "blocks": {
+      "container_configuration": {
+       "attributes": {
+        "container_uri": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "memory": {
+     "attributes": {},
+     "blocks": {
+      "agentcore_memory_configuration": {
+       "attributes": {
+        "actor_id": "optional",
+        "arn": "required",
+        "messages_count": "optional"
+       },
+       "blocks": {
+        "retrieval_config": {
+         "attributes": {
+          "map_block_key": "required",
+          "relevance_score": "optional",
+          "strategy_id": "optional",
+          "top_k": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "disabled": {
+       "attributes": {},
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "managed_memory_configuration": {
+       "attributes": {
+        "arn": "computed",
+        "encryption_key_arn": "optional",
+        "event_expiry_duration": "optional,computed",
+        "strategies": "optional,computed"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "model": {
+     "attributes": {},
+     "blocks": {
+      "bedrock_model_config": {
+       "attributes": {
+        "additional_params": "optional",
+        "api_format": "optional,computed",
+        "max_tokens": "optional",
+        "model_id": "required",
+        "temperature": "optional",
+        "top_p": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "gemini_model_config": {
+       "attributes": {
+        "additional_params": "optional",
+        "api_key_arn": "required",
+        "max_tokens": "optional",
+        "model_id": "required",
+        "temperature": "optional",
+        "top_k": "optional",
+        "top_p": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "litellm_model_config": {
+       "attributes": {
+        "additional_params": "optional",
+        "api_base": "optional",
+        "api_key_arn": "optional",
+        "max_tokens": "optional",
+        "model_id": "required",
+        "temperature": "optional",
+        "top_p": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "openai_model_config": {
+       "attributes": {
+        "additional_params": "optional",
+        "api_format": "optional,computed",
+        "api_key_arn": "required",
+        "max_tokens": "optional",
+        "model_id": "required",
+        "temperature": "optional",
+        "top_p": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "skill": {
+     "attributes": {
+      "path": "optional"
+     },
+     "blocks": {
+      "aws_skills": {
+       "attributes": {
+        "paths": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "git": {
+       "attributes": {
+        "path": "optional",
+        "url": "required"
+       },
+       "blocks": {
+        "auth": {
+         "attributes": {
+          "credential_arn": "required",
+          "username": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "s3": {
+       "attributes": {
+        "uri": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "system_prompt": {
+     "attributes": {
+      "text": "optional,sensitive"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    },
+    "tool": {
+     "attributes": {
+      "name": "optional",
+      "type": "required"
+     },
+     "blocks": {
+      "config": {
+       "attributes": {},
+       "blocks": {
+        "agentcore_browser": {
+         "attributes": {
+          "browser_arn": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "agentcore_code_interpreter": {
+         "attributes": {
+          "code_interpreter_arn": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "agentcore_gateway": {
+         "attributes": {
+          "gateway_arn": "required"
+         },
+         "blocks": {
+          "outbound_auth": {
+           "attributes": {
+            "aws_iam": "optional",
+            "none": "optional"
+           },
+           "blocks": {
+            "oauth": {
+             "attributes": {
+              "custom_parameters": "optional",
+              "default_return_url": "optional",
+              "grant_type": "optional",
+              "provider_arn": "required",
+              "scopes": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "inline_function": {
+         "attributes": {
+          "description": "required",
+          "input_schema": "required,sensitive"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "remote_mcp": {
+         "attributes": {
+          "headers": "optional,sensitive",
+          "url": "required,sensitive"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrockagentcore_memory": {
+   "attributes": {
+    "arn": "computed",
+    "description": "optional",
+    "encryption_key_arn": "optional",
+    "event_expiry_duration": "required",
+    "id": "computed",
+    "memory_execution_role_arn": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "indexed_key": {
+     "attributes": {
+      "key": "required",
+      "type": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "set"
+    },
+    "stream_delivery_resources": {
+     "attributes": {},
+     "blocks": {
+      "resource": {
+       "attributes": {},
+       "blocks": {
+        "kinesis": {
+         "attributes": {
+          "data_stream_arn": "required"
+         },
+         "blocks": {
+          "content_configuration": {
+           "attributes": {
+            "level": "optional,computed",
+            "type": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_memory_strategy": {
+   "attributes": {
+    "description": "optional,computed",
+    "memory_execution_role_arn": "optional,deprecated",
+    "memory_id": "required",
+    "memory_strategy_id": "computed",
+    "name": "required",
+    "namespace_templates": "optional,computed",
+    "namespaces": "optional,computed,deprecated",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {
+    "configuration": {
+     "attributes": {
+      "type": "required"
+     },
+     "blocks": {
+      "consolidation": {
+       "attributes": {
+        "append_to_prompt": "required",
+        "model_id": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "extraction": {
+       "attributes": {
+        "append_to_prompt": "required",
+        "model_id": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "reflection": {
+       "attributes": {
+        "append_to_prompt": "required",
+        "model_id": "required",
+        "namespace_templates": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "self_managed_configuration": {
+       "attributes": {
+        "historical_context_window_size": "optional,computed",
+        "trigger_conditions_actual": "computed"
+       },
+       "blocks": {
+        "invocation_configuration": {
+         "attributes": {
+          "payload_delivery_bucket_name": "required",
+          "topic_arn": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "trigger_conditions": {
+         "attributes": {},
+         "blocks": {
+          "message_based_trigger": {
+           "attributes": {
+            "message_count": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "time_based_trigger": {
+           "attributes": {
+            "idle_session_timeout": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "token_based_trigger": {
+           "attributes": {
+            "token_count": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "memory_record_schema": {
+     "attributes": {},
+     "blocks": {
+      "metadata_schema": {
+       "attributes": {
+        "extraction_type": "optional,computed",
+        "key": "required",
+        "type": "optional,computed"
+       },
+       "blocks": {
+        "extraction_config": {
+         "attributes": {},
+         "blocks": {
+          "llm_extraction_config": {
+           "attributes": {
+            "definition": "required",
+            "llm_extraction_instruction": "optional,computed"
+           },
+           "blocks": {
+            "validation": {
+             "attributes": {},
+             "blocks": {
+              "number_validation": {
+               "attributes": {
+                "max_value": "optional",
+                "min_value": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "string_list_validation": {
+               "attributes": {
+                "allowed_values": "optional",
+                "max_items": "optional"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              },
+              "string_validation": {
+               "attributes": {
+                "allowed_values": "required"
+               },
+               "blocks": {},
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "reflection_configuration": {
+     "attributes": {
+      "namespace_templates": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_oauth2_credential_provider": {
+   "attributes": {
+    "callback_url": "computed",
+    "client_secret_arn": "computed",
+    "credential_provider_arn": "computed",
+    "credential_provider_vendor": "required",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "oauth2_provider_config": {
+     "attributes": {},
+     "blocks": {
+      "atlassian_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "custom_oauth2_provider_config": {
+       "attributes": {
+        "client_authentication_method": "optional",
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "oauth_discovery": {
+         "attributes": {
+          "discovery_url": "optional"
+         },
+         "blocks": {
+          "authorization_server_metadata": {
+           "attributes": {
+            "authorization_endpoint": "required",
+            "issuer": "required",
+            "response_types": "optional",
+            "token_endpoint": "required",
+            "token_endpoint_auth_methods": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "on_behalf_of_token_exchange_config": {
+         "attributes": {
+          "grant_type": "required"
+         },
+         "blocks": {
+          "token_exchange_grant_type_config": {
+           "attributes": {
+            "actor_token_content": "required",
+            "actor_token_scopes": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_endpoint": {
+         "attributes": {},
+         "blocks": {
+          "managed_vpc_resource": {
+           "attributes": {
+            "endpoint_ip_address_type": "required",
+            "routing_domain": "optional",
+            "security_group_ids": "optional",
+            "subnet_ids": "required",
+            "tags": "optional",
+            "vpc_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "self_managed_lattice_resource": {
+           "attributes": {
+            "resource_configuration_identifier": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_endpoint_override": {
+         "attributes": {
+          "domain": "required"
+         },
+         "blocks": {
+          "private_endpoint": {
+           "attributes": {},
+           "blocks": {
+            "managed_vpc_resource": {
+             "attributes": {
+              "endpoint_ip_address_type": "required",
+              "routing_domain": "optional",
+              "security_group_ids": "optional",
+              "subnet_ids": "required",
+              "tags": "optional",
+              "vpc_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "self_managed_lattice_resource": {
+             "attributes": {
+              "resource_configuration_identifier": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_key_jwt_config": {
+         "attributes": {
+          "additional_header_claims": "optional",
+          "additional_payload_claims": "optional",
+          "signing_algorithm": "optional"
+         },
+         "blocks": {
+          "private_key_source": {
+           "attributes": {},
+           "blocks": {
+            "kms_key_source": {
+             "attributes": {
+              "kms_key_arn": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "github_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "google_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "included_oauth2_provider_config": {
+       "attributes": {
+        "authorization_endpoint": "optional",
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "issuer": "optional",
+        "oauth_discovery": "computed",
+        "token_endpoint": "optional"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "linkedin_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "microsoft_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed",
+        "tenant_id": "optional,sensitive",
+        "tenant_id_wo": "optional,sensitive,write_only",
+        "tenant_id_wo_version": "optional"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "salesforce_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "slack_oauth2_provider_config": {
+       "attributes": {
+        "client_credentials_wo_version": "optional",
+        "client_id": "optional,sensitive",
+        "client_id_wo": "optional,sensitive,write_only",
+        "client_secret": "optional,sensitive",
+        "client_secret_source": "optional",
+        "client_secret_wo": "optional,sensitive,write_only",
+        "oauth_discovery": "computed"
+       },
+       "blocks": {
+        "client_secret_config": {
+         "attributes": {
+          "json_key": "required",
+          "secret_id": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_online_evaluation_config": {
+   "attributes": {
+    "description": "optional",
+    "enable_on_create": "required",
+    "evaluation_execution_role_arn": "required",
+    "execution_status": "optional,computed",
+    "online_evaluation_config_arn": "computed",
+    "online_evaluation_config_id": "computed",
+    "online_evaluation_config_name": "required",
+    "output_config": "computed",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "data_source_config": {
+     "attributes": {},
+     "blocks": {
+      "cloudwatch_logs": {
+       "attributes": {
+        "log_group_names": "required",
+        "service_names": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "evaluator": {
+     "attributes": {
+      "evaluator_id": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "set"
+    },
+    "rule": {
+     "attributes": {},
+     "blocks": {
+      "filter": {
+       "attributes": {
+        "key": "required",
+        "operator": "required"
+       },
+       "blocks": {
+        "value": {
+         "attributes": {
+          "boolean_value": "optional",
+          "double_value": "optional",
+          "string_value": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "sampling_config": {
+       "attributes": {
+        "sampling_percentage": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "session_config": {
+       "attributes": {
+        "session_timeout_minutes": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_policy": {
+   "attributes": {
+    "description": "optional",
+    "name": "required",
+    "policy_arn": "computed",
+    "policy_engine_id": "required",
+    "policy_id": "computed",
+    "region": "optional,computed",
+    "validation_mode": "optional"
+   },
+   "blocks": {
+    "definition": {
+     "attributes": {},
+     "blocks": {
+      "cedar": {
+       "attributes": {
+        "statement": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_policy_engine": {
+   "attributes": {
+    "description": "optional",
+    "encryption_key_arn": "optional",
+    "name": "required",
+    "policy_engine_arn": "computed",
+    "policy_engine_id": "computed",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_registry": {
+   "attributes": {
+    "approval_configuration": "optional,computed",
+    "authorizer_type": "optional,computed",
+    "description": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "registry_arn": "computed",
+    "registry_id": "computed"
+   },
+   "blocks": {
+    "authorizer_configuration": {
+     "attributes": {},
+     "blocks": {
+      "custom_jwt_authorizer": {
+       "attributes": {
+        "allowed_audience": "optional",
+        "allowed_clients": "optional",
+        "allowed_scopes": "optional",
+        "discovery_url": "required"
+       },
+       "blocks": {
+        "allowed_workload_configuration": {
+         "attributes": {
+          "workload_identities": "optional"
+         },
+         "blocks": {
+          "hosting_environment": {
+           "attributes": {
+            "arn": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "custom_claim": {
+         "attributes": {
+          "inbound_token_claim_name": "required",
+          "inbound_token_claim_value_type": "required"
+         },
+         "blocks": {
+          "authorizing_claim_match_value": {
+           "attributes": {
+            "claim_match_operator": "required"
+           },
+           "blocks": {
+            "claim_match_value": {
+             "attributes": {
+              "match_value_string": "optional",
+              "match_value_string_list": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "set"
+        },
+        "private_endpoint": {
+         "attributes": {},
+         "blocks": {
+          "managed_vpc_resource": {
+           "attributes": {
+            "endpoint_ip_address_type": "required",
+            "routing_domain": "optional",
+            "security_group_ids": "optional",
+            "subnet_ids": "required",
+            "tags": "optional",
+            "vpc_identifier": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "self_managed_lattice_resource": {
+           "attributes": {
+            "resource_configuration_identifier": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "private_endpoint_overrides": {
+         "attributes": {
+          "domain": "required"
+         },
+         "blocks": {
+          "private_endpoint": {
+           "attributes": {},
+           "blocks": {
+            "managed_vpc_resource": {
+             "attributes": {
+              "endpoint_ip_address_type": "required",
+              "routing_domain": "optional",
+              "security_group_ids": "optional",
+              "subnet_ids": "required",
+              "tags": "optional",
+              "vpc_identifier": "required"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            },
+            "self_managed_lattice_resource": {
+             "attributes": {
+              "resource_configuration_identifier": "optional"
+             },
+             "blocks": {},
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockagentcore_resource_policy": {
+   "attributes": {
+    "policy": "required",
+    "region": "optional,computed",
+    "resource_arn": "required"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockagentcore_token_vault_cmk": {
+   "attributes": {
+    "region": "optional,computed",
+    "token_vault_id": "optional,computed"
+   },
+   "blocks": {
+    "kms_configuration": {
+     "attributes": {
+      "key_type": "required",
+      "kms_key_arn": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrockagentcore_workload_identity": {
+   "attributes": {
+    "allowed_resource_oauth2_return_urls": "optional",
+    "name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "workload_identity_arn": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_bedrockdataautomation_blueprint": {
+   "attributes": {
+    "arn": "computed",
+    "blueprint_stage": "computed",
+    "creation_time": "computed",
+    "last_modified_time": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "schema": "required",
+    "tags": "optional",
+    "tags_all": "computed",
+    "type": "required"
+   },
+   "blocks": {
+    "encryption_configuration": {
+     "attributes": {
+      "kms_encryption_context": "optional",
+      "kms_key_id": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_bedrockdataautomation_library": {
+   "attributes": {
+    "arn": "computed",
+    "creation_time": "computed",
+    "description": "optional",
+    "entity_types": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {
+    "encryption_configuration": {
+     "attributes": {
+      "kms_encryption_context": "optional",
+      "kms_key_id": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_bedrockdataautomation_project": {
+   "attributes": {
+    "arn": "computed",
+    "creation_time": "computed",
+    "description": "optional",
+    "last_modified_time": "computed",
+    "name": "required",
+    "project_stage": "computed",
+    "region": "optional,computed",
+    "status": "computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "type": "optional,computed"
+   },
+   "blocks": {
+    "custom_output_configuration": {
+     "attributes": {},
+     "blocks": {
+      "blueprint": {
+       "attributes": {
+        "blueprint_arn": "required",
+        "blueprint_stage": "optional",
+        "blueprint_version": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "document": {
+       "attributes": {},
+       "blocks": {
+        "fallback_blueprint": {
+         "attributes": {
+          "blueprint_arn": "required",
+          "blueprint_stage": "optional",
+          "blueprint_version": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "data_automation_library_configuration": {
+     "attributes": {},
+     "blocks": {
+      "library": {
+       "attributes": {
+        "library_arn": "required"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "encryption_configuration": {
+     "attributes": {
+      "kms_encryption_context": "optional",
+      "kms_key_id": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "override_configuration": {
+     "attributes": {},
+     "blocks": {
+      "audio": {
+       "attributes": {},
+       "blocks": {
+        "language_configuration": {
+         "attributes": {
+          "generative_output_language": "optional",
+          "identify_multiple_languages": "optional",
+          "input_languages": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "modality_processing": {
+         "attributes": {
+          "state": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "sensitive_data_configuration": {
+         "attributes": {
+          "detection_mode": "required",
+          "detection_scope": "optional"
+         },
+         "blocks": {
+          "pii_entities_configuration": {
+           "attributes": {
+            "pii_entity_types": "optional",
+            "redaction_mask_mode": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "document": {
+       "attributes": {},
+       "blocks": {
+        "modality_processing": {
+         "attributes": {
+          "state": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "sensitive_data_configuration": {
+         "attributes": {
+          "detection_mode": "required",
+          "detection_scope": "optional"
+         },
+         "blocks": {
+          "pii_entities_configuration": {
+           "attributes": {
+            "pii_entity_types": "optional",
+            "redaction_mask_mode": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "splitter": {
+         "attributes": {
+          "state": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "image": {
+       "attributes": {},
+       "blocks": {
+        "modality_processing": {
+         "attributes": {
+          "state": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "sensitive_data_configuration": {
+         "attributes": {
+          "detection_mode": "required",
+          "detection_scope": "optional"
+         },
+         "blocks": {
+          "pii_entities_configuration": {
+           "attributes": {
+            "pii_entity_types": "optional",
+            "redaction_mask_mode": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "modality_routing": {
+       "attributes": {
+        "jpeg": "optional",
+        "mov": "optional",
+        "mp4": "optional",
+        "png": "optional"
+       },
+       "blocks": {},
+       "nesting_mode": "list"
+      },
+      "video": {
+       "attributes": {},
+       "blocks": {
+        "modality_processing": {
+         "attributes": {
+          "state": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "sensitive_data_configuration": {
+         "attributes": {
+          "detection_mode": "required",
+          "detection_scope": "optional"
+         },
+         "blocks": {
+          "pii_entities_configuration": {
+           "attributes": {
+            "pii_entity_types": "optional",
+            "redaction_mask_mode": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "standard_output_configuration": {
+     "attributes": {},
+     "blocks": {
+      "audio": {
+       "attributes": {},
+       "blocks": {
+        "extraction": {
+         "attributes": {},
+         "blocks": {
+          "category": {
+           "attributes": {
+            "state": "required",
+            "types": "optional"
+           },
+           "blocks": {
+            "type_configuration": {
+             "attributes": {},
+             "blocks": {
+              "transcript": {
+               "attributes": {},
+               "blocks": {
+                "channel_labeling": {
+                 "attributes": {
+                  "state": "required"
+                 },
+                 "blocks": {},
+                 "nesting_mode": "list"
+                },
+                "speaker_labeling": {
+                 "attributes": {
+                  "state": "required"
+                 },
+                 "blocks": {},
+                 "nesting_mode": "list"
+                }
+               },
+               "nesting_mode": "list"
+              }
+             },
+             "nesting_mode": "list"
+            }
+           },
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "generative_field": {
+         "attributes": {
+          "state": "required",
+          "types": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "document": {
+       "attributes": {},
+       "blocks": {
+        "extraction": {
+         "attributes": {},
+         "blocks": {
+          "bounding_box": {
+           "attributes": {
+            "state": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "granularity": {
+           "attributes": {
+            "types": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "generative_field": {
+         "attributes": {
+          "state": "required"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        },
+        "output_format": {
+         "attributes": {},
+         "blocks": {
+          "additional_file_format": {
+           "attributes": {
+            "state": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "text_format": {
+           "attributes": {
+            "types": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "image": {
+       "attributes": {},
+       "blocks": {
+        "extraction": {
+         "attributes": {},
+         "blocks": {
+          "bounding_box": {
+           "attributes": {
+            "state": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "category": {
+           "attributes": {
+            "state": "required",
+            "types": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "generative_field": {
+         "attributes": {
+          "state": "required",
+          "types": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      },
+      "video": {
+       "attributes": {},
+       "blocks": {
+        "extraction": {
+         "attributes": {},
+         "blocks": {
+          "bounding_box": {
+           "attributes": {
+            "state": "required"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          },
+          "category": {
+           "attributes": {
+            "state": "required",
+            "types": "optional"
+           },
+           "blocks": {},
+           "nesting_mode": "list"
+          }
+         },
+         "nesting_mode": "list"
+        },
+        "generative_field": {
+         "attributes": {
+          "state": "required",
+          "types": "optional"
+         },
+         "blocks": {},
+         "nesting_mode": "list"
+        }
+       },
+       "nesting_mode": "list"
+      }
+     },
+     "nesting_mode": "list"
+    },
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_opensearchserverless_access_policy": {
+   "attributes": {
+    "description": "optional",
+    "id": "computed",
+    "name": "required",
+    "policy": "required",
+    "policy_version": "computed",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_collection": {
+   "attributes": {
+    "arn": "computed",
+    "collection_endpoint": "computed",
+    "collection_group_name": "optional",
+    "dashboard_endpoint": "computed",
+    "description": "optional",
+    "encryption_config": "optional,computed",
+    "id": "computed",
+    "kms_key_arn": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "standby_replicas": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "type": "optional,computed",
+    "vector_options": "optional,computed"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_opensearchserverless_collection_group": {
+   "attributes": {
+    "arn": "computed",
+    "capacity_limits": "optional,computed",
+    "created_date": "computed",
+    "description": "optional",
+    "generation": "optional,computed",
+    "id": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "standby_replicas": "required",
+    "tags": "optional",
+    "tags_all": "computed"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_lifecycle_policy": {
+   "attributes": {
+    "description": "optional",
+    "id": "computed",
+    "name": "required",
+    "policy": "required",
+    "policy_version": "computed",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_security_config": {
+   "attributes": {
+    "config_version": "computed",
+    "description": "optional",
+    "id": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {
+    "iam_federation_options": {
+     "attributes": {
+      "group_attribute": "optional",
+      "user_attribute": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "iam_identity_center_options": {
+     "attributes": {
+      "group_attribute": "optional,computed",
+      "instance_arn": "required",
+      "user_attribute": "optional,computed"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    },
+    "saml_options": {
+     "attributes": {
+      "group_attribute": "optional",
+      "metadata": "required",
+      "session_timeout": "optional,computed",
+      "user_attribute": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_opensearchserverless_security_policy": {
+   "attributes": {
+    "description": "optional",
+    "id": "computed",
+    "name": "required",
+    "policy": "required",
+    "policy_version": "computed",
+    "region": "optional,computed",
+    "type": "required"
+   },
+   "blocks": {}
+  },
+  "aws_opensearchserverless_vpc_endpoint": {
+   "attributes": {
+    "id": "computed",
+    "name": "required",
+    "region": "optional,computed",
+    "security_group_ids": "optional,computed",
+    "subnet_ids": "required",
+    "vpc_id": "required"
+   },
+   "blocks": {
+    "timeouts": {
+     "attributes": {
+      "create": "optional",
+      "delete": "optional",
+      "update": "optional"
+     },
+     "blocks": {},
+     "nesting_mode": "single"
+    }
+   }
+  },
+  "aws_s3vectors_index": {
+   "attributes": {
+    "creation_time": "computed",
+    "data_type": "required",
+    "dimension": "required",
+    "distance_metric": "required",
+    "encryption_configuration": "optional,computed",
+    "index_arn": "computed",
+    "index_name": "required",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "vector_bucket_name": "required"
+   },
+   "blocks": {
+    "metadata_configuration": {
+     "attributes": {
+      "non_filterable_metadata_keys": "required"
+     },
+     "blocks": {},
+     "nesting_mode": "list"
+    }
+   }
+  },
+  "aws_s3vectors_vector_bucket": {
+   "attributes": {
+    "creation_time": "computed",
+    "encryption_configuration": "optional,computed",
+    "force_destroy": "optional,computed",
+    "region": "optional,computed",
+    "tags": "optional",
+    "tags_all": "computed",
+    "vector_bucket_arn": "computed",
+    "vector_bucket_name": "required"
+   },
+   "blocks": {}
+  },
+  "aws_s3vectors_vector_bucket_policy": {
+   "attributes": {
+    "policy": "required",
+    "region": "optional,computed",
+    "vector_bucket_arn": "required"
+   },
+   "blocks": {}
+  }
+ },
+ "version": "6.73.0"
+}

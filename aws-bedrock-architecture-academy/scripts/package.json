@@ -1,0 +1,17 @@
+{
+  "name": "aws-bedrock-architecture-academy-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tooling for validating and rendering the academy's Mermaid diagrams. Not an application.",
+  "scripts": {
+    "check:mermaid": "node check-mermaid.cjs",
+    "render:mermaid": "node check-mermaid.cjs --render ../diagrams/rendered"
+  },
+  "devDependencies": {
+    "mermaid": "12.2.0",
+    "playwright": "^1.50.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
