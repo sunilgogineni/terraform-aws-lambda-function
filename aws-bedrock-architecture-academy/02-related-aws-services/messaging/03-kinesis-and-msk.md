@@ -336,8 +336,9 @@ streaming example shows.
 - **Model tokens** for enrichment are billed per call; batching records into one prompt changes the
   request count, not the token count, much.
 - **Knowledge base ingestion** cost depends on the knowledge base type: a Managed Knowledge Base bills
-  stored raw data and does not charge parsing and embedding separately; a customer-managed one bills
-  embedding tokens and your vector store — see the [verification matrix](../../FEATURE-VERIFICATION.md).
+  stored raw data and does not charge parsing and embedding separately — see the
+  [verification matrix](../../FEATURE-VERIFICATION.md). **Our reading:** a customer-managed knowledge
+  base adds embedding-model tokens and vector-store capacity for every streamed document.
 - **Vended log delivery to Firehose** is billed per GB delivered, plus Firehose ingestion
   ([CloudWatch pricing](https://aws.amazon.com/cloudwatch/pricing/)).
 

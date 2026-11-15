@@ -2,9 +2,8 @@
 
 > **Level:** Advanced · **Verified:** 2026-11-15 · **Feature status:** GA · **Time:** ~40 min
 
-CloudFormation Hooks stop a non-compliant resource *before* CloudFormation creates it, and AWS
-CloudFormation Guard is the policy language you write those checks in. This chapter shows how the
-two fit together, how they differ from linters and scanners, and how to enforce Bedrock-specific
+CloudFormation Hooks stop a non-compliant resource *before* CloudFormation creates it; AWS
+CloudFormation Guard is a language for writing those checks. This chapter enforces three Bedrock
 rules — encrypted guardrails, prompt-attack filters, no wildcard model access — with real rules and
 real output.
 
@@ -31,10 +30,9 @@ private, but you can skip it. A **Hook** is airport security: every passenger go
 CloudFormation passes it, and it can refuse boarding (`FAIL`) or just note a problem (`WARN`).
 **AWS Config** is the audit after landing: it finds problems that already exist.
 
-A **linter** (cfn-lint) is a spell checker: it knows the CloudFormation dictionary. A **policy
-engine** (Guard) is your company style guide: "every guardrail must use our own encryption key".
-A template can be spelled perfectly and still break the style guide — the
-[non-compliant example](templates/05-noncompliant.yaml) in this chapter is exactly that.
+A **linter** (cfn-lint) is a spell checker; a **policy engine** (Guard) is your company style
+guide ("every guardrail uses our own encryption key"). The
+[non-compliant example](templates/05-noncompliant.yaml) is spelled perfectly and breaks the style guide.
 
 ## How it really works
 
@@ -52,8 +50,7 @@ The organisation-wide view is in [Governance at scale](../../06-security-governa
 ### Hooks: targets, actions and failure modes
 
 A Hook is code that CloudFormation invokes immediately before it creates, updates or deletes a
-stack or a resource, or while it creates a change set. Hooks can also run before Cloud Control API
-operations.
+stack or resource, or while it creates a change set; it can also run before Cloud Control API operations.
 
 | Target (`TargetOperations`) | What the Hook evaluates | Actions it can run on |
 |:--|:--|:--|
@@ -65,8 +62,8 @@ operations.
 Sources: [Hooks concepts](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-concepts.html),
 [Write Guard rules for Guard Hooks](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/guard-hooks-write-rules.html).
 
-`FAIL` stops the operation (and, for a stack, rolls it back); `WARN` lets it continue with a
-warning. Each invocation has a 30-second timeout and up to 3 retries.
+`FAIL` stops the operation and rolls the stack back; `WARN` continues with a warning. Each
+invocation has a 30-second timeout and up to 3 retries.
 
 > [!NOTE]
 > **Documented fact** — AWS recommends activating a Hook in `WARN` mode first to see which
@@ -74,9 +71,9 @@ warning. Each invocation has a 30-second timeout and up to 3 retries.
 > Source: [Hooks concepts](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-concepts.html)
 
 > [!WARNING]
-> **Common mistake** — Expecting a `preDelete` check on every removal. Stack operations that end in
-> `UpdateCleanup` do not invoke Hooks: removing a resource from the template, or deleting the old
-> copy of a replaced resource, is not checked.
+> **Common mistake** — Expecting a delete check on every removal. Operations in `UpdateCleanup` do
+> not invoke Hooks: removing a resource from the template, or deleting the old copy of a replaced
+> resource, is not checked.
 
 ### Four ways to implement a Hook
 
@@ -101,9 +98,9 @@ Sources: [What are CloudFormation Hooks?](https://docs.aws.amazon.com/cloudforma
 
 ### Activation and targeting
 
-Hooks are per account and per Region. You activate one with `ActivateType` and configure it with
-`SetTypeConfiguration` (or declare the resource types above in a template). The configuration holds
-`HookInvocationStatus`, `TargetOperations`, `FailureMode`, type-specific `Properties` (for Guard:
+Hooks are per account and Region. Activate one with `ActivateType` and configure it with
+`SetTypeConfiguration`, or declare the resource types above in a template. The configuration holds
+`HookInvocationStatus`, `TargetOperations`, `FailureMode`, type-specific `Properties` (Guard:
 `ruleLocation`, `logBucket`) and two filters:
 
 - **`TargetFilters`** — `Actions`, `InvocationPoints` (`PRE_PROVISION`) and `TargetNames` (up to 50 resource types, wildcards allowed), or a `Targets` list that combines them.
@@ -112,16 +109,15 @@ Hooks are per account and per Region. You activate one with `ActivateType` and c
 Sources: [Hook configuration schema](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hook-configuration-schema.html),
 [Target filters](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-target-filtering.html),
 [Stack level filters](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-stack-level-filtering.html).
-Quotas: 100 Hooks per account per Region, 100 Hooks per resource, 100 versions per Hook
+Quotas: 100 Hooks per account per Region, 100 per resource, 100 versions per Hook
 ([CloudFormation quotas](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html)).
-The maximum configuration size is stated as 204.8 KB on the quotas page and 300 KB on the
-configuration-schema page; design for the smaller value.
+The configuration size limit is 204.8 KB on the quotas page but 300 KB on the schema page; design
+for the smaller.
 
-**Results.** The console's *Invocation summary* shows every invocation of the last 90 days.
-`ListHookResults` filters by Hook, status (`HOOK_IN_PROGRESS`, `HOOK_COMPLETE_SUCCEEDED`,
-`HOOK_COMPLETE_FAILED`, `HOOK_FAILED`) or target, and `GetHookResult` returns **annotations** —
-per-check status, message, remediation and severity. You can encrypt annotations with your own KMS
-key, currently only when you configure the Hook from the AWS CLI. Sources:
+**Results.** The console's *Invocation summary* covers the last 90 days. `ListHookResults`
+filters by Hook, status (`HOOK_IN_PROGRESS`, `HOOK_COMPLETE_SUCCEEDED`, `HOOK_COMPLETE_FAILED`,
+`HOOK_FAILED`) or target; `GetHookResult` returns **annotations** — per-check status, message,
+remediation and severity, encryptable with your KMS key (set from the AWS CLI only). Sources:
 [View invocation results](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-view-invocations.html),
 [Hooks concepts](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/hooks-concepts.html).
 
@@ -140,11 +136,10 @@ Source: [Document history for the Hooks User Guide](https://docs.aws.amazon.com/
 
 ### Guard: the rule language
 
-Guard is an open-source policy-as-code tool that evaluates any JSON or YAML — CloudFormation
-templates, change sets, Terraform JSON, Kubernetes files — against rules. It does not check that a
-template is valid (that is cfn-lint's job) and does not enforce anything server-side (that is a
-Hook's job). The current major version is 3; Guard 3.0 added stateful rules through built-in
-functions, the `--structured` output flag and corrected intrinsic-function handling in `test`.
+Guard is an open-source policy-as-code tool for any JSON or YAML — templates, change sets,
+Terraform JSON, Kubernetes files. It does not check template validity (cfn-lint does) or enforce
+server-side (a Hook does). The major version is 3; Guard 3.0 added built-in functions, the
+`--structured` flag and corrected intrinsic-function handling in `test`.
 Sources: [What is Guard?](https://docs.aws.amazon.com/cfn-guard/latest/ug/what-is-guard.html),
 [Guard README](https://raw.githubusercontent.com/aws-cloudformation/cloudformation-guard/main/README.md).
 
@@ -162,23 +157,20 @@ Sources: [What is Guard?](https://docs.aws.amazon.com/cfn-guard/latest/ug/what-i
 Sources: [Writing Guard rules](https://docs.aws.amazon.com/cfn-guard/latest/ug/writing-rules.html),
 [Queries and filtering](https://docs.aws.amazon.com/cfn-guard/latest/ug/query-and-filtering.html).
 
-Two semantics trip people up. A missing `Resources` section is a retrieval error and fails a
-plain clause, but a filter that matches nothing yields an empty result and the block is skipped.
-That is why every rule below starts with `when %selection !empty`.
+A missing key is a retrieval error and fails a clause, but a filter that matches nothing returns
+an empty result and the block is skipped — hence `when %selection !empty` on every rule below.
 
-**Testing.** A test file lists inputs and the expected `PASS`, `FAIL` or `SKIP` per rule; AWS
-suggests starting with an empty input and naming the file `<rules>_tests.yaml`
-([Testing Guard rules](https://docs.aws.amazon.com/cfn-guard/latest/ug/testing-rules.html)).
-**Validating.** `cfn-guard validate` exits `0` when every rule passes, accepts files or directories
-for `--rules` and `--data`, and writes `json`, `yaml`, `single-line-summary`, `junit` or `sarif`
-([validate](https://docs.aws.amazon.com/cfn-guard/latest/ug/cfn-guard-validate.html)). With cfn-guard
-3.2.1 we observed exit code 19 on a failed validation, and `junit` output required `--structured`.
+**Testing:** a test file lists inputs and the expected `PASS`, `FAIL` or `SKIP` per rule, starting
+with an empty input ([Testing Guard rules](https://docs.aws.amazon.com/cfn-guard/latest/ug/testing-rules.html)).
+**Validating:** `cfn-guard validate` exits `0` when all rules pass and writes `json`, `yaml`,
+`single-line-summary`, `junit` or `sarif` ([validate](https://docs.aws.amazon.com/cfn-guard/latest/ug/cfn-guard-validate.html)).
+With cfn-guard 3.2.1 we observed exit code 19 on failure, and `junit` required `--structured`.
 
 ### How Guard, cfn-lint, cdk-nag, Checkov and Hooks fit together
 
 | Tool | Reads | Checks | Runs | Can block a deployment? |
 |:--|:--|:--|:--|:--|
-| cfn-lint | CloudFormation and SAM templates | Template against the resource provider schemas: types, properties, values, references, best practices | Editor, CI | Only if CI fails the build |
+| cfn-lint | CloudFormation and SAM templates | Template against the resource provider schemas: properties, allowed values, best practices | Editor, CI | Only if CI fails the build |
 | **Guard** | Any JSON/YAML | Your organisation's rules | CI, and inside a Guard Hook | Yes, as a Hook |
 | cdk-nag | A CDK app (or a template through the CDK) | Rule packs: AWS Solutions, HIPAA, NIST 800-53, PCI DSS, Serverless | `cdk synth` | Only if synthesis fails |
 | Checkov | Terraform, CloudFormation, SAM, Kubernetes and more | Over 1,000 built-in security policies | CI | Only if CI fails the build |
@@ -192,9 +184,8 @@ The pipeline view of these tools is in
 and [Policy validation, cost estimation and human approval](../../07-devops-and-cicd/06-policy-cost-and-approvals.md).
 
 > [!TIP]
-> **Academy recommendation** — Run the same Guard rules in two places: in CI for fast feedback
-> on every pull request, and as a Guard Hook for enforcement that nobody can skip. Keep generic
-> security scanning (cfn-lint, Checkov or cdk-nag) alongside; keep *organisation-specific* rules
+> **Academy recommendation** — Run the same Guard rules in CI (fast feedback) and as a Guard Hook
+> (enforcement nobody can skip). Keep generic scanners alongside; put *organisation-specific* rules
 > in Guard. This is our design guidance, not an official AWS reference architecture.
 
 ## Architecture diagram
@@ -242,22 +233,22 @@ flowchart LR
     classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
 ```
 
-**What this shows** — The same rules file runs twice: in CI, where a developer can skip it, and
-inside a Guard Hook, where CloudFormation calls it before provisioning. Control Tower proactive
-controls add AWS-written checks on the same path. AWS Config looks at what exists afterwards.
+**What this shows** — One rules file runs in CI, where it can be skipped, and in a Guard Hook,
+where it cannot. Control Tower proactive controls add AWS-written checks on the same path; AWS
+Config inspects what exists afterwards.
 
 **Walkthrough**
 
 1. cfn-lint checks the template against the resource schemas.
-2. `cfn-guard test` and `cfn-guard validate` run the organisation's rules.
+2. Guard tests and validates the organisation's rules.
 3. The pipeline creates a change set.
-4. CloudFormation invokes every activated Hook whose targets, actions and filters match.
-5. The Guard Hook downloads the pinned rules object with its execution role.
-6. The Hook returns its verdict; in `FAIL` mode a failure stops the operation.
-7. If a log bucket is configured, the detailed Guard report (with the `Violation` and `Fix` text) is written there.
-8. The invocation and its annotations appear in the invocation summary and `GetHookResult`.
-9. Only then are the guardrail and the role created.
-10. AWS Config evaluates the resources after they change — including changes made outside CloudFormation.
+4. CloudFormation invokes every Hook whose targets, actions and filters match.
+5. The Guard Hook reads the pinned rules object.
+6. It returns its verdict; in `FAIL` mode a failure stops the operation.
+7. The detailed report (with `Violation` and `Fix` text) goes to the log bucket.
+8. The result and annotations are recorded.
+9. Only then are the guardrail and role created.
+10. AWS Config evaluates resources after any change, including changes made outside CloudFormation.
 
 | Legend | Meaning |
 |:--|:--|
@@ -267,32 +258,29 @@ controls add AWS-written checks on the same path. AWS Config looks at what exist
 | Cylinder | Stored data |
 | Red boxes | Policy and identity controls |
 
-**Variations** — With a `CHANGE_SET` target the Hook sees the list of changes and runs only on
-change-set creation. With `CLOUD_CONTROL`, the same Hook also covers Cloud Control API callers, and
-stack filters are ignored. Proactive controls do not see requests made through the console, the
-service APIs, SDKs or other IaC tools
+**Variations** — A `CHANGE_SET` target sees the list of changes and runs only on change-set
+creation. A `CLOUD_CONTROL` target covers Cloud Control API callers and ignores stack filters.
+Proactive controls may not affect requests made through the console, APIs, SDKs or other IaC tools
 ([Proactive controls](https://docs.aws.amazon.com/controltower/latest/controlreference/proactive-controls.html)).
 
 ## Implementation details
 
-1. **Write rules and tests together**, in the repository, next to the templates.
-2. **Run them in CI** on every pull request; fail the build on a non-zero exit code.
-3. **Publish the rules** to a versioned S3 bucket. The Hook downloads them on every invocation,
-   so pin the object version in `RuleLocation`; otherwise an overwrite silently changes policy.
-4. **Activate the Guard Hook in `WARN`**, review the invocation summary, then switch to `FAIL`.
-5. **Choose the target deliberately.** `STACK` evaluates the template as submitted; `RESOURCE`
-   evaluates resolved properties, which also includes resources that modules and transforms add.
-6. **Roll out per account and Region.** Hooks are regional, so deploy the activation template
-   with StackSets ([Nested stacks and StackSets](03-nested-stacks-and-stacksets.md),
-   [Multi-account and multi-Region deployments](../maintenance/06-multi-account-multi-region.md)).
-   Exclude the stack that manages the Hook itself with `StackFilters`.
+1. **Write rules and tests together**, next to the templates; fail CI on a non-zero exit code.
+2. **Publish the rules** to a versioned S3 bucket and pin `VersionId` in `RuleLocation`: the Hook
+   downloads them on every invocation, so an overwrite would silently change policy.
+3. **Activate in `WARN`**, review the invocation summary, then switch to `FAIL`.
+4. **Choose the target.** `STACK` sees the template as submitted; `RESOURCE` sees resolved
+   properties. **Our reading:** only `RESOURCE` sees resources that modules and macros add.
+5. **Roll out per account and Region** with StackSets
+   ([Nested stacks and StackSets](03-nested-stacks-and-stacksets.md),
+   [Multi-account and multi-Region deployments](../maintenance/06-multi-account-multi-region.md)),
+   excluding the Hook's own stack with `StackFilters`.
 
 > [!WARNING]
-> **Common mistake** — Assuming one rule file reads `STACK` and `RESOURCE` input identically. The
-> Hooks guide's input-syntax block names the resource keys `ResourceType` and `ResourceProperties`,
-> while the example input and rules on the same page use `Type` and `Properties`. Our rules were
-> tested against templates only. **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: confirm with a
-> `WARN`-mode Hook before relying on the `RESOURCE` target.
+> **Common mistake** — Assuming `STACK` and `RESOURCE` input look the same. The guide's input
+> syntax names the keys `ResourceType` and `ResourceProperties`; its example input and rules use
+> `Type` and `Properties`. Our rules were tested against templates only. **UNVERIFIED — REQUIRES
+> DOCUMENTATION REVIEW**: confirm with a `WARN`-mode Hook before relying on `RESOURCE`.
 > Source: [Write Guard rules for Guard Hooks](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/guard-hooks-write-rules.html)
 
 ## Example
@@ -300,7 +288,7 @@ service APIs, SDKs or other IaC tools
 ### The rules
 
 [`templates/05-bedrock-guardrail-rules.guard`](templates/05-bedrock-guardrail-rules.guard) holds
-three named rules. The IAM rule shows filters, `some` and a case-insensitive regular expression:
+three named rules. The IAM rule uses filters, `some` and a case-insensitive expression:
 
 > **Code status:** tested with `cfn-guard test` (15 of 15 cases pass) and run with `cfn-guard validate` (cfn-guard 3.2.1) · **never deployed**
 
@@ -326,10 +314,9 @@ rule iam_no_wildcard_bedrock_invoke when %iam_resources !empty {
 }
 ```
 
-Only `Allow` statements are selected: the compliant template's broad `Deny` that requires a
-guardrail (see [Enforce specific guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions-id.html))
-is a good thing and passes. The guardrail rules check `KmsKeyArn` and a `PROMPT_ATTACK` filter with
-`InputStrength` `MEDIUM` or `HIGH`.
+Only `Allow` statements are selected, so the compliant template's broad `Deny` that requires a
+guardrail ([Enforce specific guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions-id.html))
+passes. The guardrail rules check `KmsKeyArn` and a `PROMPT_ATTACK` filter of `MEDIUM` or `HIGH`.
 
 ### Real output
 
@@ -372,7 +359,7 @@ $ echo $?
 19
 ```
 
-The same template that cfn-lint accepts without a single finding fails all three policies.
+The template cfn-lint accepts without a finding fails all three policies.
 
 ### Activating the rules as a Guard Hook
 
@@ -400,18 +387,16 @@ The same template that cfn-lint accepts without a single finding fails all three
 ```
 
 The execution role needs `s3:GetObject`, `s3:GetObjectVersion` and `s3:ListBucket` on the rules
-and `s3:PutObject` on the report bucket
+and `s3:PutObject` on the reports
 ([Prepare to create a Guard Hook](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/guard-hooks-prepare-to-create-hook.html),
 [`AWS::CloudFormation::GuardHook`](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-cloudformation-guardhook.html)).
 
 ### What a CI-time check cannot see
 
-Running the same rules against [`templates/06-module-usage.yaml`](templates/06-module-usage.yaml)
-returns `SKIP` for both guardrail rules: the guardrail lives inside a registry module that is only
-expanded when CloudFormation processes the template. **Our reading:** a `RESOURCE`-target Hook,
-which receives each resource as CloudFormation is about to provision it, is the place that sees
-module- and macro-generated resources; also run Guard on the module's own template fragment in CI.
-See [CloudFormation modules and reuse](06-modules-and-reuse.md).
+Against [`templates/06-module-usage.yaml`](templates/06-module-usage.yaml) both guardrail rules
+return `SKIP`: the guardrail sits inside a registry module that CloudFormation expands only when it
+processes the template. Also run Guard on the module's own fragment in CI
+([CloudFormation modules and reuse](06-modules-and-reuse.md)).
 
 ## Common mistakes
 
@@ -427,21 +412,20 @@ See [CloudFormation modules and reuse](06-modules-and-reuse.md).
 
 ## Security considerations
 
-- The Hook execution role can read rules and write reports — keep it that narrow, and restrict who can change the Hook configuration and the rules bucket.
-- Guard reports and annotations can contain resource configuration; encrypt the report bucket and, if needed, annotations with a customer managed key.
-- Hooks see secure strings and secrets unresolved, so rules cannot inspect them ([Proactive controls](https://docs.aws.amazon.com/controltower/latest/controlreference/proactive-controls.html)).
-- The IAM rule here ignores `NotAction` and `NotResource` and policies attached outside the template; treat it as one layer, not the whole of least privilege ([Identity and least privilege](../../06-security-governance/02-identity-and-least-privilege.md)).
+- Keep the Hook execution role to reading rules and writing reports; restrict who can change the Hook and the rules bucket.
+- Reports and annotations can contain resource configuration; encrypt them.
+- Secure strings and secrets reach Hooks unresolved, so rules cannot inspect them ([Proactive controls](https://docs.aws.amazon.com/controltower/latest/controlreference/proactive-controls.html)).
+- The IAM rule ignores `NotAction`, `NotResource` and policies attached elsewhere — one layer of least privilege, not all of it ([Identity and least privilege](../../06-security-governance/02-identity-and-least-privilege.md)).
 
 ## Cost considerations
 
-- Hooks in the `AWS::*` namespace carry no additional CloudFormation charge. Custom Hooks you
-  author are billed per handler operation (after a free tier of 1,000 operations; $0.0009 per
-  operation in the pricing page's examples) plus $0.00008 per second beyond 30 seconds
+- Managed Hooks in the `AWS::*` namespace carry no additional CloudFormation charge. Custom Hooks
+  are billed per handler operation — the pricing page's examples use $0.0009 per operation after
+  1,000 free-tier operations — plus $0.00008 per second beyond 30 seconds
   ([CloudFormation pricing](https://aws.amazon.com/cloudformation/pricing/)).
-- **Our reading:** Guard and Lambda Hooks are activated from the `AWS::Hooks::*` types, so the
-  Hook itself is not charged; the Lambda invocations, the S3 storage for rules and reports, and AWS
-  Config evaluations are billed by those services.
-- Guard, cfn-lint, cdk-nag and Checkov in CI cost only build minutes.
+- **Our reading:** Guard and Lambda Hooks are activated from `AWS::Hooks::*` types, so you pay for
+  the Lambda invocations, S3 storage and AWS Config evaluations, not for the Hook.
+- The CI tools cost only build minutes.
 
 ## Knowledge check
 

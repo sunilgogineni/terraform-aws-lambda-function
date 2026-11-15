@@ -835,7 +835,7 @@ data. Start the metadata sync with the script in [chapter 4](04-ingestion-parsin
 | Changing the schema without a sync | SQL refers to old columns | Sync after every schema change |
 | Non-English questions to `GenerateQuery` | Poor or empty SQL | Queries "must be written in English" |
 | Graph construction model given as a plain model ARN when it is profile-only | `ValidationException: Invalid graph bedrock foundation model provided` (provider docs) | Use an inference profile ARN; grant the role `bedrock:GetInferenceProfile` on `*` and `bedrock:InvokeModel` on the profile and its Regional models |
-| Neptune vector dimension differs from the embedding model's | Creation or first sync fails | Choose the model first; the index dimension is fixed at graph creation |
+| Neptune vector dimension differs from the embedding model's | Breaks a documented requirement; **our reading:** creation or the first sync fails | Choose the model first; the index dimension is fixed at graph creation |
 | Copying Claude 3 Haiku from an older GraphRAG example | Model is Legacy | Pick a current model from the model lifecycle page |
 | Deleting the knowledge base and forgetting the graph | Neptune Analytics keeps billing | Delete the knowledge base, then the graph |
 | Planning a Kendra knowledge base in a new account | Kendra is closed to new customers | Use a Managed Knowledge Base |
