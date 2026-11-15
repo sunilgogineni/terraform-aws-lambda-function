@@ -100,8 +100,7 @@ principal `bedrock.amazonaws.com`, `s3:PutObject` on
 | The deployment itself | `cdk bootstrap --custom-permissions-boundary <name>` | Bounds the CloudFormation execution role, not your application's roles ([permissions boundaries](https://docs.aws.amazon.com/cdk/v2/guide/customize-permissions-boundaries.html)) |
 
 A boundary grants nothing on its own; effective permissions are the intersection of identity
-policy and boundary. It also applies to roles that L2s create for you, such as the `Memory`
-service role — the example's test checks that.
+policy and boundary. It also reaches roles that L2s create, such as the `Memory` service role.
 
 ### Aspects
 
@@ -417,7 +416,6 @@ export class ChatPermissionsStack extends Stack {
 
 ```ts
 // bin/app.ts
-#!/usr/bin/env node
 import { App, AspectPriority, Aspects, Tags, Validations } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { AwsSolutionsChecks } from 'cdk-nag';
@@ -587,15 +585,14 @@ The `id` passed to `acknowledge` is the part after `AwsSolutions::`, as in the c
   [Governance at scale](../../06-security-governance/06-governance-at-scale.md).
 - Validation errors from `Validations.addError` cannot be acknowledged, so use them for rules that
   must never be waived and warnings for rules with legitimate exceptions.
-- Review every acknowledgement in code review like a policy change; it is one.
 
 ## Cost considerations
 
 - Grants, boundaries, aspects and cdk-nag cost nothing to run; they execute during synthesis.
 - Model invocation logging stores prompts and responses in S3 or CloudWatch Logs, which are
   billed; plan retention for the log bucket you grant Bedrock access to.
-- A broad `bedrock:InvokeModel` grant is also a cost control failure: it lets a compromised or
-  buggy caller run any model you have access to. Scoping by model ARN limits spend as well as risk.
+- Scoping `bedrock:InvokeModel` to named model ARNs limits which models a buggy or compromised
+  caller can run, and therefore spend as well as risk.
 
 ## Knowledge check
 

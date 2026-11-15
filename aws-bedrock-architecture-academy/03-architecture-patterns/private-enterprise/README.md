@@ -276,7 +276,7 @@ sequenceDiagram
     S3-)LA: Replicate · replica owned by log archive
 ```
 
-Steps 1–2: without private DNS the SDK would resolve the public address and, with no NAT gateway, time out. Steps 5–7: denials and guardrail interventions are themselves logged (CloudTrail `errorCode`; guardrail data events). Steps 10–11 are asynchronous; a replication failure leaves the log in staging until it expires, so alarm on it.
+Steps 1–2: without private DNS the SDK would resolve the public address and, with no NAT gateway, time out. Step 5: denials and guardrail interventions are themselves evidence (CloudTrail `errorCode`; guardrail data events). Steps 6–7: the enforced guardrail also assesses the output. Steps 8–9 are asynchronous; a replication failure leaves the log in staging until it expires, so alarm on it.
 
 ## Implementation details
 

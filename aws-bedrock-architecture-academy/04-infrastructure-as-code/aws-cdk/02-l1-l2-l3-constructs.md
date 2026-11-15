@@ -312,7 +312,6 @@ export class AlphaGuardrailStack extends Stack {
 
 ```ts
 // bin/app.ts
-#!/usr/bin/env node
 import { App } from 'aws-cdk-lib';
 import { AlphaGuardrailStack } from '../lib/alpha-guardrail-stack';
 import { LevelsStack } from '../lib/levels-stack';

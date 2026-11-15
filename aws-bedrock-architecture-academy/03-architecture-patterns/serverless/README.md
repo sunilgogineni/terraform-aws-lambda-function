@@ -31,21 +31,22 @@ After this chapter you can:
 
 - [Pattern: basic model inference](../basic-inference/README.md)
 - [AWS Lambda with Bedrock](../../02-related-aws-services/compute/01-lambda.md)
+- [API Gateway, CloudFront and Application Load Balancer](../../02-related-aws-services/compute/04-api-gateway-cloudfront-alb.md) — the front-door comparison this pattern relies on
+- [Amazon DynamoDB](../../02-related-aws-services/databases/03-dynamodb.md)
 - [AWS WAF and AWS Shield](../../02-related-aws-services/security/03-waf-and-shield.md)
 - [Amazon Bedrock Guardrails](../../01-amazon-bedrock/guardrails/01-guardrails.md)
 - [Diagram set 4 — Converse API application](../../diagrams/mermaid/04-converse-api-application.md)
 
 ## Concept in plain language
 
-The model behind the chat has no memory: every turn, you hand it the whole conversation again.
-Think of a help desk where the expert forgets you the moment you hang up, so the receptionist
-keeps your file and reads it out at every call. This pattern builds the receptionist: it checks
-who you are, keeps your file, reads the expert's answer to you as it is spoken, and stops taking
-your calls when you have used today's allowance.
+The model has no memory: every turn, you hand it the whole conversation again. Picture a help
+desk whose expert forgets you when you hang up, so a receptionist keeps your file, reads it out at
+every call, relays the answer as it is spoken, and stops taking your calls once you have used
+today's allowance. This pattern builds the receptionist.
 
-**The problem.** Employees need a chat assistant. It must know who they are, remember the
-conversation, show the answer while it is being written, refuse harmful content, survive
-abusive traffic, and cost something predictable — and the team would rather not run servers.
+**The problem.** Employees need a chat assistant that knows who they are, remembers the
+conversation, shows the answer while it is written, refuses harmful content, survives abusive
+traffic and costs something predictable — without servers to run.
 
 ### Conceptual view
 
@@ -204,18 +205,15 @@ that passed all of them.
 
 **Walkthrough**
 
-1. –2. The user signs in to the Cognito user pool and receives tokens.
-3. The browser posts the message with the token in the `Authorization` header.
-4. AWS WAF evaluates rate, size and managed rules; blocked requests never reach the API.
-5. The authorizer validates the token; throttling applies; API Gateway invokes the function with
-   `InvokeWithResponseStream`.
-6. The function reserves a worst-case token estimate against the user's daily budget and reads
-   the newest messages of the session.
-7. –9. It calls `ConverseStream` with history, the guardrail and a bounded `maxTokens`.
-10. –12. Text deltas are relayed after the metadata prelude and delimiter.
-13. When the stream ends, the turn is written in one transaction and the reservation is replaced
-    by the real usage.
-14. –15. Token counts and latency go to CloudWatch; Bedrock writes its invocation record.
+1. –3. The user signs in, then posts the message with the token in the `Authorization` header.
+4. AWS WAF applies rate, size and managed rules; blocked requests never reach the API.
+5. The authorizer validates the token, throttling applies, and API Gateway invokes the function
+   with `InvokeWithResponseStream`.
+6. The function reserves a worst-case token estimate and reads the newest messages.
+7. –12. `ConverseStream` runs with history, guardrail and bounded `maxTokens`; text deltas are
+   relayed after the metadata prelude and delimiter.
+13. The completed turn is written in one transaction; the reservation becomes the real usage.
+14. –15. Token counts go to CloudWatch; Bedrock writes its invocation record.
 
 **Legend** — solid: request or write · dashed: response or stream · thick: asynchronous record ·
 cylinder: data at rest · nested boxes: trust boundaries. Streaming mechanics and every failure
@@ -263,7 +261,7 @@ completed; a half answer is never stored as if it were whole.
 
 ## Implementation details
 
-1. **Table design.** One table; partition key `USER#<user>#SESSION#<session>` for messages and
+1. **Table design** (background in [Amazon DynamoDB](../../02-related-aws-services/databases/03-dynamodb.md)). One table; partition key `USER#<user>#SESSION#<session>` for messages and
    `USER#<user>` for daily usage; a numeric `expires_at` attribute as the TTL. DynamoDB deletes
    expired items "typically within a few days" without consuming write throughput, so also filter
    expired items in queries if retention is a legal requirement
@@ -540,16 +538,16 @@ resource "aws_wafv2_web_acl_association" "chat" {
 
 The execution role for the function comes from the
 [`bedrock-invocation-role`](../../04-infrastructure-as-code/terraform/modules/bedrock-invocation-role/README.md)
-module with `allow_streaming = true` and `required_guardrail_arn_pattern` set, plus DynamoDB
-`Query`, `UpdateItem` and `PutItem` on this table only (`TransactWriteItems` is authorized per
-contained `PutItem`).
+module with `allow_streaming = true` and `required_guardrail_arn_pattern` set, plus the DynamoDB
+read and write actions this code uses, on this table only.
 
 ## Common mistakes
 
 > [!WARNING]
 > **Common mistake** — Choosing an HTTP API because it is cheaper, then discovering that response
-> streaming "is only supported for REST APIs" and that AWS WAF cannot be associated with it. Pick
-> the front door from the streaming and WAF requirements first.
+> streaming "is only supported for REST APIs" and that HTTP APIs are not among the resources an
+> AWS WAF web ACL can protect ([AWS WAF and AWS Shield](../../02-related-aws-services/security/03-waf-and-shield.md)).
+> Pick the front door from the streaming and WAF requirements first.
 
 | Mistake | Symptom | Fix |
 |:--|:--|:--|
@@ -562,16 +560,14 @@ contained `PutItem`).
 
 ## Security considerations
 
-- **Identity** — Cognito tokens validated at the gateway; the function trusts only the claims in
-  the event ([Cognito authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)).
-- **Edge** — AWS WAF does not read prompt meaning; it limits volume and size. The guardrail
-  screens content, and neither is the only barrier
-  ([ADR-015](../../ARCHITECTURE-DECISIONS.md#adr-015-security-controls-are-layered-and-none-is-trusted-alone)).
-- **Prompt injection** — user text is untrusted; a chat function with no tools limits the blast
-  radius. See [Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md).
+- **Identity** — tokens validated at the gateway; the function trusts only the claims in the
+  event ([Cognito authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)).
+- **Layers** — AWS WAF limits volume and size but cannot read meaning; the guardrail screens
+  content; neither stands alone ([ADR-015](../../ARCHITECTURE-DECISIONS.md#adr-015-security-controls-are-layered-and-none-is-trusted-alone)).
+- **Prompt injection** — user text is untrusted; a function with no tools limits the blast radius
+  ([prompt injection](../../06-security-governance/04-prompt-injection-and-untrusted-content.md)).
 - **Data** — history is personal data: KMS key, TTL, deletion on request, no prompts in logs.
-- **Streaming with `async` guardrails** releases unscreened chunks; use `sync` where a brief
-  exposure is unacceptable.
+- **`async` guardrail streaming** releases unscreened chunks; use `sync` where that is unacceptable.
 
 ## Cost considerations
 

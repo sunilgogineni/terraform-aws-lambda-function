@@ -9,7 +9,8 @@
 #    under the same conditions; bucket ACLs must be disabled for the bucket policy to take effect.
 #  * CloudWatch Logs: Bedrock assumes a role (trusting bedrock.amazonaws.com with the same
 #    conditions) that may logs:CreateLogStream and logs:PutLogEvents on the
-#    aws/bedrock/modelinvocations log stream.
+#    aws/bedrock/modelinvocations log stream. Bodies over 100 KB and binary data reach
+#    CloudWatch Logs only through a large-data S3 location (written under its own prefix here).
 #  * A KMS-encrypted log group needs the logs.<region> service principal in the key policy
 #    (restricted with kms:EncryptionContext:aws:logs:arn), and principals that call
 #    PutLogEvents need KMS permissions through kms:ViaService.
@@ -31,8 +32,20 @@ locals {
   bucket_arn    = "arn:${local.partition}:s3:::${local.bucket_name}"
   log_group_arn = "arn:${local.partition}:logs:${local.region}:${local.account_id}:log-group:${var.log_group_name}"
 
-  # Bedrock writes below <prefix>/AWSLogs/<account-id>/BedrockModelInvocationLogs/.
+  # S3 destination: Bedrock writes below <prefix>/AWSLogs/<account-id>/BedrockModelInvocationLogs/.
   log_object_prefix = join("/", compact([var.s3_key_prefix, "AWSLogs", local.account_id, "BedrockModelInvocationLogs"]))
+
+  large_data_enabled = var.enable_cloudwatch_logs && var.cloudwatch_large_data_delivery
+
+  # Object paths Bedrock may write to, and the prefixes the lifecycle rule expires.
+  bedrock_write_arns = concat(
+    var.enable_s3 ? ["${local.bucket_arn}/${local.log_object_prefix}/*"] : [],
+    local.large_data_enabled ? ["${local.bucket_arn}/${var.large_data_key_prefix}/*"] : [],
+  )
+  expiring_prefixes = concat(
+    var.enable_s3 ? ["${local.log_object_prefix}/"] : [],
+    local.large_data_enabled ? ["${var.large_data_key_prefix}/"] : [],
+  )
 
   # Confused-deputy protection used on every statement that names bedrock.amazonaws.com.
   bedrock_source_conditions = {
@@ -83,7 +96,7 @@ locals {
         Effect    = "Allow"
         Principal = { Service = "bedrock.amazonaws.com" }
         Action    = "s3:PutObject"
-        Resource  = "${local.bucket_arn}/${local.log_object_prefix}/*"
+        Resource  = local.bedrock_write_arns
         Condition = local.bedrock_source_conditions
       },
       {
@@ -229,20 +242,24 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 
   bucket = aws_s3_bucket.this[0].id
 
-  rule {
-    id     = "expire-invocation-logs"
-    status = "Enabled"
+  dynamic "rule" {
+    for_each = local.expiring_prefixes
 
-    filter {
-      prefix = "${local.log_object_prefix}/"
-    }
+    content {
+      id     = "expire-${replace(trimsuffix(rule.value, "/"), "/", "-")}"
+      status = "Enabled"
 
-    expiration {
-      days = var.s3_log_expiration_days
-    }
+      filter {
+        prefix = rule.value
+      }
 
-    noncurrent_version_expiration {
-      noncurrent_days = 30
+      expiration {
+        days = var.s3_log_expiration_days
+      }
+
+      noncurrent_version_expiration {
+        noncurrent_days = 30
+      }
     }
   }
 
@@ -279,7 +296,7 @@ resource "aws_bedrock_model_invocation_logging_configuration" "this" {
 
           content {
             bucket_name = aws_s3_bucket.this[0].bucket
-            key_prefix  = var.s3_key_prefix == "" ? null : var.s3_key_prefix
+            key_prefix  = var.large_data_key_prefix
           }
         }
       }

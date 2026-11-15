@@ -32,10 +32,9 @@ folder per copy of your application, such as `Dev` or `Prod`. A **Stack** is a p
 shipped and unpacked as one unit. **Constructs** are the items inside the parcel; some are
 single items (an IAM role), some are kits that contain several items.
 
-Every item has a name that only has to be unique inside its folder, and its full folder path
-makes it unique everywhere. CloudFormation identifies each resource by a name derived from that
-path. Move an item to another folder, or rename it, and CloudFormation sees a new item and
-throws the old one away. That single fact explains most CDK surprises.
+Every item's name only has to be unique inside its folder; the full path makes it unique
+everywhere, and CloudFormation identifies each resource by a name derived from that path. Move or
+rename an item and CloudFormation sees a new item and throws the old one away.
 
 ## How it really works
 
@@ -129,9 +128,9 @@ it writes depends on the reference **strength**:
 > [Fn::GetStackOutput](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-getstackoutput.html),
 > [aws-cdk-lib module — Reference strength](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib-readme.html)
 
-Either way the CDK still records a deployment dependency: in the example the `Dev/Inference`
-stack depends on `Dev/PromptStore` in `manifest.json`, so `cdk deploy` orders them correctly.
-The intrinsic functions themselves are compared in [Intrinsic functions](../cloudformation/02-intrinsic-functions.md).
+Either way the CDK records a deployment dependency (`Dev/Inference` depends on `Dev/PromptStore`
+in `manifest.json`). The intrinsic functions are compared in
+[Intrinsic functions](../cloudformation/02-intrinsic-functions.md).
 
 ### The project the official template creates
 
@@ -149,10 +148,9 @@ The intrinsic functions themselves are compared in [Intrinsic functions](../clou
 | `AGENTS.md` | Instructions for coding agents: read the service READMEs in `node_modules/aws-cdk-lib`, and ask before `cdk deploy` |
 | `README.md`, `.gitignore`, `.npmignore` | `.gitignore` excludes `cdk.out` and generated `*.js` / `*.d.ts` |
 
-The [projects page](https://docs.aws.amazon.com/cdk/v2/guide/projects.html) of the developer
-guide still shows `import 'source-map-support/register'` and no `AGENTS.md`; it notes that the
-structure "may vary across versions". The installed template is the authority. The academy
-pins `aws-cdk-lib` to an exact version instead of the caret range the template writes
+The developer guide's [projects page](https://docs.aws.amazon.com/cdk/v2/guide/projects.html)
+shows an older layout and notes that it "may vary across versions"; the installed template is the
+authority. The academy pins `aws-cdk-lib` exactly instead of using the template's caret range
 ([conventions](../../templates/CONVENTIONS.md#7-code)).
 
 ## Architecture diagram
@@ -234,8 +232,8 @@ tree through synthesis and deployment.
 2. **Pass constructs, not names, between stacks.** Type the prop as an interface such as
    `s3.IBucket`. The `grants` property lives on the `Bucket` class, not on `IBucket`, so for an
    interface use the Grants class: `s3.BucketGrants.fromBucket(bucket).read(role)`.
-3. **Use generated physical names.** A hard-coded `bucketName` blocks replacements and second
-   copies of the stack ([best practices](https://docs.aws.amazon.com/cdk/v2/guide/best-practices.html)).
+3. **Use generated physical names**; a hard-coded `bucketName` blocks replacements
+   ([best practices](https://docs.aws.amazon.com/cdk/v2/guide/best-practices.html)).
 4. **Protect stateful resources twice:** a `RETAIN` removal policy, and a unit test that pins the logical ID.
 5. **Refactor with `Default`.** When you wrap an existing resource in a new construct, give the
    inner construct the ID `Default` and the logical ID stays the same
@@ -353,7 +351,6 @@ export class ChatStage extends Stage {
 
 ```ts
 // bin/app.ts   (cdk.json: "app": "npx tsx bin/app.ts")
-#!/usr/bin/env node
 import { App } from 'aws-cdk-lib';
 import { ChatStage } from '../lib/chat-stage';
 
@@ -453,13 +450,12 @@ bucket is retained by design and must be emptied and deleted by hand. See
 - A stack boundary is a blast-radius boundary. Keep the role that can call Amazon Bedrock in a
   stateless stack that you can redeploy freely, and put data in a stateful stack with
   termination protection.
-- Cross-stack references carry ARNs, not permissions; the grant in the consumer still decides
-  what the role may do. Review grants in `cdk diff`'s "IAM Statement Changes" table.
+- Cross-stack references carry ARNs, not permissions; review the consumer's grants in the
+  "IAM Statement Changes" table of `cdk diff`.
 - `Fn::GetStackOutput` has no referential integrity; AWS recommends stack policies, deletion
   protection or IAM policies to stop referenced stacks from being deleted
   ([Fn::GetStackOutput](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-getstackoutput.html)).
-- The template's `AGENTS.md` tells coding agents that `cdk deploy` "changes a real AWS account"
-  and to ask first. Keep that instruction if you let agents work in the repository.
+- Keep the template's `AGENTS.md` instruction that coding agents ask before `cdk deploy`.
 
 ## Cost considerations
 
@@ -467,7 +463,6 @@ bucket is retained by design and must be emptied and deleted by hand. See
   start with the resources CloudFormation creates when you deploy.
 - Resources with a `RETAIN` removal policy, and resources orphaned by a rename, keep costing
   money after the stack forgets them. Search for them after refactors.
-- Fewer, larger stacks mean fewer deployments to orchestrate; split only for a deployment reason.
 
 ## Knowledge check
 

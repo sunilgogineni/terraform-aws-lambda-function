@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PlanJobsFromPullRequestsAndMainOfOneRepository",
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": [
+            "repo:example-org/bedrock-platform:pull_request",
+            "repo:example-org/bedrock-platform:ref:refs/heads/main"
+          ],
+          "token.actions.githubusercontent.com:repository_id": "REPLACE-WITH-NUMERIC-REPOSITORY-ID",
+          "token.actions.githubusercontent.com:repository_owner_id": "REPLACE-WITH-NUMERIC-OWNER-ID"
+        }
+      }
+    }
+  ]
+}

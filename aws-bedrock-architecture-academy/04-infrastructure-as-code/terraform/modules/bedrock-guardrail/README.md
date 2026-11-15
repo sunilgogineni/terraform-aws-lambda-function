@@ -226,5 +226,10 @@ how to check a published version's behaviour with `ApplyGuardrail`.
 - Guardrail resource policies (`aws_bedrock_guardrail_resource_policy`) and account-level
   enforcement (`aws_bedrock_enforced_guardrail_configuration`) are separate resources, covered in
   [Automated Reasoning checks and guardrail enforcement](../../../../01-amazon-bedrock/guardrails/02-automated-reasoning-and-enforcement.md).
+- Every policy change publishes a version, and retained versions accumulate. The
+  [Amazon Bedrock Guardrails](../../../../01-amazon-bedrock/guardrails/01-guardrails.md) chapter
+  lists a quota of 20 versions per guardrail (not adjustable). Delete retained versions that
+  nobody pins any more (Terraform no longer tracks them), or set
+  `retain_previous_versions = false` so that each change deletes the superseded version.
 - Safeguard tier and Standard-tier contextual grounding availability differ by Region; see
   [Safeguard tiers](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-tiers.html).

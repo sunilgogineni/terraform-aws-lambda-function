@@ -27,9 +27,20 @@ variable "enable_s3" {
 }
 
 variable "cloudwatch_large_data_delivery" {
-  description = "With CloudWatch Logs delivery, send request and response bodies larger than 100 KB and binary data to the S3 bucket (creates the bucket even when enable_s3 is false). Without it such data is not published to CloudWatch Logs."
+  description = "With CloudWatch Logs delivery, send request and response bodies larger than 100 KB and binary data to the S3 bucket under large_data_key_prefix (creates the bucket even when enable_s3 is false). Without it such data is not published."
   type        = bool
   default     = true
+}
+
+variable "large_data_key_prefix" {
+  description = "Key prefix, without leading or trailing slash, for the large request and response bodies that the CloudWatch destination sends to S3. Bedrock may write anywhere below it."
+  type        = string
+  default     = "bedrock-large-data"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9!_.*'()-]+(/[A-Za-z0-9!_.*'()-]+)*$", var.large_data_key_prefix))
+    error_message = "large_data_key_prefix must be non-empty, must not start or end with a slash and may contain only S3 safe characters."
+  }
 }
 
 variable "log_group_name" {
@@ -77,7 +88,7 @@ variable "s3_key_prefix" {
 }
 
 variable "s3_log_expiration_days" {
-  description = "Delete log objects after this many days (noncurrent versions after 30 more days). null keeps objects indefinitely."
+  description = "Delete log and large-data objects after this many days (noncurrent versions 30 days after they become noncurrent). null keeps objects indefinitely."
   type        = number
   default     = 365
 

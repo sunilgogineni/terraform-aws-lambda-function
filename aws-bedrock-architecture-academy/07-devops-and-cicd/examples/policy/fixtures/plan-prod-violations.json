@@ -1,0 +1,131 @@
+{
+  "_comment": "Fixture for conftest. resource_changes were captured from 'terraform test -json -verbose' (test_plan records, mock AWS provider, Terraform 1.17.2) for 04-infrastructure-as-code/maintenance/environments; the variables block was added by hand to match 'terraform show -json' output. Never planned against AWS. EDITED BY HAND to contain three problems: the guardrail Deny statement was removed, a wildcard policy was added, and the role is replaced.",
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "variables": {
+    "environment": {
+      "value": "prod"
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_ssm_parameter.runtime_config",
+      "mode": "managed",
+      "type": "aws_ssm_parameter",
+      "name": "runtime_config",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allowed_pattern": null,
+          "description": "Bedrock runtime configuration for chat-prod",
+          "insecure_value": "{\"environment\":\"prod\",\"guardrail_arn\":\"arn:aws:bedrock:us-east-1:444455556666:guardrail/replaceguardrailid\",\"guardrail_version\":\"3\",\"max_output_tokens\":1024,\"model_id\":\"us.amazon.nova-2-lite-v1:0\"}",
+          "name": "/chat/prod/runtime-config",
+          "overwrite": null,
+          "tags": null,
+          "type": "String",
+          "value_wo": null,
+          "value_wo_version": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "data_type": true,
+          "has_value_wo": true,
+          "id": true,
+          "key_id": true,
+          "region": true,
+          "tags_all": true,
+          "tier": true,
+          "value": true,
+          "version": true
+        }
+      }
+    },
+    {
+      "address": "module.invocation_role.aws_iam_role.this",
+      "module_address": "module.invocation_role",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "this",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"lambda.amazonaws.com\"]},\"Sid\":\"TrustedServices\"}],\"Version\":\"2012-10-17\"}",
+          "description": "Invokes Amazon Bedrock models: amazon.nova-2-lite-v1:0",
+          "force_detach_policies": null,
+          "inline_policy": [],
+          "max_session_duration": null,
+          "name": "chat-prod-invoke",
+          "path": null,
+          "permissions_boundary": null,
+          "tags": {}
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": [],
+          "managed_policy_arns": true,
+          "name_prefix": true,
+          "tags": {},
+          "tags_all": true,
+          "unique_id": true
+        }
+      },
+      "action_reason": "replace_because_cannot_update"
+    },
+    {
+      "address": "module.invocation_role.aws_iam_role_policy.invoke",
+      "module_address": "module.invocation_role",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "invoke",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "chat-prod-invoke-bedrock-invoke",
+          "policy": "{\"Statement\":[{\"Action\":[\"bedrock:InvokeModel\",\"bedrock:InvokeModelWithResponseStream\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1:444455556666:inference-profile/us.amazon.nova-2-lite-v1:0\"],\"Sid\":\"InvokeThroughInferenceProfiles\"},{\"Action\":[\"bedrock:InvokeModel\",\"bedrock:InvokeModelWithResponseStream\"],\"Condition\":{\"StringLike\":{\"bedrock:InferenceProfileArn\":[\"arn:aws:bedrock:us-east-1:444455556666:inference-profile/us.amazon.nova-2-lite-v1:0\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-2-lite-v1:0\",\"arn:aws:bedrock:us-east-2::foundation-model/amazon.nova-2-lite-v1:0\",\"arn:aws:bedrock:us-west-2::foundation-model/amazon.nova-2-lite-v1:0\"],\"Sid\":\"InvokeFoundationModels\"},{\"Action\":[\"bedrock:ApplyGuardrail\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:bedrock:us-east-1:444455556666:guardrail/replaceguardrailid\"],\"Sid\":\"ApplyGuardrails\"}],\"Version\":\"2012-10-17\"}"
+        },
+        "after_unknown": {
+          "id": true,
+          "name_prefix": true,
+          "role": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy.debug",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "debug",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "debug-everything",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"Debug\",\"Effect\":\"Allow\",\"Action\":\"bedrock:*\",\"Resource\":\"*\"}]}"
+        },
+        "after_unknown": {
+          "id": true,
+          "name_prefix": true,
+          "role": true
+        }
+      }
+    }
+  ]
+}

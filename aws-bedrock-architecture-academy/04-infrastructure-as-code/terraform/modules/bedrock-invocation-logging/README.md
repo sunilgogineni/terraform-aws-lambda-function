@@ -87,11 +87,11 @@ KMS, IAM and CloudWatch Logs types against the full provider schema).
 module "invocation_logging" {
   source = "../../04-infrastructure-as-code/terraform/modules/bedrock-invocation-logging"
 
-  name_prefix        = "bedrock-invocation-logs"
-  log_retention_days = 30  # CloudWatch Logs: recent, searchable with Logs Insights
+  name_prefix            = "bedrock-invocation-logs"
+  log_retention_days     = 30  # CloudWatch Logs: recent, searchable with Logs Insights
   s3_log_expiration_days = 400 # S3: longer-term audit copy
 
-  # Embeddings are rarely useful in logs and are large.
+  # Example choice: leave embedding vectors out of the logs.
   data_delivery = { embedding = false }
 }
 ```
@@ -107,11 +107,12 @@ Grant readers access deliberately: a principal needs `logs:` read actions on the
 | `enable_cloudwatch_logs` | `bool` | `true` | Deliver to a CloudWatch Logs log group |
 | `enable_s3` | `bool` | `true` | Deliver to an S3 bucket; at least one destination is required |
 | `cloudwatch_large_data_delivery` | `bool` | `true` | Send bodies over 100 KB and binary data from the CloudWatch path to the bucket |
+| `large_data_key_prefix` | `string` | `"bedrock-large-data"` | Prefix for those large bodies; Bedrock may write anywhere below it |
 | `log_group_name` | `string` | `"/aws/bedrock/model-invocation-logs"` | Log group name |
 | `log_retention_days` | `number` | `90` | One of the `PutRetentionPolicy` values; never-expire is not offered |
 | `s3_bucket_name` | `string` | `null` | `null` derives `<name_prefix>-<account-id>-<region>` |
 | `s3_key_prefix` | `string` | `"bedrock"` | Key prefix, no leading or trailing slash; `""` for none |
-| `s3_log_expiration_days` | `number` | `365` | Expire log objects (noncurrent versions 30 days later); `null` keeps them |
+| `s3_log_expiration_days` | `number` | `365` | Expire log and large-data objects (noncurrent versions 30 days later); `null` keeps them |
 | `force_destroy` | `bool` | `false` | Allow destroying a non-empty bucket |
 | `data_delivery` | `object` | all `true` | `text`, `image`, `embedding`, `video` |
 | `kms_key_deletion_window_in_days` | `number` | `30` | 7–30 |
@@ -126,6 +127,7 @@ Grant readers access deliberately: a principal needs `logs:` read actions on the
 | `cloudwatch_delivery_role_arn` | Role Bedrock assumes for CloudWatch Logs, or `null` |
 | `s3_bucket_name`, `s3_bucket_arn` | The log bucket, or `null` |
 | `s3_log_object_prefix` | `<prefix>/AWSLogs/<account-id>/BedrockModelInvocationLogs` |
+| `large_data_key_prefix` | Prefix of large bodies from the CloudWatch destination, or `null` |
 | `key_policy_json`, `bucket_policy_json`, `cloudwatch_trust_policy_json` | Rendered policies, for review and tests |
 
 ## Design notes
@@ -141,8 +143,12 @@ Grant readers access deliberately: a principal needs `logs:` read actions on the
   explicit actions `kms:Encrypt`, `kms:Decrypt`, `kms:GenerateDataKey` and `kms:DescribeKey`
   instead of the wildcarded forms in the CloudWatch Logs example. **Our reading:** these cover
   writing to the log group; verify in a sandbox before relying on it.
-- **The bucket denies requests without TLS** and expires objects through a lifecycle rule, both
-  beyond what the Bedrock page requires.
+- **Two write paths, both narrow.** The S3 destination may write only below the documented
+  `AWSLogs/<account-id>/BedrockModelInvocationLogs/` path. Large bodies from the CloudWatch
+  destination go to their own `large_data_key_prefix`, and Bedrock may write anywhere below it,
+  because the documentation does not give the object layout for that path.
+- **The bucket denies requests without TLS** and expires objects under both prefixes through a
+  lifecycle rule, both beyond what the Bedrock page requires.
 - **Ordering.** The logging configuration depends on the role policy, the bucket policy and the
   bucket encryption, so logging is switched on only after every permission exists.
 
@@ -167,7 +173,8 @@ terraform test          # 7 runs, mock provider, no AWS credentials
 ```
 
 The tests in [`tests/logging.tftest.hcl`](tests/logging.tftest.hcl) cover: both destinations
-with the bucket hardening and log group settings, the bucket policy and delivery role policy
+with the bucket hardening, the large-data prefix, the lifecycle rules and the log group settings,
+the bucket policy and delivery role policy
 against the documented statements, the key policy principals and conditions, S3-only delivery
 without a prefix, CloudWatch-only delivery without a bucket, and two rejections (no destination,
 an unsupported retention value). The mock provider fixes the KMS key ARN during plan
@@ -177,15 +184,18 @@ an unsupported retention value). The mock provider fixes the KMS key ARN during 
 
 - Validated against the provider schema and tested with mocks only. Whether delivery succeeds is
   decided by Bedrock, IAM, S3 and KMS at run time in a real account.
-- **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: the object path used for large-data delivery
-  from the CloudWatch destination. The documentation gives the bucket policy path only for the S3
-  destination; the module uses the same bucket, key prefix and policy for both. Looked for the
-  path on the model invocation logging page and the `PutModelInvocationLoggingConfiguration`
+- **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: the object layout that Bedrock uses below the
+  large-data prefix of the CloudWatch destination. The documentation gives a bucket policy path
+  only for the S3 destination, so the module grants `s3:PutObject` on the whole
+  `large_data_key_prefix` (still limited by `aws:SourceAccount` and `aws:SourceArn`). Looked for
+  the layout on the model invocation logging page and the `PutModelInvocationLoggingConfiguration`
   API reference.
 - The `PutModelInvocationLoggingConfiguration` API also has `audioDataDeliveryEnabled`; provider
   6.73.0 has no argument for it, so audio delivery is left at the service default.
 - The module always creates its own key and bucket; bringing an existing key or a central
   logging bucket in another account is not supported (the documentation requires same-account
   destinations).
-- No S3 server access logging or object lock on the log bucket; add them in the root module if
-  your compliance regime requires them.
+- No S3 server access logging or object lock on the log bucket, and no alarms; add them in the
+  root module. The delivery health metrics (`ModelInvocationLogsCloudWatchDeliveryFailure` and
+  related) are listed in
+  [CloudWatch and Bedrock-specific observability](../../../../02-related-aws-services/observability/01-cloudwatch-and-bedrock-observability.md).

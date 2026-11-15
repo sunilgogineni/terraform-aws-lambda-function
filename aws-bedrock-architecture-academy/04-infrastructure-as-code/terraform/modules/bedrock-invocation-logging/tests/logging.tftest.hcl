@@ -50,6 +50,16 @@ run "both_destinations_by_default" {
   }
 
   assert {
+    condition     = aws_bedrock_model_invocation_logging_configuration.this.logging_config[0].cloudwatch_config[0].large_data_delivery_s3_config[0].key_prefix == "bedrock-large-data"
+    error_message = "Large bodies must be written under their own prefix."
+  }
+
+  assert {
+    condition     = length(aws_s3_bucket_lifecycle_configuration.this[0].rule) == 2
+    error_message = "Both the log prefix and the large-data prefix must expire."
+  }
+
+  assert {
     condition = (
       aws_s3_bucket_ownership_controls.this[0].rule[0].object_ownership == "BucketOwnerEnforced" &&
       aws_s3_bucket_public_access_block.this[0].block_public_policy &&
@@ -82,8 +92,11 @@ run "bucket_policy_matches_documentation" {
   command = plan
 
   assert {
-    condition     = jsondecode(output.bucket_policy_json).Statement[0].Resource == "arn:aws:s3:::bedrock-invocation-logs-111122223333-us-east-1/bedrock/AWSLogs/111122223333/BedrockModelInvocationLogs/*"
-    error_message = "Bedrock may write only under <prefix>/AWSLogs/<account>/BedrockModelInvocationLogs/."
+    condition = jsondecode(output.bucket_policy_json).Statement[0].Resource == [
+      "arn:aws:s3:::bedrock-invocation-logs-111122223333-us-east-1/bedrock/AWSLogs/111122223333/BedrockModelInvocationLogs/*",
+      "arn:aws:s3:::bedrock-invocation-logs-111122223333-us-east-1/bedrock-large-data/*",
+    ]
+    error_message = "Bedrock may write only under the documented log path and the large-data prefix."
   }
 
   assert {
@@ -165,6 +178,11 @@ run "s3_only_without_prefix" {
   assert {
     condition     = output.s3_log_object_prefix == "AWSLogs/111122223333/BedrockModelInvocationLogs"
     error_message = "An empty prefix must not produce a leading slash."
+  }
+
+  assert {
+    condition     = jsondecode(output.bucket_policy_json).Statement[0].Resource == ["arn:aws:s3:::example-invocation-logs/AWSLogs/111122223333/BedrockModelInvocationLogs/*"]
+    error_message = "Without CloudWatch delivery, Bedrock may write only under the documented log path."
   }
 
   assert {

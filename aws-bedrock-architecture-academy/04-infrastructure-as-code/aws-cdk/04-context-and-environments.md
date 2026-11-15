@@ -36,8 +36,8 @@ line, and remembered answers to questions it once had to ask (such as "which Ava
 does this office have?"). **Feature flags** are sticky notes that switch on newer printing
 behaviour without surprising offices that relied on the old one.
 
-You want every print run from the same commit to produce the same pages. That rules out notes
-that change depending on who is at the printer.
+Every print run from the same commit should produce the same pages, so avoid notes that depend
+on who is at the printer.
 
 ## How it really works
 
@@ -361,7 +361,6 @@ export class ChatStage extends Stage {
 
 ```ts
 // bin/app.ts
-#!/usr/bin/env node
 import { App } from 'aws-cdk-lib';
 import { ChatStage } from '../lib/chat-stage';
 import { ENVIRONMENTS } from '../lib/environments';
@@ -487,8 +486,6 @@ production buckets are retained by design and must be deleted by hand.
   retention) instead of copy-pasting stacks.
 - Retained resources in deleted test stacks keep costing money; use `retainData: false` only
   where losing the data is acceptable, and clean up retained resources in the others.
-- Lookups themselves are API calls during synthesis; caching them in `cdk.context.json` also keeps
-  synthesis fast and offline.
 
 ## Knowledge check
 

@@ -33,6 +33,11 @@ output "s3_log_object_prefix" {
   value       = local.log_object_prefix
 }
 
+output "large_data_key_prefix" {
+  description = "Key prefix of large bodies delivered from the CloudWatch destination, or null when large-data delivery is off."
+  value       = local.large_data_enabled ? var.large_data_key_prefix : null
+}
+
 output "key_policy_json" {
   description = "The rendered KMS key policy, for review and tests."
   value       = local.key_policy_json

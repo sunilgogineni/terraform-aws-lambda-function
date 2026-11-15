@@ -295,7 +295,6 @@ export class InvocationStack extends Stack {
 
 ```ts
 // bin/app.ts
-#!/usr/bin/env node
 import { App } from 'aws-cdk-lib';
 import { InvocationStack } from '../lib/invocation-stack';
 

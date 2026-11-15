@@ -1,0 +1,72 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListTheStateBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::example-tfstate-111122223333-us-east-1"
+    },
+    {
+      "Sid": "ReadThisComponentsState",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::example-tfstate-111122223333-us-east-1/chat/bedrock-invocation-role/terraform.tfstate"
+    },
+    {
+      "Sid": "TakeAndReleaseTheStateLock",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::example-tfstate-111122223333-us-east-1/chat/bedrock-invocation-role/terraform.tfstate.tflock"
+    },
+    {
+      "Sid": "UseTheStateKey",
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "kms:GenerateDataKey"
+      ],
+      "Resource": "arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+    },
+    {
+      "Sid": "RefreshTheInvocationRole",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRoleTags"
+      ],
+      "Resource": "arn:aws:iam::111122223333:role/chat-dev-invoke"
+    },
+    {
+      "Sid": "RefreshTheRuntimeConfigParameter",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:ListTagsForResource"
+      ],
+      "Resource": "arn:aws:ssm:us-east-1:111122223333:parameter/chat/dev/runtime-config"
+    },
+    {
+      "Sid": "DescribeParametersHasNoResourceLevelPermissions",
+      "Effect": "Allow",
+      "Action": "ssm:DescribeParameters",
+      "Resource": "*"
+    },
+    {
+      "Sid": "NeverWriteTheStateObject",
+      "Effect": "Deny",
+      "Action": [
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::example-tfstate-111122223333-us-east-1/chat/bedrock-invocation-role/terraform.tfstate"
+    }
+  ]
+}
