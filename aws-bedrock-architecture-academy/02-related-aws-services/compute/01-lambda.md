@@ -2,21 +2,21 @@
 
 > **Level:** Intermediate · **Verified:** 2026-11-15 · **Feature status:** n/a · **Time:** ~25 min
 
-AWS Lambda meets Amazon Bedrock in two directions: your function **calls** Bedrock, or a Bedrock feature **calls** your function. Each direction has its own identity, its own limits and its own failure modes, and most production incidents come from mixing them up.
+AWS Lambda meets Amazon Bedrock in two directions: your function **calls** Bedrock, or a Bedrock feature **calls** your function. Each direction has its own identity, limits and failure modes.
 
 ## Learning objectives
 
 After this chapter you can:
 
-- Configure a function that calls the Converse API with the right execution role, timeouts and concurrency ceiling.
-- Line up the model's latency, the SDK read timeout, the function timeout and the front door's timeout.
-- Decide when response streaming from Lambda is worth its constraints.
-- Name, for each Bedrock feature that invokes Lambda, who invokes the function and which policy authorises it.
-- Run a Lambda function in a VPC that reaches Bedrock through an interface endpoint.
+- Configure a Converse-calling function's execution role, timeouts and concurrency ceiling.
+- Line up model latency, SDK read timeout, function timeout and front-door timeout.
+- Decide when Lambda response streaming is worth its constraints.
+- Name, for each Bedrock feature that invokes Lambda, the invoker and the authorising policy.
+- Reach Bedrock from a VPC-attached function through an interface endpoint.
 
 ## Prerequisites
 
-- [Amazon S3, AWS Lambda and Amazon API Gateway](../../00-foundations/aws-fundamentals/02-s3-lambda-api-gateway.md) — execution model, quotas, proxy integrations.
+- [Amazon S3, AWS Lambda and Amazon API Gateway](../../00-foundations/aws-fundamentals/02-s3-lambda-api-gateway.md)
 - [IAM roles, trust policies and cross-account access](../../00-foundations/security/02-iam-roles-and-trust.md) and [Resource-based policies](../../00-foundations/security/03-resource-policies.md).
 - [The Converse API](../../01-amazon-bedrock/inference/01-converse-api.md).
 - [VPC endpoints and AWS PrivateLink](../../00-foundations/networking/03-vpc-endpoints-and-privatelink.md).
@@ -25,7 +25,7 @@ After this chapter you can:
 
 Think of a hospital switchboard. Sometimes your clerk (a Lambda function) phones the specialist (a Bedrock model) and waits; the clerk's badge (the **execution role**) decides whether the call goes through, and the clerk can wait only as long as the shift lasts (the **function timeout**).
 
-Other times the specialist phones the clerk: a Bedrock agent needs an order looked up, or a gateway needs a tool run. Now the question is "who is allowed to ring this extension?", and the answer lives either on the extension (a **resource-based policy** on the function) or on the caller's badge (an **identity-based policy** on a Bedrock service role). Which one depends on the feature.
+Other times the specialist phones the clerk: an agent needs an order looked up, or a gateway needs a tool run. Now the question is "who may ring this extension?", answered either on the extension (a **resource-based policy** on the function) or on the caller's badge (an **identity-based policy** on a Bedrock service role), depending on the feature.
 
 ## How it really works
 
@@ -44,7 +44,7 @@ Other times the specialist phones the clerk: a Bedrock agent needs an order look
 Sources: [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html), [Response streaming](https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html), [Lambda and VPCs](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html), [Internet access for VPC functions](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc-internet.html), [Quotas for the bedrock-runtime endpoint](https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-runtime.html), [Inference profile prerequisites](https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-prereq.html), [Amazon Nova models](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-nova.html).
 
 > [!IMPORTANT]
-> **Status** — The Lambda documentation now calls the classic function a *Lambda Event Function* and lists separate quotas for Lambda Managed Instances, MicroVMs and Web Functions. Lambda Managed Instances allow 90 minutes for asynchronous and most event-source-mapping invocations. This chapter covers Event Functions.
+> **Status** — Lambda now calls the classic function a *Lambda Event Function*; Managed Instances, MicroVMs and Web Functions have separate quotas (Managed Instances allow 90 minutes for asynchronous invocations). This chapter covers Event Functions.
 > Source: [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html)
 
 ### Lambda as the callee
@@ -62,10 +62,10 @@ Five Bedrock features invoke a Lambda function you own. They do **not** all use 
 Sources: [Agents service role and action group policy](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-permissions.html), [Gateway permissions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-prerequisites-permissions.html), [Gateway Lambda targets](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-add-target-lambda.html), [Custom transformation](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-custom-transformation.html), [Knowledge base service role](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-permissions.html), [Flows service role](https://docs.aws.amazon.com/bedrock/latest/userguide/flows-permissions.html), [Code-based evaluators](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/code-based-evaluators.html).
 
 > [!NOTE]
-> **Documented fact** — For an Agents Classic action group, "whether you use a custom role or not, you also need to attach a resource-based policy to the Lambda functions for the action groups". For an AgentCore Gateway Lambda target, the resource-based policy is needed only "if the function is in a different account from the gateway service role".
+> **Documented fact** — Agents Classic: "whether you use a custom role or not, you also need to attach a resource-based policy to the Lambda functions". AgentCore Gateway: a resource-based policy only "if the function is in a different account from the gateway service role".
 > Source: [Agents service role](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-permissions.html), [Gateway permissions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-prerequisites-permissions.html)
 
-Other Lambda hooks exist outside these five: a Lambda evaluator for [prompt optimization](../../01-amazon-bedrock/prompt-management/02-prompt-optimization.md) and a reward function for reinforcement fine-tuning in [model customization](../../01-amazon-bedrock/foundation-models/03-model-customization.md). Agents Classic is in maintenance mode and closed to new customers since 2026-07-30; new tool code goes behind AgentCore Gateway.
+Other hooks: a Lambda evaluator in [prompt optimization](../../01-amazon-bedrock/prompt-management/02-prompt-optimization.md) and a reward function in [model customization](../../01-amazon-bedrock/foundation-models/03-model-customization.md). Agents Classic is in maintenance mode (closed to new customers since 2026-07-30); put new tool code behind AgentCore Gateway.
 
 ### Integration with Amazon Bedrock
 
@@ -79,7 +79,7 @@ Other Lambda hooks exist outside these five: a Lambda evaluator for [prompt opti
 | Lambda node in a flow | Amazon Bedrock Flows | Node input in; node output back | Flows service role (identity-based) | Inside AWS |
 | Code-based evaluator | AgentCore Evaluations | Spans in; label and score back, written to CloudWatch Logs | Evaluation execution role, or the `Evaluate` caller | Inside AWS |
 
-**No native integration:** a model call never triggers a function by itself. **Our reading:** the rows above are the only places where Bedrock invokes Lambda; to react to a finished asynchronous Bedrock job you use events, covered in [EventBridge, SQS and SNS with Bedrock](../messaging/01-eventbridge-sqs-sns.md).
+**No native integration:** a model call never triggers a function. **Our reading:** the rows above are the only places Bedrock invokes Lambda; to react to finished asynchronous jobs, use events ([EventBridge, SQS and SNS with Bedrock](../messaging/01-eventbridge-sqs-sns.md)).
 
 ## Architecture diagram
 
@@ -137,7 +137,7 @@ flowchart LR
     classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
 ```
 
-**What this shows** — Left: Lambda as caller, reaching Bedrock Runtime privately. Right: Lambda as callee, invoked by four Bedrock features, each authorised differently. The knowledge base transformation path is omitted because its authorisation is unverified.
+**What this shows** — Left: Lambda as caller, reaching Bedrock Runtime privately. Right: Lambda as callee, invoked by four Bedrock features, each authorised differently (the knowledge base transformation is omitted: its authorisation is unverified).
 
 **Walkthrough**
 
@@ -295,7 +295,7 @@ def handler(event, context):
     })
 ```
 
-The tests stub the client, so they run offline with no credentials (`python -m unittest -v test_handler`).
+The tests stub the client and run offline (`python -m unittest -v test_handler`).
 
 > **Code status:** 8 tests pass with `TOOLS/py-sdk/bin/python -m unittest` (boto3/botocore 1.44.3) · **never deployed**
 
@@ -431,7 +431,7 @@ The execution role's Bedrock statements, for a Geo cross-Region inference profil
 ## Common mistakes
 
 > [!WARNING]
-> **Common mistake** — Leaving botocore's 60-second read timeout in a function with a 29-second front door. The client gets a 504 from API Gateway, the function keeps waiting and billing, and if retries are on, a second model call starts that nobody will read.
+> **Common mistake** — Keeping botocore's 60-second read timeout behind a 29-second front door. The client gets a 504 while the function keeps waiting, billing and possibly retrying a generation nobody will read.
 
 | Mistake | Symptom | Fix |
 |:--|:--|:--|
@@ -456,23 +456,23 @@ The execution role's Bedrock statements, for a Geo cross-Region inference profil
 - **Lambda bills while it waits.** Duration × memory includes every second spent waiting for the model; streaming bills until the stream ends, even after the client leaves.
 - **Bedrock bills tokens.** `maxTokens`, prompt size and prompt caching ([Prompt caching](../../01-amazon-bedrock/prompt-caching/01-prompt-caching.md)) matter more than Lambda memory.
 - **Retries cost twice.** A retried timeout can mean two paid generations.
-- **VPC attachment adds endpoints.** Each interface endpoint is billed per hour per Availability Zone plus per GB; see [Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md).
+- **Endpoints cost money.** Each interface endpoint bills per hour per Availability Zone plus per GB; see [Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md).
 - Pricing: [Lambda pricing](https://aws.amazon.com/lambda/pricing/), [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/).
 
 ## Knowledge check
 
-1. A function behind an HTTP API calls a model whose answers take 20–45 seconds. Which three settings must change, and is any combination enough for every request?
-2. An AgentCore Gateway in account 111122223333 must call a function in account 444455556666. Which policies do you need, and on which resources?
-3. Your function has no reserved concurrency. A marketing email triples traffic. What happens first: Lambda throttling or Bedrock throttling, and why does it matter?
-4. A teammate adds `AWSLambdaVPCAccessExecutionRole` and attaches the function to public subnets "so it can reach Bedrock". What happens?
+1. Behind an HTTP API, answers take 20–45 seconds. Which settings change, and is any combination enough?
+2. An AgentCore Gateway in account 111122223333 must call a function in 444455556666. Which policies, on which resources?
+3. A function with no reserved concurrency sees traffic triple. Which throttles first, Lambda or Bedrock?
+4. A teammate attaches the function to public subnets "so it can reach Bedrock". What happens?
 
 <details>
 <summary>Answers</summary>
 
 1. The SDK read timeout, the function timeout and `maxTokens` — but no combination is enough: an HTTP API has a fixed 30-second integration timeout. Use a REST API in `STREAM` mode with a streaming function, or an asynchronous pattern.
-2. An identity-based policy on the gateway service role allowing `lambda:InvokeFunction` on the function, and a resource-based policy on the function in 444455556666 naming the gateway service role ARN as principal.
+2. `lambda:InvokeFunction` in the gateway service role's policy, plus a resource-based policy on the function naming the gateway service role ARN.
 3. Whichever limit is lower. Compare 1,000 concurrent executions with the requests and tokens per minute they would send; when the model's quota is lower, unbounded concurrency becomes `ThrottlingException` storms. Reserved concurrency makes the function the bottleneck you control.
-4. Calls fail or time out: a public subnet gives a Lambda function no internet access. Use private subnets with a `bedrock-runtime` interface endpoint or a NAT gateway.
+4. Calls time out: a public subnet gives a function no internet access. Use private subnets with a `bedrock-runtime` endpoint or a NAT gateway.
 
 </details>
 

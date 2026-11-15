@@ -66,6 +66,9 @@ export class InvocationLoggingStack extends Stack {
           resources: ['*'],
         }),
       ]),
+      // Use the SDK v3 that ships in the Lambda Node.js runtime. Set true only if you need an
+      // API newer than that SDK (the function then downloads the SDK from npm on every run).
+      installLatestAwsSdk: false,
     });
     // Create the bucket and its policy first, so Bedrock can write as soon as logging is on.
     logging.node.addDependency(this.bucket);

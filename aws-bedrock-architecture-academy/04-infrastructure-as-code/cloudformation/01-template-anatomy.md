@@ -271,8 +271,7 @@ cylinders: data · dashed: values returned after creation.
 Read the template top to bottom; each excerpt below is copied from
 [`templates/01-guardrail-basic.yaml`](templates/01-guardrail-basic.yaml).
 
-**1. Constrain inputs where they enter.** The KMS key parameter accepts an empty string or a
-full key ARN, so a typo fails at submission rather than half-way through a deployment:
+**1. Constrain inputs where they enter**, so a typo fails at submission, not half-way through:
 
 ```yaml
   KmsKeyArn:
@@ -282,8 +281,7 @@ full key ARN, so a typo fails at submission rather than half-way through a deplo
     Default: ""
 ```
 
-**2. Use Rules for relationships between parameters.** A single parameter constraint cannot
-say "a key is required only in prod"; a rule can:
+**2. Use Rules for relationships between parameters**, such as "a key is required only in prod":
 
 ```yaml
 Rules:

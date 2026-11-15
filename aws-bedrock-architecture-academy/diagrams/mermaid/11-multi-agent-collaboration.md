@@ -245,21 +245,21 @@ sequenceDiagram
     end
 ```
 
-**Steps 1 to 7 — routing.** One routing-classifier model call (`RoutingClassifierTrace` in the trace)
+**Steps 1 to 6 — routing.** One routing-classifier model call (`RoutingClassifierTrace` in the trace)
 picks a collaborator; the collaborator's answer is the final response. AWS states that routing
 reduces latency.
 
-**Steps 8 to 16 — supervisor mode.** Each sub-task costs at least one supervisor model call plus the
+**Steps 7 to 15 — supervisor mode.** Each sub-task costs at least one supervisor model call plus the
 collaborator's own iterations. The `par` block shows what the documentation allows (collaborators
 "work in parallel"); whether a given turn runs in parallel is the model's decision.
 
-**Steps 17 to 19 — return of control through a supervisor.** The caller sends the result to the
+**Steps 16 to 18 — return of control through a supervisor.** The caller sends the result to the
 **supervisor**, with the `agentId` the response named, and the supervisor propagates it to the right
 collaborator.
 
 **Failure paths**
 
-- A supervisor role without `bedrock:InvokeAgent` on a collaborator alias fails at steps 5 or 10,
+- A supervisor role without `bedrock:InvokeAgent` on a collaborator alias fails at step 4 or 9,
   during delegation — not when the application calls — so single-agent tests can pass.
 - A collaborator alias that still points to an old version: the team behaves as before the change.
 - Exceptions from any agent surface in the supervisor's event stream: `throttlingException`,
@@ -390,12 +390,12 @@ builds a `callerChain` for you.
 | Collaborator reached as a tool | Specialist hosted as an MCP server on Runtime, behind a gateway **MCP server target** | MCP server targets; Runtime listed as SigV4-compatible (see the source conflict above); tools appear as `<target>___<tool>` | One specialist per target; one coarse tool per specialist |
 | Collaborator reached as an agent | Specialist hosted as an **A2A server** on Runtime, behind a gateway **Runtime target** | A2A on Runtime: port 9000, JSON-RPC, Agent Card at `/.well-known/agent-card.json`, SigV4 or OAuth 2.0. Runtime targets: proxy without aggregation, path `/{targetName}/invocations`, outbound IAM, caller IAM, OAuth or token passthrough; not on MCP-protocol gateways | Separate tools and agents gateways |
 | Collaborator outside your account | **HTTP passthrough target** with `protocolType` `A2A` | Documented, with an OAuth credential provider from AgentCore Identity | Which partners may be reached |
-| Supervisor role with `bedrock:InvokeAgent` on aliases | Supervisor execution role with `bedrock-agentcore:InvokeGateway`; gateway role with `bedrock-agentcore:InvokeAgentRuntime` on the specialist; specialist restricted to gateway traffic | Gateway role permission and restricting a runtime to its gateway are documented on the Runtime targets page | One gateway role per trust level |
+| Supervisor role with `bedrock:InvokeAgent` on aliases | Supervisor execution role with `bedrock-agentcore:InvokeGateway`; gateway role with `bedrock-agentcore:InvokeAgentRuntime` on the specialist; specialist restricted to gateway traffic | `InvokeGateway` for IAM-authorized gateways; the gateway role permission and restricting a runtime to its gateway are on the Runtime targets page | One gateway role per trust level |
 | Guardrail per agent | Guardrail on each model, plus AgentCore Policy on each gateway | "Guardrails configured on the Bedrock model still apply"; agent-level enforcement "through AgentCore gateway policies" | Which policies apply to which specialist |
-| `relayConversationHistory`, payload referencing, forwarded `sessionAttributes` | Context passed by your framework; shared AgentCore Memory | No managed equivalent is listed in the official comparison | What each specialist may see |
-| One trace with `callerChain` | Spans per agent in AgentCore Observability | Tracing is documented per agent | Propagating a correlation identifier across agents |
+| `relayConversationHistory`, payload referencing, forwarded `sessionAttributes` | Context passed by your framework; shared AgentCore Memory | Memory supports sharing memory stores across agents; no managed relay is listed in the official comparison | What each specialist may see, and under which `actorId` and namespace |
+| One trace with `callerChain` | Spans per agent in AgentCore Observability | Observability traces each agent's workflow in an OpenTelemetry-compatible format | Propagating a correlation identifier across agents |
 | Delegation to a helper inside one agent | Harness built-in `subagent` tool | "The child is not a separately configured harness" | Not a replacement for separately owned specialists |
-| Finding collaborators | AWS Agent Registry | A governed catalog of agents, MCP servers, tools and skills | Using it at design time or at run time |
+| Finding collaborators | AWS Agent Registry | A governed catalog of MCP servers, agents (A2A agent cards), skills and custom resources, with hybrid search and an MCP endpoint | Using it at design time or at run time |
 | A harness as supervisor calling an A2A agent | — | Harness tool types are MCP servers, gateways, Browser, Code Interpreter and inline functions | **Our reading:** a harness reaches other agents only as MCP tools; A2A through an HTTP target needs your own code on Runtime |
 
 > [!TIP]
@@ -434,5 +434,8 @@ builds a `callerChain` for you.
 - [AgentCore Runtime targets](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-http-runtime.html) and [HTTP passthrough targets](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-http-passthrough.html) — edges 6 to 10 of view D.
 - [MCP servers targets](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-MCPservers.html) and [Gateway VPC egress](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-vpc-egress.html) — edge 5 and its source conflict.
 - [Deploy A2A servers in AgentCore Runtime](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-a2a.html) — the A2A specialist.
+- [Set up inbound authorization for your gateway](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-inbound-auth.html) — `bedrock-agentcore:InvokeGateway` on edges 3 and 6.
+- [AgentCore overview](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html) — Runtime support for multi-agent workloads and A2A, memory shared across agents, Observability.
+- [AWS Agent Registry](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/registry.html) — the discovery row of the table.
 - [AgentCore harness tools](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness-tools.html) — harness tool types and the `subagent` tool.
 - [Generated API reference](../../references/bedrock-api-operations.md) — operation names used in this set.

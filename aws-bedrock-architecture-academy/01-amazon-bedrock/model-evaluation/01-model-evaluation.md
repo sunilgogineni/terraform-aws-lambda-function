@@ -135,6 +135,18 @@ report card, and a **Compare** view for two finished jobs.
 | API | `bedrock`: `CreateEvaluationJob` | `bedrock-agentcore`: `Evaluate`, `StartBatchEvaluation`; `bedrock-agentcore-control`: `CreateEvaluator`, `CreateOnlineEvaluationConfig` | `bedrock`: `CreateAdvancedPromptOptimizationJob` |
 | Acts as | A service role you pass | — | Your calling identity |
 
+Sources: [AgentCore Evaluations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/evaluations.html),
+[Feature verification matrix](../../FEATURE-VERIFICATION.md), [Prompt optimization](../prompt-management/02-prompt-optimization.md)
+
+> [!WARNING]
+> **Managed Knowledge Base** — `retrieveConfig` carries only `vectorSearchConfiguration`, and a Managed
+> Knowledge Base expects `managedSearchConfiguration` and does not support `RetrieveAndGenerate`. Whether a
+> knowledge-base-backed RAG job works against a Managed Knowledge Base is
+> **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: the user guide is silent and an AWS sample notebook
+> says "Retrieval only". Bringing your own responses works for any source.
+> Sources: [Query a knowledge base](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html),
+> [AWS sample notebook](https://github.com/aws-samples/amazon-bedrock-samples/blob/main/rag/managed-knowledge-bases/02-feature-examples/04-rag-evaluation/02-ragas-evaluation.ipynb)
+
 ## 5. Internal architecture
 
 AWS documents the inputs, the roles and the outputs. What happens between them is a conceptual model.
@@ -262,16 +274,15 @@ sequenceDiagram
     end
 ```
 
-- **Steps 1–3** — documented creation errors are validation, quota, conflict, not-found, access-denied
-  and throttling exceptions.
-- **Steps 4–10** — the generator and the judge must be "available in the same AWS Region"; cross-Region
-  inference profiles are accepted for the listed judge models. **Our reading:** permission problems of
-  the service role (S3, models, key) appear later, as a failed job with `failureMessages`.
-- **Steps 11–14** — status moves from InProgress to Completed, Failed or Stopped (or Stopping, Deleting).
-  An AWS blog puts a small RAG job at 10–15 minutes and a large one at "a few hours"; poll, do not wait.
-- **Comparing** — select two finished jobs and choose Compare in the console for a radar chart and
-  per-metric differences. Only completed, failed or stopped jobs can be deleted, up to 25 per
-  `BatchDeleteEvaluationJob` call; results in S3 are left in place.
+- **Steps 1–3** — creation can fail with validation, quota, conflict, not-found, access-denied or
+  throttling errors.
+- **Steps 4–10** — generator and judge must be "available in the same AWS Region"; cross-Region
+  inference profiles are accepted for the listed judges. **Our reading:** service-role permission
+  problems (S3, models, key) surface later, as a failed job with `failureMessages`.
+- **Steps 11–14** — status goes from InProgress to Completed, Failed or Stopped. An AWS blog puts a
+  small RAG job at 10–15 minutes and a large one at "a few hours": poll.
+- **Afterwards** — Compare two finished jobs in the console (radar chart, per-metric differences).
+  Completed, failed or stopped jobs can be deleted, 25 per `BatchDeleteEvaluationJob` call; S3 results stay.
 
 Sources: [CreateEvaluationJob](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_CreateEvaluationJob.html),
 [Create a judge job](https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-judge-create.html),
@@ -314,13 +325,12 @@ Sources: [Judge service role](https://docs.aws.amazon.com/bedrock/latest/usergui
 
 You call the `bedrock` control-plane endpoint, publicly or through an interface endpoint
 ([VPC endpoints and AWS PrivateLink](../../00-foundations/networking/03-vpc-endpoints-and-privatelink.md)).
-The job itself runs inside AWS and reaches S3, models and knowledge bases with the service role, so no
-VPC configuration exists on the job. With a cross-Region inference profile as generator or judge,
-prompts can be processed in any Region the profile routes to — see
-[Cross-Region inference](../inference/04-cross-region-inference.md).
+The job runs inside AWS with the service role; the API has no VPC settings. With a cross-Region
+inference profile as generator or judge, prompts can be processed in any Region the profile routes to
+([Cross-Region inference](../inference/04-cross-region-inference.md)).
 
-**Our reading:** a bucket policy that only admits requests through your VPC endpoint
-(`aws:SourceVpce`) also blocks the job; allow the service role explicitly.
+**Our reading:** a bucket policy that admits only requests through your VPC endpoint
+(`aws:SourceVpce`) also shuts out the job's service role.
 
 ## 10. Pricing dimensions
 
@@ -387,15 +397,6 @@ What the Terraform schema cannot express, compared with the API (botocore 1.44.3
 > Sources: [Terraform resource documentation](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_evaluation_job.html.markdown),
 > [Delete a job](https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-jobs-management-delete.html)
 
-> [!WARNING]
-> **Managed Knowledge Base** — `retrieveConfig` carries only `vectorSearchConfiguration`, and a Managed
-> Knowledge Base expects `managedSearchConfiguration` and does not support `RetrieveAndGenerate`. Whether a
-> knowledge-base-backed RAG job works against a Managed Knowledge Base is
-> **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW**: the user guide is silent and an AWS sample notebook
-> says "Retrieval only". Bringing your own responses works for any source.
-> Sources: [Query a knowledge base](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html),
-> [AWS sample notebook](https://github.com/aws-samples/amazon-bedrock-samples/blob/main/rag/managed-knowledge-bases/02-feature-examples/04-rag-evaluation/02-ragas-evaluation.ipynb)
-
 > [!TIP]
 > **Academy recommendation** — keep the role, bucket and key in IaC and submit jobs from the pipeline
 > that changes the model or prompt, with a job name derived from the commit. A Terraform-managed job
@@ -405,10 +406,9 @@ What the Terraform schema cannot express, compared with the API (botocore 1.44.3
 ## 13. Working example
 
 An LLM-as-a-judge job with two built-in metrics and one custom metric, its service role and its
-dataset. The diagram set [Model evaluation architecture](../../diagrams/mermaid/20-model-evaluation.md)
-draws the same design.
+dataset — the design drawn in [Model evaluation architecture](../../diagrams/mermaid/20-model-evaluation.md).
 
-> **Code status:** validated with `terraform validate` (provider 6.73.0, with a `versions.tf` that sets `required_version = ">= 1.11.0"` and `hashicorp/aws ~> 6.73`), `terraform fmt -check` and TFLint 0.66 (core rules) · mock-tested with `terraform test` (mock provider, 4 runs) · **never planned or applied against AWS**
+> **Code status:** validated with `terraform validate` (provider 6.73.0, with a `versions.tf` that sets `required_version = ">= 1.11.0"` and `hashicorp/aws ~> 6.73`), `terraform fmt -check` and TFLint 0.66 (core rules) · mock-tested with `terraform test` (mock provider, 4 runs) · never planned or applied against AWS · **never deployed**
 
 > [!CAUTION]
 > **Cost or security hazard** — applying this starts a real job billed for generator and judge tokens.
@@ -683,13 +683,10 @@ output "evaluation_role_arn" {
 }
 ```
 
-What the example leaves out, on purpose: the KMS key policy statement for `bedrock.amazonaws.com`
-(section 8), a RAG or human variant (swap `inference_config` for `rag_config`, or `automated` for
-`human` with a `flow_definition_arn`), and inference-profile ARNs in `model_arns`.
-
-The mock-provider test that runs with it (`tests/evaluation_job.tftest.hcl`) asserts that the custom
-metric is listed in `metric_names`, that at most 3 metrics are requested, that the trust policy is
-limited to `evaluation-job/*`, and that an invalid job name is rejected:
+Left out on purpose: the KMS key policy statement (section 8), inference-profile ARNs, and the RAG and
+human variants (`rag_config` instead of `model`; `human` with a `flow_definition_arn` instead of
+`automated`). The test file `tests/evaluation_job.tftest.hcl` checks the metric list, the trust scope and
+the job-name rule:
 
 ```hcl
 mock_provider "aws" {
@@ -770,7 +767,7 @@ run "rejects_invalid_job_name" {
 
 To use the scores as a release gate, read them back. The thresholds are yours to set.
 
-> **Code status:** syntax-checked (`python -m py_compile`) · mock-tested with botocore `Stubber` (boto3/botocore 1.44.3) · **never run against AWS**
+> **Code status:** syntax-checked (`python -m py_compile`) · mock-tested with botocore `Stubber` (boto3/botocore 1.44.3) · never run against AWS · **never deployed**
 
 ```python
 """Wait for an Amazon Bedrock evaluation job, average each metric, and fail a pipeline below thresholds."""
@@ -819,8 +816,8 @@ def gate(averages: dict, minimums: dict, maximums: dict) -> list:
     return failures
 ```
 
-Check the `metricName` strings in your own first results file before you set thresholds: the
-documented example shows a display name (`Accuracy`), not the `Builtin.` request name.
+Read `metricName` in your first results file before setting thresholds: the documented example shows
+`Accuracy`, not `Builtin.Accuracy`.
 
 ## Common mistakes
 
@@ -871,5 +868,7 @@ documented example shows a display name (`Accuracy`), not the `Builtin.` request
 - [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/) — Model Evaluation section.
 - [Evaluate agent performance with AgentCore Evaluations](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/evaluations.html) — the agent-level counterpart.
 - [Evaluating RAG applications with knowledge base evaluation](https://aws.amazon.com/blogs/machine-learning/evaluating-rag-applications-with-amazon-bedrock-knowledge-base-evaluation/) — AWS blog: comparing jobs, job duration.
+- [Evaluate models or RAG systems using Amazon Bedrock Evaluations – now generally available](https://aws.amazon.com/blogs/machine-learning/evaluate-models-or-rag-systems-using-amazon-bedrock-evaluations-now-generally-available/) — AWS blog: bring-your-own RAG responses and the `citations` field.
+- [Amazon Bedrock Evaluations](https://aws.amazon.com/bedrock/evaluations/) — product page: the Compare feature.
 - [Terraform `aws_bedrock_evaluation_job`](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_evaluation_job.html.markdown) — arguments and destroy behaviour; schema checked against [the generated reference](../../references/terraform-aws-provider-bedrock.md).
 - [Feature verification matrix](../../FEATURE-VERIFICATION.md) — the academy's register entry for this feature.

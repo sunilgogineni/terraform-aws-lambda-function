@@ -24,16 +24,14 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Think of Bedrock as a busy specialist with a fixed number of appointments per minute. Two things go
-wrong if you send work straight at it: at peak times you are turned away (throttled), and if a
-messenger gets lost and you send the same request again, the specialist charges you twice and may
-give a different opinion the second time.
+Think of Bedrock as a specialist with a fixed number of appointments per minute. Send work straight
+at it and two things go wrong: at peak times you are turned away (throttled), and a request sent
+twice is charged twice — and may get a different opinion the second time.
 
-The fix is an office around the specialist. A **queue** is the waiting room that lets in only as many
-people as there are appointments. A **ledger** records which requests already have an answer, so a
-repeated request gets the recorded answer instead of a new appointment. And for work that takes
-hours — training a model, a batch job — the specialist **phones you when it is done** (an event)
-instead of you calling every five minutes.
+So you build an office around it. A **queue** is the waiting room that admits only as many people as
+there are appointments. A **ledger** records which requests already have an answer. And for work that
+takes hours, the specialist **phones you when it is done** (an event) instead of you calling every
+five minutes.
 
 ## How it really works
 
@@ -240,16 +238,13 @@ full pattern is [Diagram 23 — Event-driven GenAI architecture](../../diagrams/
 2. **Keep batches small for long generations.** Batch size × slowest call must fit the function
    timeout. **Our reading:** a batch size of a few messages suits chat-length outputs; measure p99
    `InvocationLatency` before you choose.
-3. **Make throttles cheap.** Configure SDK retries modestly (they consume function time and appear in
-   `InvocationThrottles`), report the message as failed, and let the visibility timeout space retries.
+3. **Make throttles cheap.** Keep SDK retries modest (they consume function time), report the message
+   as failed, and let the visibility timeout space the retries.
 4. **Separate "retry later" from "never works".** Validation errors and guardrail interventions go to
-   a DLQ or an error table immediately; throttles and 5xx go back to the queue.
-5. **Subscribe to job events with one rule** on `source` `aws.bedrock` and the detail types you need;
-   filter final states in the pattern (for batch: `Completed`, `PartiallyCompleted`, `Failed`,
-   `Expired`, `Stopped`).
-6. **Treat event payloads as hints.** Delivery is best effort: on a final-state event, read the
-   authoritative status with `GetModelInvocationJob` or `GetModelCustomizationJob`, and keep a slow
-   reconciliation sweep for jobs whose final event never arrived.
+   an error table at once; throttles and 5xx go back to the queue.
+5. **One rule for job events**, on `source` `aws.bedrock` and the detail types you need. On a final
+   state, re-read the job with `GetModelInvocationJob` or `GetModelCustomizationJob` — delivery is
+   best effort.
 
 > [!TIP]
 > **Academy recommendation** — Use one queue per model (or per inference profile) when several
@@ -359,9 +354,9 @@ def handler(event, context):
     return {"batchItemFailures": failures}
 ```
 
-The claim window is a trade-off: if a worker dies after the model answered but before the update,
-the next delivery after `CLAIM_SECONDS` calls the model again. **Our reading:** no queue-based design
-removes that window entirely; it only makes it small and visible.
+**Our reading:** if a worker dies between the answer and the update, the next delivery after
+`CLAIM_SECONDS` calls the model again. No queue-based design removes that window; it only makes it
+small and visible.
 
 ## Common mistakes
 
@@ -382,27 +377,23 @@ removes that window entirely; it only makes it small and visible.
 
 ## Security considerations
 
-- **Events carry metadata, messages carry content.** Bedrock events contain ARNs, statuses and S3
-  locations; your queue messages usually contain prompts. Encrypt queues and topics with KMS, and
-  prefer an S3 reference over an inline document.
-- **Scope who may send.** Queue and topic policies should name the sending service and its source ARN.
-- **One role per hop.** The worker needs `bedrock:InvokeModel` on specific model or profile ARNs; the
-  Scheduler role needs only the action it schedules; the job handler needs only read access to job
-  results.
-- **Do not put personal data in `requestMetadata`.** It is copied into invocation logs.
-- **Private path.** VPC-attached workers reach Bedrock through the `bedrock-runtime` interface
-  endpoint and SQS through its own endpoint — see
+- **Events carry metadata, messages carry content.** Bedrock events hold ARNs, statuses and S3
+  locations; queue messages usually hold prompts. Encrypt queues and topics with KMS and prefer an S3
+  reference to an inline document.
+- **One role per hop.** The worker gets `bedrock:InvokeModel` on specific model or profile ARNs; the
+  Scheduler role gets only the action it schedules.
+- **No personal data in `requestMetadata`** — it is copied into invocation logs.
+- **Private path.** VPC-attached workers use the `bedrock-runtime` and SQS interface endpoints — see
   [Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md).
 
 ## Cost considerations
 
-- Receiving AWS service events on EventBridge is free; SQS, SNS, Scheduler and Pipes bill per request
-  or event — see the [foundations chapter](../../00-foundations/aws-fundamentals/03-eventbridge-sqs-sns.md).
-- **Tokens dominate.** Every duplicate or retry that reaches Bedrock is billed per token; the
-  idempotency ledger costs far less than one extra long completion.
-- **Throttled retries are not free in time.** They hold Lambda duration and lengthen the backlog.
-- **Batch instead of queueing** when the work can wait hours: batch inference is about half the
-  on-demand price for supported models — see [Batch inference](../../01-amazon-bedrock/inference/08-batch-inference.md).
+- Receiving AWS service events is free; SQS, SNS, Scheduler and Pipes bill per request or event — see
+  the [foundations chapter](../../00-foundations/aws-fundamentals/03-eventbridge-sqs-sns.md).
+- **Tokens dominate.** Every duplicate that reaches Bedrock is billed per token; the ledger costs far
+  less than one extra long completion. Throttled retries also hold Lambda duration.
+- **Batch instead of queueing** when work can wait hours — about half the on-demand price for
+  supported models ([Batch inference](../../01-amazon-bedrock/inference/08-batch-inference.md)).
 
 ## Knowledge check
 

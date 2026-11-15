@@ -1,0 +1,14 @@
+{
+  "app": "npx tsx bin/app.ts",
+  "watch": {
+    "include": ["**"],
+    "exclude": ["README.md", "cdk*.json", "**/*.d.ts", "**/*.js", "tsconfig.json", "package*.json", "node_modules", "test"]
+  },
+  "context": {
+    "academy:region": "us-east-1",
+    "academy:toolingAccount": "111122223333",
+    "academy:workloadAccount": "444455556666",
+    "academy:repository": "example-org/bedrock-platform",
+    "academy:connectionArn": "arn:aws:codeconnections:us-east-1:111122223333:connection/00000000-0000-0000-0000-000000000000"
+  }
+}

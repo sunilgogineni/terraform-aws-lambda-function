@@ -1,0 +1,32 @@
+{
+  "name": "@academy/cdk-chapter-examples",
+  "version": "1.0.0",
+  "description": "Worked examples for the AWS CDK chapters 6-9 (learning examples, never deployed by the authors).",
+  "private": true,
+  "bin": {
+    "app": "bin/app.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "jest",
+    "synth": "cdk synth"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.277.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.15.0",
+    "@swc/jest": "^0.2.39",
+    "@types/jest": "^30",
+    "@types/node": "^24.10.1",
+    "aws-cdk": "2.1148.1",
+    "cdk-nag": "3.0.2",
+    "jest": "^30",
+    "tsx": "^4.21.0",
+    "typescript": "~7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

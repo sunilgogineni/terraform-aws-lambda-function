@@ -1,4 +1,5 @@
 import { Environment, Stack, StackProps, Stage, StageProps } from 'aws-cdk-lib';
+import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as pipelines from 'aws-cdk-lib/pipelines';
 import { Construct } from 'constructs';
 import { AgentMemoryStack } from './agent-memory-stack';
@@ -40,6 +41,7 @@ export class DeliveryPipelineStack extends Stack {
     super(scope, id, props);
 
     this.pipeline = new pipelines.CodePipeline(this, 'Pipeline', {
+      pipelineType: codepipeline.PipelineType.V2,
       crossAccountKeys: true,
       enableKeyRotation: true,
       synth: new pipelines.ShellStep('Synth', {
