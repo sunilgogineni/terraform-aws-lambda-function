@@ -149,7 +149,7 @@ then **deletes the old one** — unless `UpdateReplacePolicy: Retain`
 | `Bedrock::KnowledgeBase` | `StorageConfiguration`; the knowledge base type and its vector, managed, Kendra or SQL configuration | Knowledge base ID; every data source; ingested vectors |
 | `Bedrock::DataSource` | `KnowledgeBaseId`, data source type, chunking and parsing configuration | Data source ID; its vectors (with `DataDeletionPolicy: DELETE`) |
 | `S3Vectors::Index` | Everything except `Tags` | The index and its vectors; forces a new knowledge base |
-| `S3Vectors::VectorBucket` | `VectorBucketName`, `EncryptionConfiguration` | Fails unless the bucket is empty |
+| `S3Vectors::VectorBucket` | `VectorBucketName`, `EncryptionConfiguration` | Deleting the old bucket fails unless it is empty |
 | `Bedrock::GuardrailVersion` | `GuardrailIdentifier`, `Description` (no update handler) | The published version number callers pin |
 | `Bedrock::PromptVersion`, `FlowVersion`, `AutomatedReasoningPolicyVersion` | All their properties | The version |
 | `Bedrock::AgentAlias`, `FlowAlias` | `AgentId`, `FlowArn` | Alias ID used by callers |
@@ -166,8 +166,9 @@ reference pages linked in Further reading. One inconsistency: the knowledge base
 settings create-only — plan for replacement.
 
 > [!CAUTION]
-> **Cost or security hazard** — **Version resources do not follow their parent.** Editing a
-> guardrail, prompt or flow does not publish a new version. Editing the *version* resource replaces
+> **Cost or security hazard** — **Version resources do not follow their parent** (our reading of
+> the update rules above). Editing a guardrail, prompt or flow leaves its version resources
+> untouched, so nothing new is published. Editing the *version* resource replaces
 > it — creating version 2 and **deleting version 1**, which production may still call. Add a new
 > version resource (new logical ID) for every release, keep the old ones until nothing uses them,
 > and consider `DeletionPolicy` and `UpdateReplacePolicy: Retain` on versions.

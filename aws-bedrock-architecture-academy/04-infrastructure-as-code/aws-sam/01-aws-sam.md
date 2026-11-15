@@ -350,6 +350,11 @@ sam delete                                # teardown
 
 ## Common mistakes
 
+> [!WARNING]
+> **Common mistake** — Treating a passing `sam local invoke` as proof that the deployed function
+> may call Bedrock. Local runs use your own credentials, not the execution role, and the SAM CLI
+> documentation notes that local testing does not validate permissions between cloud resources.
+
 | Mistake | Symptom | Fix |
 |:--|:--|:--|
 | Looking for a Bedrock policy template | `sam build` or deploy fails on an unknown template name | Write inline statements as above |

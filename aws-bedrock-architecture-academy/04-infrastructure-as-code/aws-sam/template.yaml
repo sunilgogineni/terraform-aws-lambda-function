@@ -3,8 +3,9 @@
 # HTTP API (IAM-authorised) -> Python Lambda function -> Amazon Bedrock Converse, through a
 # system-defined inference profile, with an Amazon Bedrock guardrail on every call.
 #
-# Code status: validated with cfn-lint 1.60.1 (which applies the SAM transform rules).
-# The handler is byte-compiled and mock-tested. NEVER DEPLOYED.
+# Code status: validated with cfn-lint 1.60.1, which checks AWS::Serverless resources against its
+# SAM schema and knows the resources the transform generates. The `sam` CLI was not run.
+# The handler is byte-compiled and mock-tested (tests/). NEVER DEPLOYED.
 #
 # There is no AWS::Serverless::* type for Amazon Bedrock: the guardrail below is a native
 # CloudFormation type, which a SAM template accepts alongside SAM resources.
