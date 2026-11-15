@@ -13,8 +13,9 @@ never touched:
   (`<!-- DIAGRAM-INDEX:START -->`)
 * the coverage table in PROGRESS.md (`<!-- COVERAGE:START -->`)
 
-Usage:  python3 scripts/build-nav.py [--check]
-        --check exits 1 if any file would change (for CI).
+Usage:  python3 scripts/build-nav.py [--check] [--skip-footers]
+        --check         exits 1 if any file would change (for CI).
+        --skip-footers  do not touch chapter files (use while chapters are being written).
 Standard library only.
 """
 from __future__ import annotations
@@ -28,6 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CMAP = json.loads((ROOT / "scripts" / "content-map.json").read_text(encoding="utf-8"))
 CHECK = "--check" in sys.argv
+SKIP_FOOTERS = "--skip-footers" in sys.argv
 changed: list[str] = []
 
 H1_RE = re.compile(r"^#\s+(.+?)\s*$", re.MULTILINE)
@@ -96,7 +98,7 @@ def status(ch: dict) -> str:
 
 
 # ---------------------------------------------------------------- chapter footers
-for i, ch in enumerate(existing):
+for i, ch in enumerate([] if SKIP_FOOTERS else existing):
     path = ch["path"]
     prev_ch = existing[i - 1] if i > 0 else None
     next_ch = existing[i + 1] if i + 1 < len(existing) else None
