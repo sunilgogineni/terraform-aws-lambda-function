@@ -307,7 +307,7 @@ Events carry metadata; the document itself never leaves S3 except to the worker 
 | Claim | `PutItem` with `attribute_not_exists(pk)`, or an expired lease | Exactly one invocation calls the model |
 | Retryable error | Release the claim, report the message | The next delivery can claim it |
 | Permanent error | Mark `FAILED`; redeliveries fail fast | The message reaches the dead-letter queue without more tokens |
-| Asynchronous engines | `clientToken` on `InvokeDataAutomationAsync`; `clientRequestToken` on `CreateModelInvocationJob` | Built-in idempotency tokens ([API reference](../../references/bedrock-api-operations.md)) |
+| Asynchronous engines | `clientToken` on `InvokeDataAutomationAsync`; `clientRequestToken` on `CreateModelInvocationJob` | Both are marked as idempotency tokens in the AWS SDK models ([API reference](../../references/bedrock-api-operations.md)) |
 | Audit | Key in Converse `requestMetadata` | It is recorded in model invocation logs ([request metadata](https://docs.aws.amazon.com/bedrock/latest/userguide/cost-mgmt-request-metadata.html)) |
 
 ### Quota-aware concurrency
@@ -344,7 +344,7 @@ The first ceiling is the model quota, by design. Lambda can scale an SQS event s
 
 | Variation | What changes | Read |
 |:--|:--|:--|
-| **Step Functions worker** | Each message starts a workflow (Express through EventBridge Pipes, or Standard); retries with backoff and a task-token review step are declarative | [AWS Step Functions with Bedrock](../../02-related-aws-services/messaging/02-step-functions.md) |
+| **Step Functions worker** | Each item runs as a workflow execution; retries with backoff and a task-token review step are declarative (task tokens need a Standard workflow) | [AWS Step Functions with Bedrock](../../02-related-aws-services/messaging/02-step-functions.md) |
 | **Bulk lane: batch inference** | A scheduled submitter writes JSONL and calls `CreateModelInvocationJob`; a `Batch Inference Job State Change` event triggers result handling | [Batch inference](../../01-amazon-bedrock/inference/08-batch-inference.md), [diagram 23](../../diagrams/mermaid/23-event-driven-genai.md) |
 | **Extraction lane: Data Automation** | The worker calls `InvokeDataAutomationAsync` with EventBridge notifications enabled; a completion handler reads the output and routes low-confidence fields to review | [Bedrock Data Automation](../../01-amazon-bedrock/data-automation/01-bedrock-data-automation.md) |
 | **Distributed Map backfill** | A one-off backlog in S3 processed with `MaxConcurrency` against the on-demand quota | [Step Functions: bulk inference](../../02-related-aws-services/messaging/02-step-functions.md#bulk-inference-with-a-distributed-map) |
@@ -809,7 +809,7 @@ def handler(event, context):
 |:--|:--|:--|
 | Model tokens | Every duplicate or retried call is billed | Idempotency ledger; partial batch responses |
 | On-demand versus batch | Batch is about 50% cheaper for supported models, with no completion guarantee ([Capacity and performance](https://docs.aws.amazon.com/bedrock/latest/userguide/capacity-limits-cost-optimization.html)) | Route deferrable work to the bulk lane |
-| Data Automation | Per page, image or minute | Use it for scanned and media inputs only |
+| Data Automation | Per page, image or minute ([Data Automation pricing dimensions](../../01-amazon-bedrock/data-automation/01-bedrock-data-automation.md#10-pricing-dimensions)) | Use it for scanned and media inputs only |
 | Lambda duration | Throttled retries hold invocations open | Fewer SDK retries; release and requeue |
 | SQS, SNS, DynamoDB, KMS requests | Per request | Batch size; data key reuse period |
 | Human review | Reviewer time | Route only what validation cannot decide |

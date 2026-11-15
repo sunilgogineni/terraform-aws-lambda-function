@@ -1,0 +1,4 @@
+# Copy to integration/sandbox.tfvars (git-ignored) for a sandbox run.
+# Confirm the model IDs in the Amazon Bedrock model catalog (ADR-010).
+foundation_model_ids = ["REPLACE-WITH-A-MODEL-ID-FROM-THE-CATALOG"]
+model_regions        = ["us-east-1", "us-west-2"]
