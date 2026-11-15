@@ -1,6 +1,72 @@
 # Cost, performance and reliability
 
-> **Level:** Advanced
+> **Level:** Advanced · **Verified:** 2026-11-15 · **Time:** about 2 days at 2 hours a day
+
+Three properties that pull against each other. A faster model costs more; a cheaper tier may
+be preempted; a resilient design spans Regions and raises data-residency questions. This
+section gives you the levers and the trade-offs.
+
+[Academy home](../README.md) · [Feature verification matrix](../FEATURE-VERIFICATION.md) · Previous: [DevOps and CI/CD](../07-devops-and-cicd/README.md) · Next: [Advanced topics](../09-advanced-topics/README.md)
+
+> [!IMPORTANT]
+> **Status** — Prices, quotas and limits change often and differ by model and Region. This section
+> teaches the **dimensions** and the reasoning; take the numbers from the
+> [Bedrock pricing page](https://aws.amazon.com/bedrock/pricing/), the
+> [AgentCore pricing page](https://aws.amazon.com/bedrock/agentcore/pricing/) and the Service
+> Quotas console on the day you need them.
+
+## The levers
+
+```mermaid
+---
+title: Which lever moves which property
+---
+flowchart LR
+    subgraph levers["Levers you control"]
+        v1["Model choice"]:::ai
+        v2["Prompt and output length"]:::ai
+        v3["Prompt caching"]:::ai
+        v4["Service tier<br/>reserved · priority · standard · flex"]:::ai
+        v5["Batch inference"]:::ai
+        v6["Inference profile<br/>single-Region · Geo · Global"]:::ai
+        v7["Retries · fallback · routing"]:::compute
+        v8["Provisioned Throughput"]:::ai
+    end
+    cost["Cost"]:::obs
+    lat["Latency"]:::obs
+    rel["Reliability and throughput"]:::obs
+    v1 --> cost
+    v1 --> lat
+    v2 --> cost
+    v2 --> lat
+    v3 --> cost
+    v3 --> lat
+    v4 --> cost
+    v4 --> lat
+    v5 --> cost
+    v6 --> rel
+    v6 --> cost
+    v7 --> rel
+    v8 --> rel
+    v8 --> cost
+
+    classDef compute fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai      fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef obs     fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+```
+
+## What each chapter gives you
+
+| Chapter | You leave with |
+|:--|:--|
+| Pricing model and cost drivers | A map of every metered dimension across inference, knowledge bases and AgentCore |
+| Cost optimization and token budgeting | A budgeting method per request, per user and per tenant |
+| Latency optimization | Where time goes in a request, and which changes shorten it |
+| Caching strategies | Prompt caching, response caching and retrieval caching — and when each is unsafe |
+| Quotas, rate limits and throttling | How quotas apply per account, Region and model, and how to handle `ThrottlingException` |
+| Resilience, fallback models and model routing | A degradation ladder: retry, reroute, fall back, shed load |
+| Disaster recovery and business continuity | What a Regional failure means for inference, knowledge bases and agents |
+| Production monitoring and incident response | The signals to alarm on and a runbook shape |
 
 ## Chapters
 

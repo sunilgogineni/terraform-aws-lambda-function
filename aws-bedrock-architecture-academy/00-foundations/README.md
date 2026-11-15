@@ -1,6 +1,54 @@
-# Level 1 — Foundations
+# Level 1 and 2 — Foundations
 
-> **Level:** Beginner
+> **Level:** Beginner · **Verified:** 2026-11-15 · **Time:** about 7 days at 2 hours a day
+
+Everything later in the course assumes you can read an AWS architecture and that you know what
+a token, an embedding and a retrieval pipeline are. This section gets you there. It has two halves:
+the AWS building blocks that every Bedrock system sits on, and the generative-AI concepts that
+Bedrock's features are built around.
+
+[Academy home](../README.md) · [Learning roadmap](../LEARNING-ROADMAP.md) · [Glossary](../GLOSSARY.md) · Next section: [Amazon Bedrock deep dive](../01-amazon-bedrock/README.md)
+
+## How the pieces fit
+
+```mermaid
+---
+title: Foundations — what each group prepares you for
+---
+flowchart LR
+    subgraph aws["Level 1 — AWS foundations"]
+        a["AWS fundamentals<br/>Regions · S3 · Lambda · API Gateway<br/>events · logs · Organizations"]:::client
+        n["Networking<br/>VPC · subnets · endpoints"]:::edge
+        s["Security<br/>IAM · resource policies · KMS"]:::security
+    end
+    subgraph genai["Level 2 — Generative AI"]
+        g["Models · tokens · embeddings<br/>RAG · fine-tuning · agents<br/>evaluation · economics"]:::ai
+    end
+    a --> n --> s --> g
+    g --> b["Level 3<br/>Amazon Bedrock deep dive"]:::compute
+
+    classDef client   fill:#E8F1FB,stroke:#1F6FEB,color:#0B1F33
+    classDef edge     fill:#E0F7FA,stroke:#00838F,color:#00363A
+    classDef compute  fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai       fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
+```
+
+| Group | Why you need it for Bedrock |
+|:--|:--|
+| [AWS fundamentals](aws-fundamentals/README.md) | Model and feature availability is per Region; applications are built from S3, Lambda, API Gateway and events; everything is observed through CloudWatch and audited through CloudTrail |
+| [Networking](networking/README.md) | Private access to Bedrock goes through interface VPC endpoints; agents and knowledge bases reach your data across network boundaries |
+| [Security](security/README.md) | Every Bedrock call is an IAM-authorised API call; Bedrock assumes service roles to read your data; encryption choices are KMS choices |
+| [Generative AI fundamentals](generative-ai-fundamentals/README.md) | Bedrock's features are implementations of these concepts — inference, embeddings, RAG, customization, agents, evaluation |
+
+## Already know some of this?
+
+- **Experienced with AWS** — skim [Networking](networking/README.md) for VPC endpoints, then go to
+  [Generative AI fundamentals](generative-ai-fundamentals/README.md).
+- **Experienced with generative AI, new to AWS** — do Level 1 in full; IAM and networking are
+  where most first Bedrock deployments go wrong.
+- **Both** — jump to [Amazon Bedrock deep dive](../01-amazon-bedrock/README.md) and read
+  [what changed since older tutorials](../FEATURE-VERIFICATION.md#what-changed-since-older-tutorials) first.
 
 ## Chapters
 

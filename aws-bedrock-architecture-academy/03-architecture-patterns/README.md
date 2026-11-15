@@ -1,6 +1,75 @@
 # Architecture patterns
 
-> **Level:** Intermediate
+> **Level:** Intermediate · **Verified:** 2026-11-15 · **Time:** about 3 days at 2 hours a day
+
+Seven reference patterns. Each one is documented the same way: a conceptual diagram, a detailed
+implementation diagram, a sequence diagram, a written explanation, and a practical example that
+points at one of the [projects](../05-practical-projects/README.md).
+
+[Academy home](../README.md) · [Diagram index](../diagrams/diagram-index.md) · Previous: [Related AWS services](../02-related-aws-services/README.md) · Next: [Infrastructure as Code](../04-infrastructure-as-code/README.md)
+
+> [!IMPORTANT]
+> **Status** — These are the academy's designs, built from documented service behaviour. They are
+> **not official AWS reference architectures**. For AWS's own, see the
+> [AWS Architecture Center](https://aws.amazon.com/architecture/) and the
+> [AWS Solutions Library](https://aws.amazon.com/solutions/).
+
+## Which pattern do you need?
+
+```mermaid
+---
+title: Choosing a starting pattern
+---
+flowchart TD
+    q1{"Does the answer need<br/>your private data?"}
+    q2{"Does the system need to<br/>take actions or use tools?"}
+    q3{"Is the work triggered by<br/>events rather than a user waiting?"}
+    q4{"Must traffic stay off<br/>the public internet?"}
+    q5{"More than one team<br/>or environment?"}
+    p1["Basic inference"]:::ai
+    p2["Enterprise RAG"]:::data
+    p3["Agentic AI"]:::compute
+    p4["Event-driven"]:::compute
+    p5["Serverless chatbot"]:::edge
+    p6["Add: private enterprise"]:::security
+    p7["Add: multi-account"]:::security
+    q1 -- "no" --> q2
+    q1 -- "yes" --> p2
+    q2 -- "no" --> q3
+    q2 -- "yes" --> p3
+    q3 -- "yes" --> p4
+    q3 -- "no, interactive" --> p5
+    q3 -- "no, one-off calls" --> p1
+    p2 --> q4
+    p3 --> q4
+    p4 --> q4
+    p5 --> q4
+    q4 -- "yes" --> p6
+    q4 -- "no" --> q5
+    p6 --> q5
+    q5 -- "yes" --> p7
+
+    classDef edge     fill:#E0F7FA,stroke:#00838F,color:#00363A
+    classDef compute  fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai       fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef data     fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
+```
+
+The patterns compose: private networking and multi-account are layers you add to any of the
+others, not alternatives to them.
+
+## The patterns
+
+| Pattern | Use it when | Numbered diagram set | Project |
+|:--|:--|:--|:--|
+| [Basic inference](basic-inference/README.md) | You need a model call with the right identity, logging and limits | [3](../diagrams/mermaid/03-model-inference-lifecycle.md), [4](../diagrams/mermaid/04-converse-api-application.md) | [A](../05-practical-projects/project-01-basic-inference/README.md) |
+| [Serverless chatbot](serverless/README.md) | Interactive chat over HTTP with conversation state | [22](../diagrams/mermaid/22-serverless-enterprise-chatbot.md) | [B](../05-practical-projects/project-02-serverless-chatbot/README.md) |
+| [Enterprise RAG](enterprise-rag/README.md) | Answers must be grounded in your documents with citations | [5](../diagrams/mermaid/05-enterprise-rag.md)–[9](../diagrams/mermaid/09-agentic-retrieval.md) | [C](../05-practical-projects/project-03-enterprise-rag/README.md) |
+| [Agentic AI](agentic-ai/README.md) | The system plans, calls tools and keeps memory | [12](../diagrams/mermaid/12-agentcore-architecture.md)–[16](../diagrams/mermaid/16-agentcore-observability.md) | [D](../05-practical-projects/project-04-agentic-ai/README.md) |
+| [Event-driven](event-driven/README.md) | Work arrives as events: documents, messages, schedules | [23](../diagrams/mermaid/23-event-driven-genai.md) | — |
+| [Private enterprise](private-enterprise/README.md) | No public endpoints, customer managed keys, full audit trail | [24](../diagrams/mermaid/24-secure-private-enterprise-bedrock.md) | [E](../05-practical-projects/project-05-private-genai/README.md) |
+| [Multi-account](multi-account/README.md) | Many teams and environments share one governed platform | [25](../diagrams/mermaid/25-multi-account-aws.md), [30](../diagrams/mermaid/30-enterprise-end-to-end-genai-reference.md) | [F](../05-practical-projects/project-06-multi-account-platform/README.md) |
 
 ## Chapters
 

@@ -1,6 +1,58 @@
 # DevOps and CI/CD
 
-> **Level:** Advanced
+> **Level:** Advanced · **Verified:** 2026-11-15 · **Time:** about 2 days at 2 hours a day
+
+How an infrastructure change travels from a developer's branch to production — and what stops
+a bad one on the way. The chapters follow the pipeline stage by stage; runnable examples are in
+[`examples/`](examples/).
+
+[Academy home](../README.md) · [IaC maintenance](../04-infrastructure-as-code/maintenance/README.md) · [Diagram 26 — CI/CD and IaC deployment](../diagrams/mermaid/26-cicd-and-iac-deployment.md) · Previous: [Security and governance](../06-security-governance/README.md) · Next: [Cost, performance and reliability](../08-cost-performance-and-reliability/README.md)
+
+## The pipeline
+
+```mermaid
+---
+title: From developer change to drift detection
+---
+flowchart TD
+    a["Developer change"]:::client --> b["Git branch"]:::client
+    b --> c["Pull request"]:::client
+    c --> d["Formatting and linting<br/>terraform fmt · TFLint · cfn-lint"]:::compute
+    d --> e["IaC validation<br/>terraform validate · tsc"]:::compute
+    e --> f["Security scanning<br/>Checkov · Trivy · cdk-nag"]:::security
+    f --> g["Unit and integration tests<br/>terraform test · Terratest · CDK assertions"]:::compute
+    g --> h["Terraform plan / CDK synthesis"]:::data
+    h --> i["Policy validation<br/>OPA · CloudFormation Guard · cost estimate"]:::security
+    i --> j{"Human approval"}
+    j -- "approved" --> k["Deployment pipeline<br/>OIDC role · one environment at a time"]:::edge
+    j -- "rejected" --> b
+    k --> l["Post-deployment validation<br/>smoke tests · check blocks"]:::compute
+    l --> m["Monitoring and drift detection"]:::obs
+    m -. "drift or alarm" .-> a
+
+    classDef client   fill:#E8F1FB,stroke:#1F6FEB,color:#0B1F33
+    classDef edge     fill:#E0F7FA,stroke:#00838F,color:#00363A
+    classDef compute  fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef data     fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
+    classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+```
+
+| Stage | Catches | Chapter |
+|:--|:--|:--|
+| Formatting, linting, validation | Syntax errors, wrong argument names, style drift | Formatting, linting and security scanning |
+| Security scanning | Known misconfigurations before they exist | Formatting, linting and security scanning |
+| Tests | Logic errors in modules and constructs | Testing infrastructure code |
+| Plan / synth | What will actually change | Pipeline overview |
+| Policy and cost | Changes that are valid but not allowed, or too expensive | Policy validation, cost estimation and human approval |
+| Approval | Anything the automation cannot judge | Policy validation, cost estimation and human approval |
+| Deployment | — | GitHub Actions · CodePipeline and CodeBuild |
+| Post-deployment and drift | What validation could not predict; changes made outside the pipeline | Post-deployment validation, monitoring and drift detection |
+
+> [!CAUTION]
+> **Cost or security hazard** — Pin third-party CI actions to a full commit SHA. In March 2026 the
+> release tags of a widely used scanner's GitHub Action were replaced with malicious commits.
+> Source: [Trivy advisory GHSA-69fq-xp46-6x23](https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23)
 
 ## Chapters
 

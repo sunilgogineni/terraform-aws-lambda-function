@@ -1,6 +1,60 @@
 # Security and governance
 
-> **Level:** Advanced
+> **Level:** Advanced · **Verified:** 2026-11-15 · **Time:** about 2 days at 2 hours a day
+
+A generative-AI system has every security concern of an ordinary cloud application plus some
+new ones: instructions hidden in data, tools called on a model's say-so, and outputs that can
+leak what the model was shown. This section builds a threat model and then layers controls
+against it.
+
+[Academy home](../README.md) · [ADR-015: layered controls](../ARCHITECTURE-DECISIONS.md#adr-015-security-controls-are-layered-and-none-is-trusted-alone) · Previous: [Practical projects](../05-practical-projects/README.md) · Next: [DevOps and CI/CD](../07-devops-and-cicd/README.md)
+
+## Layers of control
+
+```mermaid
+---
+title: Defence in depth for a generative-AI workload
+---
+flowchart TB
+    threat["Untrusted input<br/>users · documents · web pages · tool results"]:::external
+    subgraph layers["Controls, outermost first"]
+        l1["Edge: AWS WAF · throttling · authentication"]:::edge
+        l2["Identity: least-privilege IAM roles<br/>scoped to models and resources"]:::security
+        l3["Network: private subnets · interface VPC endpoints<br/>endpoint policies"]:::security
+        l4["Content: Amazon Bedrock Guardrails<br/>on input and output"]:::security
+        l5["Action: AgentCore Policy on tool calls<br/>human approval for risky actions"]:::security
+        l6["Data: customer managed KMS keys<br/>logging controls · data perimeters"]:::data
+        l7["Detection: CloudTrail · CloudWatch · GuardDuty<br/>Security Hub · AWS Config"]:::obs
+    end
+    asset["What you are protecting<br/>data · credentials · the ability to act"]:::ai
+    threat --> l1 --> l2 --> l3 --> l4 --> l5 --> l6 --> asset
+    l7 -. "observes every layer" .-> layers
+
+    classDef edge     fill:#E0F7FA,stroke:#00838F,color:#00363A
+    classDef ai       fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef data     fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
+    classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+    classDef external fill:#F1F3F4,stroke:#5F6368,color:#202124,stroke-dasharray:4 3
+```
+
+> [!TIP]
+> **Academy recommendation** — Treat a guardrail and a system prompt as probabilistic controls.
+> Anything that must never happen needs a deterministic control as well: an IAM policy, a
+> network boundary, or a policy-engine decision on the tool call. This is our design guidance,
+> not an official AWS reference architecture.
+
+## What each chapter answers
+
+| Chapter | Question |
+|:--|:--|
+| Shared responsibility and threat model | What can go wrong, and whose job is each control? |
+| Identity and least privilege | Who can call which model, and what can an agent's role actually do? |
+| Data protection and privacy | Where does data rest and travel, who can read it, and how do you stop leakage? |
+| Prompt injection and untrusted content | How do instructions in data reach a model, and what limits the damage? |
+| Network security and private access | Which paths are public, and how do you close them? |
+| Governance at scale | How do you enforce rules across an organisation rather than per team? |
+| Logging, audit and compliance | What evidence exists that controls worked? |
 
 ## Chapters
 

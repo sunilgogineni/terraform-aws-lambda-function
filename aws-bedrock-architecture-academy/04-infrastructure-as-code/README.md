@@ -1,6 +1,83 @@
 # Infrastructure as Code
 
-> **Level:** Intermediate
+> **Level:** Intermediate · **Verified:** 2026-11-15 · **Time:** about 5 days at 2 hours a day
+>
+> Terraform 1.17.2 · `hashicorp/aws` 6.73.0 · `aws-cdk-lib` 2.277.0 · AWS CDK CLI 2.1148.1
+
+How to provision everything in this course — and how to keep that code healthy for years. The
+section starts with the ideas every tool shares, then goes deep on Terraform, AWS CDK and
+CloudFormation, covers AWS SAM and Pulumi, and ends with the maintenance practices that matter
+more than the choice of tool.
+
+[Academy home](../README.md) · [Generated Terraform reference](../references/terraform-aws-provider-bedrock.md) · [Generated CDK / CloudFormation reference](../references/cdk-and-cloudformation-bedrock.md) · Previous: [Architecture patterns](../03-architecture-patterns/README.md) · Next: [Practical projects](../05-practical-projects/README.md)
+
+## How the tools relate
+
+```mermaid
+---
+title: Five tools, two deployment engines
+---
+flowchart LR
+    subgraph author["What you write"]
+        tf["Terraform<br/>HCL"]:::data
+        pu["Pulumi<br/>program"]:::data
+        cdk["AWS CDK<br/>program"]:::data
+        sam["AWS SAM<br/>template + transform"]:::data
+        cfn["CloudFormation<br/>template"]:::data
+    end
+    subgraph engines["What deploys it"]
+        tfe["Terraform core<br/>+ AWS provider"]:::compute
+        pue["Pulumi engine<br/>+ providers"]:::compute
+        cfe["AWS CloudFormation<br/>service"]:::compute
+    end
+    subgraph state["Where state lives"]
+        s1[("State file<br/>S3 backend or HCP Terraform")]:::obs
+        s2[("Pulumi state backend")]:::obs
+        s3[("CloudFormation stacks<br/>held by AWS")]:::obs
+    end
+    aws["AWS service APIs"]:::ai
+    tf --> tfe --> aws
+    pu --> pue --> aws
+    cdk -- "synth" --> cfn
+    sam -- "transform" --> cfn
+    cfn --> cfe --> aws
+    tfe --- s1
+    pue --- s2
+    cfe --- s3
+
+    classDef compute fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai      fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef data    fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef obs     fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+```
+
+The CDK and SAM both end in a CloudFormation template, so everything you learn about
+CloudFormation — change sets, drift, hooks, rollback — applies to them too.
+
+## Reading order
+
+| Step | Group | What you get |
+|--:|:--|:--|
+| 1 | [IaC concepts and comparison](comparison/README.md) | Declarative vs imperative, state, dependency graphs, drift, idempotency; the tools compared; how to choose |
+| 2 | [Terraform](terraform/README.md) | Providers to testing, plus what the AWS provider covers for Bedrock |
+| 3 | [AWS CDK](aws-cdk/README.md) | Constructs to deployment, plus what L1, L2 and alpha constructs exist for Bedrock |
+| 4 | [CloudFormation](cloudformation/README.md) | Templates to hooks and Guard, plus the Bedrock resource types |
+| 5 | [AWS SAM](aws-sam/README.md) and [Pulumi](pulumi/README.md) | Where each fits |
+| 6 | [Maintenance and engineering excellence](maintenance/README.md) | The change lifecycle, versioning, environments, secrets, policy as code, upgrades, multi-account |
+
+## Reusable code in this section
+
+| Path | What it is | Checked with |
+|:--|:--|:--|
+| [`terraform/modules/`](terraform/modules/) | Reusable Terraform modules for Bedrock building blocks | `terraform validate`, `terraform test` with mock providers |
+| [`aws-cdk/construct-library/`](aws-cdk/construct-library/) | A small TypeScript construct library | `tsc`, Jest assertions |
+| [`cloudformation/templates/`](cloudformation/templates/) | Example CloudFormation templates | `cfn-lint` |
+| [`maintenance/environments/`](maintenance/environments/) | Development, test, staging and production configuration with isolated state | `terraform validate` |
+
+> [!NOTE]
+> **Documented fact** — What each tool supports for Bedrock is taken from the tools themselves,
+> not from memory: the Terraform table from the provider's schema and the CDK / CloudFormation
+> table from the installed library. See [references](../references/README.md).
 
 ## Chapters
 

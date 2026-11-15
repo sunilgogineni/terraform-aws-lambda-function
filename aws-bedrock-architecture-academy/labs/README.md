@@ -1,6 +1,30 @@
 # Labs
 
-> **Level:** All levels
+> **Level:** All levels · **Verified:** 2026-11-15 · **Time:** 30–90 minutes each
+
+Hands-on exercises that go with the [30-day roadmap](../LEARNING-ROADMAP.md). Most need **no AWS
+account**: they use documentation, paper, and offline tooling (`terraform validate`,
+`terraform test` with mock providers, `cdk synth`).
+
+[Academy home](../README.md) · [Learning roadmap](../LEARNING-ROADMAP.md) · [Practical projects](../05-practical-projects/README.md) · [Scripts](../scripts/README.md)
+
+## What each lab needs
+
+| Lab | Skill | AWS account | Tools |
+|:--|:--|:-:|:--|
+| 1 — Verify a feature from the official docs | Research: status, Regions, APIs, IaC support | No | A browser |
+| 2 — Your first Converse call | Reading and running an inference client | **Optional** — costs apply | Python, boto3 |
+| 3 — Validate and test Terraform offline | `fmt`, `validate`, mock-provider tests | No | Terraform ≥ 1.11 |
+| 4 — Synthesize a CDK app and read the template | `cdk synth`, reading CloudFormation | No | Node 22 |
+| 5 — Design a RAG pipeline | Architecture on paper | No | — |
+| 6 — Threat-model an agent | Security analysis | No | — |
+| 7 — Estimate the cost of a chatbot | Token economics | No | A spreadsheet |
+| 8 — Run the IaC pipeline checks locally | The CI stages by hand | No | Terraform, Node, Python |
+
+> [!CAUTION]
+> **Cost or security hazard** — Any step marked "optional — needs a sandbox account" creates
+> billable usage. Use a sandbox account with a budget alarm, never production, and follow the
+> lab's clean-up steps.
 
 ## Chapters
 

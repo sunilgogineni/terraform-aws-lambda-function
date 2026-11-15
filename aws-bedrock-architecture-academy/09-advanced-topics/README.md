@@ -1,6 +1,72 @@
 # Advanced architecture topics
 
-> **Level:** Advanced
+> **Level:** Advanced · **Verified:** 2026-11-15 · **Time:** about 4 days at 2 hours a day
+
+The decisions that do not have a single right answer. Each chapter lays out the options, the
+forces, a decision matrix and the trade-offs — and marks clearly which parts are documented
+behaviour and which are the academy's judgement.
+
+[Academy home](../README.md) · [Architecture decisions](../ARCHITECTURE-DECISIONS.md) · Previous: [Cost, performance and reliability](../08-cost-performance-and-reliability/README.md) · Next: [Labs](../labs/README.md)
+
+## Topic map
+
+```mermaid
+---
+title: Advanced topics by the question they answer
+---
+flowchart TB
+    subgraph ground["How do I ground the model?"]
+        g1["RAG vs fine-tuning vs long context"]:::data
+        g2["Vector store selection"]:::data
+        g3["Chunking strategies"]:::data
+        g4["Embedding model selection"]:::data
+        g5["Hybrid search · reranking · filtering"]:::data
+        g6["Multitenant RAG"]:::data
+    end
+    subgraph actg["How do I let it act safely?"]
+        a1["Agent orchestration patterns"]:::compute
+        a2["Human-in-the-loop"]:::compute
+        a3["MCP and tool integration"]:::compute
+    end
+    subgraph run["How do I run it?"]
+        r1["Model routing and fallback"]:::ai
+        r2["Cross-Region and data residency"]:::ai
+        r3["Observability and tracing"]:::obs
+        r4["Model quality evaluation"]:::obs
+    end
+    subgraph meta["How do I decide and stay current?"]
+        m1["Choosing RAG, agents, flows or plain inference"]:::client
+        m2["Keeping up with AWS changes"]:::client
+    end
+    ground --> actg --> run --> meta
+
+    classDef client  fill:#E8F1FB,stroke:#1F6FEB,color:#0B1F33
+    classDef compute fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai      fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef data    fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef obs     fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+```
+
+Security-specific advanced topics — prompt injection, data leakage, retrieval poisoning, IAM
+isolation for agents and untrusted tool output — are in
+[Security and governance](../06-security-governance/README.md). Cost, latency, caching, quotas,
+resilience and disaster recovery are in
+[Cost, performance and reliability](../08-cost-performance-and-reliability/README.md).
+
+## How to read a decision matrix here
+
+| Element | Meaning |
+|:--|:--|
+| Rows | The options |
+| Columns | The forces that matter for this decision |
+| Cells | How each option behaves — a documented fact where a source is linked, otherwise our assessment |
+| "Choose when" | The situations where the option is the right default |
+| "Avoid when" | The situations where it will hurt |
+
+> [!TIP]
+> **Academy recommendation** — Start from the simplest design that meets the requirement: plain
+> inference before RAG, RAG before agents, one agent before several. Each step up adds cost,
+> latency and failure modes. This is our design guidance, not an official AWS reference architecture.
 
 ## Chapters
 

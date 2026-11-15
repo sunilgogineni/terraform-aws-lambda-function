@@ -1,6 +1,74 @@
 # Related AWS services and integrations
 
-> **Level:** Intermediate
+> **Level:** Intermediate · **Verified:** 2026-11-15 · **Time:** about 3 days at 2 hours a day
+
+Bedrock is rarely used alone. This section goes through the services around it and, for each
+one, answers the same three questions: **what exactly is the interaction, who calls whom, and
+which way does the data flow?**
+
+[Academy home](../README.md) · [Feature verification matrix](../FEATURE-VERIFICATION.md) · Previous: [Amazon Bedrock deep dive](../01-amazon-bedrock/README.md) · Next: [Architecture patterns](../03-architecture-patterns/README.md)
+
+## The ecosystem in one picture
+
+```mermaid
+---
+title: Services around Amazon Bedrock, grouped by role
+---
+flowchart LR
+    subgraph entry["Entry and compute"]
+        e1["CloudFront · API Gateway · ALB"]:::edge
+        e2["Lambda · ECS · EKS · Fargate<br/>EC2 · App Runner"]:::compute
+    end
+    subgraph core["Amazon Bedrock"]
+        b["Inference · Knowledge Bases<br/>AgentCore · Guardrails · Flows"]:::ai
+    end
+    subgraph data["Data and storage"]
+        d1[("S3 · S3 Vectors")]:::data
+        d2[("OpenSearch · Aurora pgvector<br/>DynamoDB · RDS · Redshift")]:::data
+        d3["Glue · Lake Formation · DMS"]:::data
+    end
+    subgraph events["Event-driven"]
+        v["EventBridge · SQS · SNS<br/>Step Functions · Kinesis · MSK"]:::compute
+    end
+    subgraph sec["Security"]
+        s["IAM · Identity Center · KMS<br/>Secrets Manager · WAF · Shield<br/>GuardDuty · Security Hub · Config · Macie"]:::security
+    end
+    subgraph obs["Observability"]
+        o[("CloudWatch · CloudTrail<br/>X-Ray · OpenTelemetry")]:::obs
+    end
+    e1 -- "requests" --> e2
+    e2 -- "API calls" --> b
+    b -- "reads and writes" --> d1
+    b -- "queries" --> d2
+    d3 -- "prepares data" --> d1
+    v -- "triggers" --> e2
+    e2 -- "publishes" --> v
+    s -- "authorises and encrypts" --> b
+    b -- "metrics, logs, events" --> o
+    e2 -- "traces" --> o
+
+    classDef edge     fill:#E0F7FA,stroke:#00838F,color:#00363A
+    classDef compute  fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai       fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef data     fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
+    classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+```
+
+## How every chapter describes an integration
+
+| Column | Meaning |
+|:--|:--|
+| Interaction | The API call, event or configuration that connects the two services |
+| Initiator | Which side makes the call — your code, Bedrock acting with a service role, or the other service |
+| Direction of data | Which way prompts, documents, embeddings, results or telemetry move |
+| Identity used | Execution role, service role, resource policy or service-linked role |
+| Network path | Public endpoint, interface VPC endpoint, or inside the AWS-managed service |
+
+> [!IMPORTANT]
+> **Status** — Amazon Kendra is in maintenance mode, and customer-managed knowledge bases can no
+> longer add new Confluence, SharePoint, Salesforce or Web Crawler connectors. The chapters say
+> where that changes a design. See the [verification matrix](../FEATURE-VERIFICATION.md#maintenance-mode-and-deprecations-to-design-around).
 
 ## Chapters
 

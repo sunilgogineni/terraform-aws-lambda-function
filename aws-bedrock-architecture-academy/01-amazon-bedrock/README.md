@@ -1,6 +1,88 @@
 # Level 3 — Amazon Bedrock deep dive
 
-> **Level:** Intermediate
+> **Level:** Intermediate · **Verified:** 2026-11-15 · **Time:** about 10 days at 2 hours a day
+
+One chapter per feature, all in the same 14-point shape: what it is, why it exists, when to use
+it, when **not** to, architecture, request lifecycle, dependencies, security, networking, pricing
+dimensions, scaling, IaC support, a working example and the official documentation.
+
+[Academy home](../README.md) · [Feature verification matrix](../FEATURE-VERIFICATION.md) · [Diagram index](../diagrams/diagram-index.md) · Previous: [Foundations](../00-foundations/README.md) · Next: [Related AWS services](../02-related-aws-services/README.md)
+
+> [!IMPORTANT]
+> **Status** — Read [what changed since older tutorials](../FEATURE-VERIFICATION.md#what-changed-since-older-tutorials)
+> before this section. Agents is now "Agents Classic" in maintenance mode, knowledge bases come
+> in two types, and AgentCore has thirteen services. Features differ in deployment model, APIs,
+> limits and Region support — never assume one behaves like another.
+
+## Capability map
+
+```mermaid
+---
+title: Amazon Bedrock capabilities and the groups that teach them
+---
+flowchart TB
+    app["Your application"]:::client
+    subgraph infer["Inference"]
+        i1["Converse · InvokeModel<br/>OpenAI- and Anthropic-compatible APIs"]:::ai
+        i2["Cross-Region inference · service tiers<br/>Provisioned Throughput · batch"]:::ai
+    end
+    subgraph shape["Shaping requests and responses"]
+        p1["Prompt management<br/>and optimization"]:::ai
+        p2["Prompt caching"]:::ai
+        p3["Guardrails"]:::security
+    end
+    subgraph know["Grounding in your data"]
+        k1["Knowledge Bases<br/>managed · customer-managed"]:::data
+        k2["Agentic retrieval"]:::data
+        k3["Data Automation"]:::data
+    end
+    subgraph act["Acting"]
+        a1["Agents Classic<br/>maintenance mode"]:::external
+        a2["AgentCore<br/>Runtime · harness · Gateway · Identity<br/>Memory · Policy · Observability"]:::compute
+        a3["Flows"]:::compute
+    end
+    subgraph model["Models"]
+        m1["Providers and catalog"]:::ai
+        m2["Customization · import · Marketplace"]:::ai
+        m3["Evaluation"]:::obs
+    end
+    app --> infer
+    app --> act
+    infer --> shape
+    act --> know
+    act --> infer
+    know --> infer
+    infer --> model
+
+    classDef client   fill:#E8F1FB,stroke:#1F6FEB,color:#0B1F33
+    classDef compute  fill:#FDEBD0,stroke:#D97706,color:#3B2300
+    classDef ai       fill:#E6F4EA,stroke:#1E8E3E,color:#0B2E13
+    classDef data     fill:#EDE7F6,stroke:#6A1B9A,color:#2A0A3D
+    classDef security fill:#FDECEA,stroke:#C62828,color:#3D0A0A
+    classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
+    classDef external fill:#F1F3F4,stroke:#5F6368,color:#202124,stroke-dasharray:4 3
+```
+
+## Which feature for which job
+
+| You want to… | Start with | Status |
+|:--|:--|:-:|
+| Call a model from code | [Converse API](inference/01-converse-api.md) | GA |
+| Reuse existing OpenAI or Anthropic SDK code | [Compatible APIs](inference/03-openai-and-anthropic-compatible-apis.md) | GA |
+| Get more throughput or resilience | [Cross-Region inference](inference/04-cross-region-inference.md) · [Service tiers](inference/06-service-tiers.md) | GA |
+| Cut cost on repeated context | [Prompt caching](prompt-caching/01-prompt-caching.md) · [Batch inference](inference/08-batch-inference.md) | GA |
+| Answer questions from your documents | [Knowledge Bases overview](knowledge-bases/01-knowledge-bases-overview.md) | GA |
+| Handle multi-step questions over your data | [Agentic retrieval](agentic-retrieval/01-agentic-retrieval.md) | GA, Managed KB only |
+| Build an agent that uses tools | [AgentCore overview](agentcore/01-agentcore-overview.md) | GA |
+| Understand an existing Bedrock agent | [Agents Classic](agents/01-agents-classic.md) | Maintenance |
+| Chain prompts and steps without code | [Flows](flows/01-bedrock-flows.md) | GA |
+| Block harmful or off-topic content | [Guardrails](guardrails/01-guardrails.md) | GA |
+| Extract structure from documents, images, audio, video | [Data Automation](data-automation/01-bedrock-data-automation.md) | GA |
+| Adapt a model to your task | [Model customization](foundation-models/03-model-customization.md) | GA |
+| Compare models or RAG configurations | [Model evaluation](model-evaluation/01-model-evaluation.md) | GA |
+
+For the reasoning behind choosing between these, see
+[Choosing between RAG, agents, flows and plain inference](../09-advanced-topics/14-choosing-rag-agents-flows.md).
 
 ## Chapters
 
