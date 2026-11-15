@@ -87,10 +87,10 @@ CLI workspaces add `<workspace_key_prefix>/*/<key>` paths, including `s3:DeleteO
 
 | Command | Use | Risk |
 |:--|:--|:--|
-| `state list`, `state show` | Inspect addresses and attributes | `show` prints sensitive attributes to your terminal |
+| `state list`, `state show` | Inspect addresses and attributes | `show` prints any secret held in an attribute the provider does not mark sensitive |
 | `state mv` | Rename or move an address | Prefer a reviewed `moved` block (1.1+) |
 | `state rm` | Forget an object without destroying it | The object keeps existing, unmanaged; prefer a `removed` block (1.7+) |
-| `state pull` | Download the current state | Leaves a plain-text copy on disk |
+| `state pull` | Print the current state as JSON | Full state, secrets included, in your terminal or in a file you redirect it to |
 | `state push` | Overwrite remote state | Refuses differing `lineage` or a lower `serial` unless `-force` — never force |
 | `state replace-provider` | Change provider source addresses | Rarely needed |
 
@@ -360,7 +360,7 @@ terraform {
 - SSE-KMS with a customer managed key makes the key policy a second gate.
 - Keep secrets out of state: write-only arguments, ephemeral resources, or services that read secrets themselves ([Secrets management and policy as code](../maintenance/04-secrets-and-policy-as-code.md)).
 - Plan files contain state and backend configuration; keep them as short-lived, encrypted CI artifacts.
-- `state pull` and `state show` put plain-text state on a laptop; avoid them in production outside break-glass procedures.
+- `state pull` puts the full plain-text state on a laptop; avoid it in production outside break-glass procedures.
 
 ## Cost considerations
 

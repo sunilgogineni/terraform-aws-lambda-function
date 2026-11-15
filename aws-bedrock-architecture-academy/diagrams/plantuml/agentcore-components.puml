@@ -1,0 +1,153 @@
+@startuml
+' =============================================================================
+' Amazon Bedrock AgentCore — services, provided interfaces and dependencies — UML component diagram
+'
+' Mermaid source set : diagrams/mermaid/12-agentcore-architecture.md (views A and B)
+' Chapters           : 01-amazon-bedrock/agentcore/01-agentcore-overview.md and 02 to 12
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      Customer-visible architecture only; AWS does not document the
+'                      hosts behind the service boundary. No AWS icons; no network includes.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agents-tools-runtime.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-sessions.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-core-concepts.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-outbound-auth.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-permissions.html
+'   https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/agentcore-regions.html
+' Operation names come from references/bedrock-api-operations.json (botocore 1.44.3).
+'
+' What UML adds over the Mermaid view: each service's provided interface (lollipop)
+' and who requires it (dashed dependency), so the API surface is explicit.
+' =============================================================================
+!pragma layout smetana
+title Amazon Bedrock AgentCore — components and interfaces around one agent (UML component)
+
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam componentStyle uml2
+skinparam packageStyle rectangle
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+skinparam interfaceBackgroundColor #FFFFFF
+skinparam interfaceBorderColor #333333
+
+!$CLIENT   = "#E8F1FB;line:1F6FEB;text:0B1F33"
+!$EDGE     = "#E0F7FA;line:00838F;text:00363A"
+!$COMPUTE  = "#FDEBD0;line:D97706;text:3B2300"
+!$AI       = "#E6F4EA;line:1E8E3E;text:0B2E13"
+!$DATA     = "#EDE7F6;line:6A1B9A;text:2A0A3D"
+!$SECURITY = "#FDECEA;line:C62828;text:3D0A0A"
+!$OBS      = "#FFF8E1;line:B28704;text:3D2E00"
+!$EXTERNAL = "#F1F3F4;line:5F6368;line.dashed;text:202124"
+
+package "Internet — untrusted" as internet #FAFAFA;line.dashed {
+  component "Client application" as client $CLIENT
+  component "Identity provider\nOIDC · issues JWT" as idp $EXTERNAL
+  component "Third-party API\nOAuth-protected" as saas $EXTERNAL
+}
+
+package "AWS account 111122223333 · Region us-east-1" as account {
+
+  package "Amazon Bedrock AgentCore — AWS-managed service boundary" as agentcore {
+    component "AgentCore data plane\ninbound authorizer: SigV4 or JWT" as dp $EDGE
+    () "InvokeAgentRuntime" as iInvokeRuntime
+    () "InvokeHarness" as iInvokeHarness
+    dp -up- iInvokeRuntime
+    dp -up- iInvokeHarness
+
+    component "AgentCore Runtime\nyour agent code" as runtime $COMPUTE
+    component "AgentCore harness\nmanaged agent loop" as harness $COMPUTE
+    component "Session microVM\nagent loop · execution role" as session $COMPUTE
+
+    component "AgentCore Memory\nevents and records · KMS" as memory $DATA
+    () "ListEvents\nRetrieveMemoryRecords\nCreateEvent" as iMemory
+    memory -up- iMemory
+
+    component "AgentCore Gateway\nMCP endpoint /mcp · service role" as gateway $EDGE
+    () "MCP tools/call" as iMcp
+    gateway -up- iMcp
+
+    component "AgentCore Policy\npolicy engine · LOG_ONLY or ENFORCE" as policy $SECURITY
+    component "AgentCore Identity\nworkload identity · token vault" as identity $SECURITY
+    () "GetResourceOauth2Token\nGetResourceApiKey" as iCredential
+    identity -up- iCredential
+
+    component "AgentCore Code Interpreter" as codeInt $COMPUTE
+    () "StartCodeInterpreterSession\nInvokeCodeInterpreter" as iCode
+    codeInt -up- iCode
+    component "AgentCore Browser" as browser $COMPUTE
+    () "StartBrowserSession" as iBrowser
+    browser -up- iBrowser
+
+    component "AgentCore Payments\npreview" as payments $EDGE
+    component "AWS Agent Registry\nagent-registry namespace" as registry $DATA
+    component "AgentCore Evaluations" as evals $AI
+    component "AgentCore Optimization" as optim $AI
+  }
+
+  component "Amazon Bedrock Runtime\nConverse · optional guardrail" as bedrock $AI
+  () "Converse" as iConverse
+  bedrock -up- iConverse
+
+  package "Customer VPC — private subnets" as vpc {
+    component "AWS Lambda function\ntool · own execution role" as fn $COMPUTE
+  }
+  database "AWS Secrets Manager\nOAuth client secrets" as secrets $DATA
+  database "AgentCore Observability\nAmazon CloudWatch · traces · metrics · logs" as cw $OBS
+  database "AWS CloudTrail\nAPI activity" as trail $OBS
+}
+
+client ..> idp : authenticate · OIDC
+client ..> iInvokeRuntime : HTTPS · JWT or SigV4\nsession ID header
+client ..> iInvokeHarness : HTTPS · JWT or SigV4
+dp --> runtime : route by session ID
+dp --> harness : route by session ID
+runtime --> session : starts a microVM\nper new session
+harness --> session : starts a microVM\nper new session
+session ..> iConverse : HTTPS · SigV4 · execution role
+session ..> iMemory : SigV4 · execution role
+session ..> iMcp : SigV4 or bearer token
+session ..> iCode : execution role
+session ..> iBrowser : execution role
+gateway ..> policy : authorize principal, tool, input
+gateway ..> iCredential : gateway service role\nworkload identity
+identity ..> secrets : secret reference
+gateway --> fn : Lambda Invoke · gateway service role
+gateway --> saas : HTTPS · OAuth token
+gateway ..> payments : paid tools
+registry ..> gateway : discovery of tools and agents
+session ..> cw : OpenTelemetry spans and logs
+cw ..> evals : telemetry scored
+evals ..> optim : results feed recommendations
+dp ..> trail : API events
+
+note bottom of agentcore
+  Thirteen services: Runtime, harness, Gateway, Identity, Memory, Code Interpreter, Browser,
+  Observability, Evaluations, Optimization, Policy, Registry and Payments (preview).
+  Each can be used without the others. The harness and Memory are in 16 of the 22 AgentCore Regions.
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | lollipop | interface the component provides (operation names) |
+  | dashed arrow | dependency: the source requires or uses the target |
+  | solid arrow | the source invokes or routes to the target |
+  | nested boxes | trust and network boundaries |
+  |<#E8F1FB> blue | client |
+  |<#E0F7FA> teal | entry point |
+  |<#FDEBD0> orange | compute |
+  |<#E6F4EA> green | model inference or managed AI |
+  |<#EDE7F6> purple | data store |
+  |<#FDECEA> red | security control |
+  |<#FFF8E1> yellow | observability |
+  |<#F1F3F4> grey dashed | outside your AWS account |
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

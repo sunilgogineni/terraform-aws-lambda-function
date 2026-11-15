@@ -240,7 +240,7 @@ flowchart TB
 12. The gateway calls the third-party API with that token; the agent never sees it.
 13. A risky request reaches only the propose tool.
 14. The proposal is stored as `PENDING` with the user, arguments and session.
-15. An approval workflow starts; its execution name is the proposal ID, so a duplicate start fails.
+15. An approval workflow starts; its execution name is the proposal ID, so a duplicate start cannot create a second execution.
 16. The workflow pauses on a task token and publishes an approval request.
 17. The approver is notified.
 18. The approver's application returns the decision with the task token.
@@ -301,11 +301,11 @@ sequenceDiagram
 
 **Steps and failure paths**
 
-- **1–2.** A missing or invalid JWT ends the request before any model call. A prompt cannot change who the actor is.
-- **3–4.** If the guardrail intervenes, the model returns the guardrail's message and no tool is requested.
-- **5–8.** The forbidden call never reaches a target. The denial is a tool result, so the agent can explain it; a spike in `DenyDecisions` is alarmed (see [AgentCore Observability](../../01-amazon-bedrock/agentcore/07-agentcore-observability.md)).
-- **9–18.** The only permitted path changes nothing except a proposal. If the Lambda function retries, `StartExecution` with the same name does not start a second workflow.
-- **19–25.** Without a decision the task token times out and the proposal is rejected by default. The executor is not a gateway target, so no prompt can reach it.
+- **1.** A missing or invalid JWT ends the request before any model call. A prompt cannot change who the actor is.
+- **2–3.** If the guardrail intervenes, the model returns the guardrail's message and no tool is requested.
+- **4–7.** The forbidden call never reaches a target. The denial is a tool result, so the agent can explain it; alarm on a spike in `DenyDecisions` (see [AgentCore Observability](../../01-amazon-bedrock/agentcore/07-agentcore-observability.md)).
+- **8–17.** The only permitted path changes nothing except a proposal. If the Lambda function is retried, a Standard workflow treats `StartExecution` with the same name and input as idempotent, so no second approval workflow starts ([StartExecution](https://docs.aws.amazon.com/step-functions/latest/apireference/API_StartExecution.html)).
+- **18–24.** In our design a task without a decision times out (`TimeoutSeconds`) and the workflow rejects the proposal. The executor is not a gateway target, so no prompt can reach it.
 
 ## Implementation details
 
@@ -330,13 +330,13 @@ sequenceDiagram
 | Your VPC | Tool and executor functions | Security groups; reachable only by the gateway role or the workflow |
 | Your account, regional services | DynamoDB, Step Functions, SNS, CloudWatch | Resource policies; customer managed keys |
 
-### Human approval: three documented mechanisms
+### Human approval: three mechanisms
 
 | Mechanism | How it works | Use it for |
 |:--|:--|:--|
-| **Propose, then execute out of band** (this pattern) | The agent's only tool for the action records a proposal; a workflow executes after `SendTaskSuccess` | Irreversible or financial actions |
-| Harness **inline function** | "The harness pauses when the tool is called and returns the call to your code"; you return the result in a later `InvokeHarness` call with the same session | Approval inside the chat, by the same user |
-| **Dogwood temporal policy** | A `permit` that requires an earlier approval tool response in the same policy session | Enforcing order of steps at the gateway |
+| **Propose, then execute out of band** (academy design, built from documented Step Functions task tokens) | The agent's only tool for the action records a proposal; a workflow executes after `SendTaskSuccess` | Irreversible or financial actions |
+| Harness **inline function** (documented) | "The harness pauses when the tool is called and returns the call to your code"; you return the result in a later `InvokeHarness` call with the same session | Approval inside the chat, by the same user |
+| **Dogwood temporal policy** (documented) | A `permit` that requires an earlier approval tool response in the same policy session | Enforcing order of steps at the gateway |
 
 Sources: [Harness tools](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/harness-tools.html), [Policy](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy.html), [Step Functions integration patterns](https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html).
 
@@ -487,6 +487,7 @@ Official sources opened while writing this chapter:
 - [What is Amazon Bedrock AgentCore?](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html) — the services used here.
 - [Amazon Bedrock Agents Classic maintenance mode](https://docs.aws.amazon.com/bedrock/latest/userguide/agents-classic-maintenance-mode.html) — status and the Classic-to-AgentCore mapping.
 - [Discover service integration patterns in Step Functions](https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html) — task tokens; AgentCore supports Request Response only.
+- [StartExecution](https://docs.aws.amazon.com/step-functions/latest/apireference/API_StartExecution.html) — idempotent for Standard workflows with the same name and input.
 - [Monitor bedrock-runtime inference using CloudWatch metrics](https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html) — throttling based on input tokens plus `max_tokens`.
 - [Prompt injection security](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-injection.html) — the customer's responsibility.
 - [Agentic AI patterns and workflows on AWS](https://docs.aws.amazon.com/prescriptive-guidance/latest/agentic-ai-patterns/introduction.html) — AWS Prescriptive Guidance.

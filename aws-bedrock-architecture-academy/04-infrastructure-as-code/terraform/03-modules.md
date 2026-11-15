@@ -29,7 +29,7 @@ A module is a kit with instructions. The kit for "an IAM role that may call thes
 
 **The contract.** A child module's interface is its `variable` blocks (inputs), `output` blocks (results) and its `terraform { required_version, required_providers }` block. It must not contain `provider` blocks: provider configurations are global to the whole configuration, defined only in the root, and a module with its own provider configuration cannot be used with `for_each`, `count` or `depends_on` ([Providers within modules](https://developer.hashicorp.com/terraform/language/modules/develop/providers)).
 
-**Sources.** `source` tells `terraform init` where to fetch the code; it installs remote modules under `.terraform/modules` and must be re-run when a source or version changes ([module block reference](https://developer.hashicorp.com/terraform/language/block/module), [Use modules](https://developer.hashicorp.com/terraform/language/modules/sources)).
+**Sources.** `source` tells `terraform init` where to fetch the code; it installs remote modules into a hidden subdirectory of the working directory (under `.terraform`) and must be re-run when a source or version changes ([module block reference](https://developer.hashicorp.com/terraform/language/block/module), [Use modules](https://developer.hashicorp.com/terraform/language/modules/sources)).
 
 | Source type | Example `source` | Versioning |
 |:--|:--|:--|

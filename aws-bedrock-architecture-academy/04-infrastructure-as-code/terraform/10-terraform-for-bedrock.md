@@ -345,7 +345,7 @@ resource "awscc_bedrock_intelligent_prompt_router" "support" {
 }
 ```
 
-**5. The one ephemeral resource: a guardrail smoke test.** `aws_bedrockruntime_apply_guardrail` calls `ApplyGuardrail` during plan and apply without storing the text or result in state; intervention is reported as `action = "GUARDRAIL_INTERVENED"`, not as an error ([provider docs](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/ephemeral-resources/bedrockruntime_apply_guardrail.html.markdown)). This turns "the published version still blocks what it must block" into a plan-time gate:
+**5. The one ephemeral resource: a guardrail smoke test.** Ephemeral resources need Terraform 1.10+. `aws_bedrockruntime_apply_guardrail` calls `ApplyGuardrail` during plan and apply without storing the text or result in state; intervention is reported as `action = "GUARDRAIL_INTERVENED"`, not as an error ([provider docs](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/ephemeral-resources/bedrockruntime_apply_guardrail.html.markdown)). This turns "the published version still blocks what it must block" into a plan-time gate:
 
 ```hcl
 # variables: guardrail_id, guardrail_version, must_block_prompt (sensitive)
@@ -429,7 +429,7 @@ The block name `mock_ephemeral` was established by running Terraform 1.17.2 (`mo
 
 - Paths 2 and 3 act with the caller's credentials unless a service role is set; a CloudFormation service role for Bedrock stacks narrows what Terraform's role must hold.
 - Ephemeral `apply_guardrail` keeps test prompts out of state; still mark the variable `sensitive`, because plan logs and CI variables can leak it.
-- Write-only `api_key_wo` keeps an AgentCore API key out of state; the plain `api_key` argument does not.
+- Write-only `api_key_wo` (write-only arguments need Terraform 1.11+) keeps an AgentCore API key out of state; the plain `api_key` argument does not.
 - Every extra provider (`awscc`) is another supply-chain dependency: pin it and commit its lock entry.
 
 ## Cost considerations

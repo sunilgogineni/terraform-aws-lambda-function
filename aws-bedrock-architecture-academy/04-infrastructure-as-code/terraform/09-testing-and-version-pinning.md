@@ -32,7 +32,7 @@ Think of a theatre production. A spell-check of the script costs nothing and cat
 | Layer | Tools | Catches | AWS credentials? | Speed |
 |:--|:--|:--|:-:|:--|
 | 1. Static | `terraform fmt -check`, `terraform validate`, TFLint, security scanners | Syntax, types, unknown arguments, style, unused declarations, known misconfigurations | No | Seconds |
-| 2. Unit | `terraform test` with `mock_provider` and `command = plan` (or `apply` against mocks) | Module logic: names, ARNs, policy documents, validations, conditions, `for_each` keys | No | Seconds |
+| 2. Unit | `terraform test` (1.6+) with `mock_provider` (1.7+) and `command = plan` (or `apply` against mocks) | Module logic: names, ARNs, policy documents, validations, conditions, `for_each` keys | No | Seconds |
 | 3. Plan-based | `terraform plan -out`, `terraform show -json`, policy engines (OPA/Conftest, Terraform Policy), destroy gates | What would really change in a real account: replacements, deletions, policy violations | Yes (read) | Minutes |
 | 4. Integration | `terraform test` with a real provider and `command = apply`; Terratest | Service-side validation: quotas, Region and model support, IAM propagation | Yes (write, sandbox account) | Minutes to hours, costs money |
 
