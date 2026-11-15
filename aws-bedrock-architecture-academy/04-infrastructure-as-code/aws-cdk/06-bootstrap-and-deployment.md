@@ -69,7 +69,7 @@ Bootstrap parameters are remembered. To remove one, rerun with `--no-previous-pa
 
 ### The bootstrap contract inside your templates
 
-The synthesizer (by default `DefaultStackSynthesizer`) writes the bootstrap names into the cloud assembly. Every template gets a `BootstrapVersion` parameter that resolves `/cdk-bootstrap/<qualifier>/version` from SSM, and a `CheckBootstrapVersion` rule that fails the deployment if that version is too old. The manifest records, per stack, the deploy role ARN, the execution role ARN, the S3 URL of the uploaded template and the minimum bootstrap version. If you bootstrap with `--qualifier acad1`, synthesize with `new DefaultStackSynthesizer({ qualifier: 'acad1' })` or the context key `@aws-cdk/core:bootstrapQualifier`; the [example test](examples/test/delivery-pipeline.test.ts) checks this.
+The synthesizer (by default `DefaultStackSynthesizer`) writes the bootstrap names into the cloud assembly. Every template gets a `BootstrapVersion` parameter that resolves `/cdk-bootstrap/<qualifier>/version` from SSM, and a CheckBootstrapVersion rule that fails the deployment if that version is too old. The manifest records, per stack, the deploy role ARN, the execution role ARN, the S3 URL of the uploaded template and the minimum bootstrap version. If you bootstrap with `--qualifier acad1`, synthesize with `new DefaultStackSynthesizer({ qualifier: 'acad1' })` or the context key `@aws-cdk/core:bootstrapQualifier`; the [example test](examples/test/delivery-pipeline.test.ts) checks this.
 
 ### Assets
 
@@ -95,7 +95,7 @@ An **asset** is a local file, directory or Docker image a stack needs at deploym
 |:--|:--|:--|
 | `cdk deploy` | Synthesize, publish assets, create and execute a change set. `--method=prepare-change-set` then `--method=execute-change-set` splits review from execution | Stable |
 | `cdk diff` | Compare with the deployed stack; `--fail-on=broadening` or `=destructive` gates CI | Stable |
-| `cdk drift` | Run CloudFormation drift detection; `--fail` for CI | Stable (no flag) |
+| `cdk drift` | Run CloudFormation drift detection; `--fail` for CI. `cdk deploy --revert-drift` creates a drift-aware change set that brings resources back to the template | Stable (no flag) |
 | `cdk import` | Bring existing resources into a stack (bootstrap version 12+); `cdk deploy --import-existing-resources` for named resources | Stable (no flag) |
 | `cdk rollback` | Roll back a paused failed deployment | Stable |
 | `cdk refactor` | Move or rename resources without replacement, using CloudFormation stack refactoring | Preview: `--unstable=refactor` |
@@ -272,7 +272,7 @@ expect(executionRole.asString()).toBe(`:iam::${WORKLOAD}:role/cdk-hnb659fds-cfn-
 1. A colleague bootstraps a workload account with `--trust 111122223333` but no execution policy. What happens, and why does the CLI behave that way?
 2. Your pipeline account can assume `cdk-hnb659fds-deploy-role` in the workload account. Can it create an IAM user directly? Can it get one created?
 3. A deployment fails while creating an AgentCore Memory after the guardrail was created. What is the state of the stack with default options, and with `--no-rollback`?
-4. Why does the synthesized template contain a `BootstrapVersion` parameter and a `CheckBootstrapVersion` rule?
+4. Why does the synthesized template contain a `BootstrapVersion` parameter and a CheckBootstrapVersion rule?
 
 <details>
 <summary>Answers</summary>

@@ -111,7 +111,7 @@ flowchart TB
 | Tokens | Stand-ins for values known only at deployment, rendered as `Ref` / `Fn::GetAtt` | Prevents secrets or IDs being hard-coded |
 | Prepare and validate | Aspects modify or inspect the tree; validation plugins (cdk-nag 3, built-in CloudFormation validation) check templates and can stop synthesis | Policy as code before anything reaches AWS |
 | Cloud assembly | Templates, `manifest.json` (per stack: deploy role ARN, execution role ARN, template URL, minimum bootstrap version) and asset manifests | Reviewable, diffable artifact; deploy the same assembly you tested |
-| SSM version parameter | Read by the CLI and by the template's `BootstrapVersion` parameter; the `CheckBootstrapVersion` rule fails old environments | Contract between template and bootstrap stack |
+| SSM version parameter | Read by the CLI and by the template's `BootstrapVersion` parameter; the CheckBootstrapVersion rule fails old environments | Contract between template and bootstrap stack |
 | Publishing roles | Write assets to the staging bucket and repository | Trust policy: the account itself plus `--trust` accounts; external IDs denied |
 | Deploy role | Create and execute change sets, pass the execution role, read the staging bucket | Cannot create workload resources itself |
 | Execution role | The permissions CloudFormation uses for every resource operation | Execution policies from `--cloudformation-execution-policies`, optional permissions boundary |

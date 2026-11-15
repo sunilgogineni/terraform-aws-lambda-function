@@ -1,0 +1,152 @@
+@startuml
+' =============================================================================
+' Knowledge base ingestion (customer-managed vector knowledge base) — UML activity diagram
+'
+' Mermaid source set : diagrams/mermaid/06-knowledge-base-ingestion-pipeline.md (views B and C)
+' Chapter            : 01-amazon-bedrock/knowledge-bases/04-ingestion-parsing-chunking.md
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      AWS documents the stages, permissions and statuses, not how
+'                      Bedrock schedules the work: the Bedrock lane is a conceptual
+'                      model of documented behaviour. No AWS icons; no network includes.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-data-source-sync-ingest.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking-parsing.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-advanced-parsing.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-custom-transformation.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-bases-logging.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/kb-permissions.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/encryption-kb.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_StartIngestionJob.html
+'
+' What UML adds over the Mermaid view: one decision per document, swimlanes for
+' who acts, and the end-of-job decision a pipeline must make.
+' =============================================================================
+!pragma layout smetana
+title Knowledge base ingestion — one sync of a customer-managed vector knowledge base (UML activity)
+
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam ActivityBorderColor #555555
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #555555
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+skinparam swimlaneWidth same
+
+|#E8F1FB|Scheduler or pipeline step\nIAM role|
+start
+:StartIngestionJob (knowledgeBaseId, dataSourceId)
+HTTPS · SigV4 · bedrock:StartIngestionJob;
+
+|#E6F4EA|Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
+#E6F4EA:Return HTTP 202 · ingestionJobId · status STARTING;
+note right
+  Only one job runs per data source
+  and per knowledge base at a time
+end note
+#FDECEA:sts:AssumeRole on the knowledge base service role
+trust: bedrock.amazonaws.com · aws:SourceAccount · aws:SourceArn;
+#E6F4EA:Job IN_PROGRESS
+log StatusChanged · INGESTION_JOB_STARTED;
+#E6F4EA:List the bucket prefix; read documents and .metadata.json files
+s3:ListBucket · s3:GetObject;
+note right
+  Transient data is encrypted with your key
+  (kms:GenerateDataKey, kms:Decrypt) when the data source
+  sets serverSideEncryptionConfiguration.kmsKeyArn
+end note
+
+while (Next document in the bucket?) is (yes)
+  switch (What changed for this document since the last sync?)
+  case (new, or content changed)
+    #E6F4EA:Parse the whole file
+    default parser (text only) · BEDROCK_DATA_AUTOMATION
+    · BEDROCK_FOUNDATION_MODEL (InvokeModel);
+    #E6F4EA:Chunk the text
+    default · fixed · hierarchical · semantic · none;
+    if (Transformation function configured?\nPOST_CHUNKING) then (yes)
+      #EDE7F6:Write chunk files to your intermediate S3 location;
+      #FDEBD0:Invoke your AWS Lambda function with file references;
+      #EDE7F6:Read back rewritten chunks or chunk-level metadata;
+    else (no)
+    endif
+    #E6F4EA:bedrock:InvokeModel on the embedding model for every chunk;
+    if (Embedding failed?) then (yes)
+      #FFF8E1:Log ResourceStatusChanged · EMBEDDING_FAILED
+      with status_reasons;
+      note right
+        Counted in statistics.numberOfDocumentsFailed;
+        the job does not fail. Our reading: the document
+        is not in the index and is processed again next sync
+      end note
+    else (no)
+      |#EDE7F6|Your vector store\nstore's own access policy|
+      #EDE7F6:Write vectors, chunk text and metadata
+      a changed document is re-indexed in full;
+      |Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
+      #FFF8E1:Log ResourceStatusChanged · INDEXED;
+    endif
+  case (only its metadata file changed\nnot CSV · no transformation function)
+    |Your vector store\nstore's own access policy|
+    #EDE7F6:Read vectors, merge the new metadata, write back
+    no embedding model call;
+    |Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
+    #FFF8E1:Log METADATA_UPDATE_COMPLETED;
+  case (deleted from the bucket)
+    |Your vector store\nstore's own access policy|
+    #EDE7F6:Delete its vectors;
+    |Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
+    #FFF8E1:Log DELETED;
+  case (unchanged)
+    #E6F4EA:Skip;
+  endswitch
+endwhile (no more documents)
+
+if (Job-level error?\nfor example the role cannot reach the store) then (yes)
+  #FDECEA:Job FAILED with failureReasons;
+else (no)
+  #E6F4EA:Job COMPLETE
+  statistics include numberOfDocumentsFailed;
+endif
+
+|Scheduler or pipeline step\nIAM role|
+:GetIngestionJob until COMPLETE, FAILED or STOPPED
+bedrock:GetIngestionJob;
+if (FAILED, or numberOfDocumentsFailed > 0?) then (yes)
+  #FDECEA:Treat the run as failed
+  read failureReasons and the EMBEDDING_FAILED log entries;
+  note right: Academy recommendation
+else (no)
+  :Wait before querying: new vectors can take a few minutes
+  to become searchable in stores other than Amazon Aurora;
+endif
+stop
+
+floating note left
+  StopIngestionJob at any point: STOPPING, then STOPPED.
+  Start again later to ingest the rest.
+  RESOURCE_IGNORED: a document was not processed;
+  the reason is in status_reasons.
+  A metadata file for doc.pdf must be named
+  doc.pdf.metadata.json. CSV files are always
+  re-ingested when their metadata changes.
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | rounded box | action |
+  | diamond | decision on documented behaviour |
+  | swimlane | who performs the action |
+  |<#E8F1FB> blue | caller |
+  |<#E6F4EA> green | Amazon Bedrock (managed) |
+  |<#FDEBD0> orange | your compute |
+  |<#EDE7F6> purple | data at rest |
+  |<#FDECEA> red | security control or failure |
+  |<#FFF8E1> yellow | log record — only with APPLICATION_LOGS delivery enabled |
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

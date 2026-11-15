@@ -208,13 +208,14 @@ run "rejects_invalid_bucket_name" {
   expect_failures = [var.bucket_name]
 }
 
-run "rejects_bad_state_key_and_deletion_window" {
+run "rejects_bad_state_key_key_settings_and_alias" {
   command = plan
 
   variables {
     state_keys                  = ["/prod/terraform.tfstate"]
     kms_deletion_window_in_days = 3
+    kms_alias_name              = "alias/aws/s3"
   }
 
-  expect_failures = [var.state_keys, var.kms_deletion_window_in_days]
+  expect_failures = [var.state_keys, var.kms_deletion_window_in_days, var.kms_alias_name]
 }

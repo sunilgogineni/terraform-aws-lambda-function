@@ -205,13 +205,14 @@ run "rejects_wildcard_model_arn" {
   expect_failures = [var.model_arns]
 }
 
-run "rejects_hyphenated_name_and_default_endpoint" {
+run "rejects_hyphenated_name_default_endpoint_and_empty_description" {
   command = plan
 
   variables {
     name          = "support-agent"
     endpoint_name = "DEFAULT"
+    description   = ""
   }
 
-  expect_failures = [var.name, var.endpoint_name]
+  expect_failures = [var.name, var.endpoint_name, var.description]
 }

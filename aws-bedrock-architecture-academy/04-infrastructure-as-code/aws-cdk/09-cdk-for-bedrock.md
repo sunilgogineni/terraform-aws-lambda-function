@@ -64,7 +64,7 @@ The L1 classes are generated from the CloudFormation resource specification bund
 | Built-in tools | `BrowserCustom`, `BrowserProfile`, `CodeInterpreterCustom` | `BrowserCustom`, `CodeInterpreterCustom` | `BrowserProfile` |
 | Policy | `Policy`, `PolicyEngine` | both | — |
 | Evaluations and Optimization | `Evaluator`, `OnlineEvaluationConfig`, `Dataset`, `ConfigurationBundle` | `Evaluator`, `OnlineEvaluationConfig` | `Dataset`, `ConfigurationBundle` |
-| Payments (preview) | `PaymentManager`, `PaymentConnector`, `PaymentCredentialProvider` | — | all three |
+| Payments | `PaymentManager`, `PaymentConnector`, `PaymentCredentialProvider` | — | all three |
 | Resource policy | `ResourcePolicy` | — | yes |
 | AWS Agent Registry | `AWS::AgentRegistry::Registry`, `RegistryRecord` (module `aws-cdk-lib/aws-agentregistry`) | — | `CfnRegistry`, `CfnRegistryRecord` |
 

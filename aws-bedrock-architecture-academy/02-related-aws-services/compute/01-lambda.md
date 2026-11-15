@@ -454,7 +454,7 @@ The execution role's Bedrock statements, for a Geo cross-Region inference profil
 ## Cost considerations
 
 - **Lambda bills while it waits.** Duration × memory includes every second spent waiting for the model; streaming bills until the stream ends, even after the client leaves.
-- **Bedrock bills tokens.** `maxTokens`, prompt size and prompt caching ([Prompt caching](../../01-amazon-bedrock/prompt-caching/01-prompt-caching.md)) matter more than Lambda memory.
+- **Bedrock bills tokens.** `maxTokens`, prompt size and [prompt caching](../../01-amazon-bedrock/prompt-caching/01-prompt-caching.md) drive that part of the bill.
 - **Retries cost twice.** A retried timeout can mean two paid generations.
 - **Endpoints cost money.** Each interface endpoint bills per hour per Availability Zone plus per GB; see [Private connectivity for Bedrock](../networking/01-private-connectivity-for-bedrock.md).
 - Pricing: [Lambda pricing](https://aws.amazon.com/lambda/pricing/), [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/).
