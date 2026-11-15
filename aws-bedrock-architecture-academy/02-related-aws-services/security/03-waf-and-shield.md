@@ -22,9 +22,9 @@ After this chapter you can:
 
 ## Concept in plain language
 
-Your chatbot is a shop. Customers come through your front door, and a clerk in the back phones a supplier (Bedrock) for every answer. AWS WAF is the doorman at *your* front door: it can turn away known troublemakers, people arriving too fast, and anyone carrying a parcel bigger than allowed. AWS Shield is the city's crowd control on the street outside.
+Your chatbot is a shop whose clerk phones a supplier (Bedrock) for every answer. AWS WAF is the doorman at *your* front door: he turns away known troublemakers, people arriving too fast and anyone carrying an oversized parcel. AWS Shield is crowd control on the street outside.
 
-Neither stands in the back room. The doorman never hears the customer's question, so he cannot tell a polite request from a cleverly worded trick. That is the job of other controls further in.
+Neither stands in the back room, and the doorman never hears the customer's question — he cannot tell a polite request from a cleverly worded trick.
 
 ## How it really works
 
@@ -34,7 +34,7 @@ Neither stands in the back room. The doorman never hears the customer's question
 > **Status** — AWS WAF support for AgentCore Gateway became generally available on 2026-06-29, in all Regions where both services exist. It applies one Regional web ACL per gateway, to every target behind it. The `bedrock-runtime`, `bedrock-mantle` and AgentCore Runtime endpoints are **not** WAF-protectable resources: there is **no native integration** between AWS WAF and model inference.
 > Sources: [What's New, 2026-06-29](https://aws.amazon.com/about-aws/whats-new/2026/06/aws-waf-amazon-bedrock-agentcore/), [Protecting your gateway with AWS WAF](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-waf.html)
 
-**AgentCore Gateway specifics.** The gateway must be `READY`; CloudFront (global) web ACLs are not supported; association needs both `wafv2:` actions and the `bedrock-agentcore:Gateway*WebACL` permissions. If AWS WAF is unreachable the gateway applies a failure mode set with `wafConfiguration` on `UpdateGateway`: `FAIL_CLOSE` (default, blocks) or `FAIL_OPEN`. Blocked MCP requests get JSON-RPC error `-32002`; HTTP targets get 403. Metrics `WafBlocks`, `WafFailOpens` and `WafFailCloses` appear in the `AWS/Bedrock-AgentCore` namespace; the limit is 100 web ACL associations per account ([gateway WAF page](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-waf.html)). Terraform 6.73.0 can associate the web ACL (`aws_wafv2_web_acl_association`) but `aws_bedrockagentcore_gateway` has no argument for the failure mode.
+**AgentCore Gateway specifics.** Only Regional web ACLs; the gateway must be `READY`; association needs `wafv2:` and `bedrock-agentcore:Gateway*WebACL` permissions. If AWS WAF is unreachable, `wafConfiguration` on `UpdateGateway` decides: `FAIL_CLOSE` (default) or `FAIL_OPEN`. Blocked MCP requests get JSON-RPC error `-32002`, HTTP targets 403; metrics `WafBlocks`, `WafFailOpens` and `WafFailCloses` appear in `AWS/Bedrock-AgentCore`; at most 100 associations per account ([gateway WAF page](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-waf.html)). Terraform 6.73.0 can associate the web ACL but has no gateway argument for the failure mode.
 
 **Body inspection limits.** For ALB and AppSync, WAF inspects the first 8 KB of a body, fixed. For CloudFront, API Gateway, Cognito, App Runner, Verified Access and AgentCore Gateway the default is 16 KB, raisable to 64 KB (at extra cost). Beyond the limit, each rule's *oversize handling* decides: `Continue`, `Match` or `No match`. Headers and cookies: first 8 KB and 200 entries ([oversize components](https://docs.aws.amazon.com/waf/latest/developerguide/web-request-body-inspection.html)). A chat request with conversation history easily exceeds 8 KB.
 
@@ -44,7 +44,7 @@ Neither stands in the back room. The doorman never hears the customer's question
 
 **Rate-based rules as a cost guard.** A rate-based rule counts matching requests over an evaluation window of 60, 120, 300 (default) or 600 seconds; the lowest limit is 10; aggregation can be by IP, forwarded IP, or custom keys such as a header, cookie or label namespace; a scope-down statement narrows what is counted ([settings](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-high-level-settings.html), [aggregation](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based-aggregation-options.html)). WAF counts *requests*, not tokens: one request can cost a fraction of a cent or many dollars. Pair it with a body-size rule (which caps input tokens per request) and with per-user quotas in your application.
 
-**Bot Control and AI bots.** The Bot Control rule group's `CategoryAI` rule blocks AI bots and, unlike other category rules, acts on verified bots too. Version 4.0 (2025-11-20) added Web Bot Auth verification, which automatically allows cryptographically verified agents and labels AgentCore agents — available on CloudFront only. An AI activity dashboard followed on 2026-02-24 ([Bot Control rule group](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-bot.html), [managed rules changelog](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-changelog.html), [What's New](https://aws.amazon.com/about-aws/whats-new/2026/02/aws-waf-ai-activity-dashboard/)). These rules concern AI bots as *clients* of your site, not prompt content.
+**Bot Control and AI bots.** Bot Control's `CategoryAI` rule blocks AI bots, verified ones included. Version 4.0 (2025-11-20) added Web Bot Auth, which allows cryptographically verified agents and labels AgentCore agents — CloudFront only; an AI activity dashboard followed on 2026-02-24 ([Bot Control rule group](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-bot.html), [managed rules changelog](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-changelog.html), [What's New](https://aws.amazon.com/about-aws/whats-new/2026/02/aws-waf-ai-activity-dashboard/)). These rules concern AI bots as *clients* of your site, not prompt content.
 
 **No prompt-injection rule group.** The AWS Managed Rules list read on 2026-11-15 has baseline groups (Core rule set, Admin protection, Known bad inputs), use-case groups (SQL, Linux, POSIX, Windows, PHP, WordPress), IP reputation groups, Fraud Control (ATP, ACFP), Bot Control and the anti-DDoS group — none for prompt injection or LLM-specific threats ([rule groups list](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html)).
 
@@ -69,7 +69,7 @@ Sources: [Shield pricing](https://aws.amazon.com/shield/pricing/), [Shield Stand
 | 3. Your function calls Bedrock | Your code | Prompt to the model | Execution role (SigV4) | Public or interface VPC endpoint — **no WAF on this hop** |
 | 4. MCP call to AgentCore Gateway, evaluated by its web ACL | Agent or MCP client | Tool request in | JWT or SigV4 at the gateway; WAF sees only the request | Internet or PrivateLink to the gateway |
 | 5. Gateway routes allowed requests to targets | AgentCore Gateway | Tool input to Lambda, APIs, MCP servers | Gateway service role or credential provider | AWS network or outbound internet |
-| 6. WAF logs and metrics | AWS WAF and AgentCore | Request metadata to CloudWatch Logs, S3 or Firehose; metrics | Service | Inside AWS |
+| 6. WAF logs and metrics | AWS WAF and AgentCore | Request metadata to CloudWatch Logs or Amazon S3; metrics | Service | Inside AWS |
 | — Prompt-content inspection | — | **No native capability**: WAF matches strings and sizes, not intent | — | — |
 
 ## Architecture diagram
@@ -98,7 +98,7 @@ flowchart LR
     end
     user -- "1. HTTPS · rate, size, bot rules" --> cf
     cf -- "2. HTTPS to origin · Regional rules" --> apigw
-    apigw -- "Lambda proxy" --> fn
+    apigw -- "2. Lambda proxy integration" --> fn
     fn -- "3. Converse · SigV4 · IAM only" --> rt
     agentClient -- "4. MCP over HTTPS · JWT · web ACL" --> gw
     gw -- "5. Allowed requests only" --> tools
@@ -112,7 +112,7 @@ flowchart LR
     classDef obs      fill:#FFF8E1,stroke:#B28704,color:#3D2E00
 ```
 
-**What this shows** — Web ACLs on the three doors you own (CloudFront, API Gateway, AgentCore Gateway) and none on Bedrock's own endpoint. Everything WAF stops is stopped before your code spends a token; anything it lets through reaches the model with the same content. This is our drawing, not an official AWS diagram.
+**What this shows** — Web ACLs on the three doors you own and none on Bedrock's endpoint: whatever WAF stops costs no tokens; whatever it allows reaches the model unchanged. This is our drawing, not an official AWS diagram.
 
 **Walkthrough**
 
@@ -134,7 +134,7 @@ flowchart LR
 3. **Scope rate limits to the expensive paths** (`/chat`, `/agent`) and aggregate on the caller's identity where possible, for example a header carrying a tenant or API-key ID, with IP as a fallback.
 4. **Run new rules in Count mode first.** AWS recommends testing in Count before Block, and the AgentCore page repeats it for gateways.
 5. **Keep `FAIL_CLOSE` on AgentCore gateways** unless availability truly outranks inspection; alarm on `WafFailOpens`.
-6. **Log.** Send WAF logs to CloudWatch Logs or S3; correlate the gateway request ID with WAF logs to see which rule blocked a tool call.
+6. **Log** to CloudWatch Logs or S3 and correlate the gateway request ID with WAF logs to find the blocking rule.
 
 > [!TIP]
 > **Academy recommendation** — Treat WAF as three cheap filters in front of an expensive service: size (input tokens), rate (call volume) and reputation (who is calling). Leave meaning to Guardrails and authorisation to IAM and AgentCore Policy. This is our design guidance, not an official AWS reference architecture.
@@ -319,11 +319,10 @@ resource "aws_wafv2_web_acl_association" "agentcore_gateway" {
 
 - **WAF cannot defend against prompt injection.** It sees bytes, not intent; size limits cap what it inspects; and indirect injection arrives in retrieved documents, tool results and web pages that never pass your web ACL. Defences are layered: Guardrails prompt-attack filters, privilege separation for tools, AgentCore Policy on tool calls and human approval — see [Prompt injection, untrusted tool output and retrieval poisoning](../../06-security-governance/04-prompt-injection-and-untrusted-content.md). GuardDuty AI Protection reports direct prompt injection that a guardrail detected ([chapter 4](04-guardduty-security-hub-config-macie.md)).
 - WAF does not authenticate users. Keep API Gateway authorisers or gateway JWT authorisers; Security Hub control `[BedrockAgentCore.2]` flags gateways without inbound authorisation.
-- WAF logs can contain request fragments; protect them like application logs.
 
 ## Cost considerations
 
-- AWS WAF pay-as-you-go: per web ACL, per rule (managed rule groups count as one rule plus $1 per month each), and per million requests; the pricing examples use $5 per web ACL, $1 per rule and $0.60 per million requests. Extra body inspection beyond the default costs $0.30 per million requests per additional 16 KB ([WAF pricing](https://aws.amazon.com/waf/pricing/)).
+- AWS WAF pay-as-you-go: per web ACL, per rule (each rule group or managed rule group you add is charged $1 per month), and per million requests; the pricing examples use $5 per web ACL, $1 per rule and $0.60 per million requests. Extra body inspection beyond the default costs $0.30 per million requests per additional 16 KB ([WAF pricing](https://aws.amazon.com/waf/pricing/)).
 - Bot Control: Common includes the first 10 million requests a month, Targeted the first 1 million; beyond that it is charged.
 - Shield Advanced: $3,000 per month per payer account plus data transfer out; it includes standard WAF charges for protected resources.
 - The saving is the point: a blocked 60 KB prompt costs a WAF request fee, not a model invocation.

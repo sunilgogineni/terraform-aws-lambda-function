@@ -1,4 +1,4 @@
-import { Environment, Stack, StackProps, Stage, StageProps } from 'aws-cdk-lib';
+import { CfnResource, Environment, Stack, StackProps, Stage, StageProps } from 'aws-cdk-lib';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as pipelines from 'aws-cdk-lib/pipelines';
 import { Construct } from 'constructs';
@@ -55,6 +55,14 @@ export class DeliveryPipelineStack extends Stack {
 
     this.pipeline.addStage(new BedrockWorkloadStage(this, 'Workload', { env: props.workloadEnv }), {
       pre: [new pipelines.ManualApprovalStep('ApproveWorkloadChange')],
+    });
+
+    // Build the pipeline now (instead of at synthesis) so the underlying L1 can be reached.
+    // cfn-lint 1.60.1 reports E3703 for the Fn::Join role ARNs that CDK Pipelines writes into
+    // CloudFormation deploy actions; suppress that one rule on that one resource, with a reason.
+    this.pipeline.buildPipeline();
+    (this.pipeline.pipeline.node.defaultChild as CfnResource).addMetadata('cfn-lint', {
+      config: { ignore_checks: ['E3703'] },
     });
   }
 }

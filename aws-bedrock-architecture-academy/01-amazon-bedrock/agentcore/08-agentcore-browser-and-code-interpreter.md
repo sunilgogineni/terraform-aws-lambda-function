@@ -113,16 +113,16 @@ flowchart LR
 
 **What this shows** — Both tools follow the same pattern: a resource you configure once, sessions that each get a dedicated microVM, and a network mode that decides what the session can reach. The browser is drawn in VPC mode and the code interpreter in `SANDBOX` mode, which is the pairing used in the [working example](#13-working-example). This is an academy diagram, not an official AWS reference architecture.
 
-1. The agent starts a session on the data-plane endpoint with SigV4.
-2. AgentCore boots a dedicated microVM "with isolated CPU, memory, and filesystem resources"; at session end it is terminated and its memory sanitised.
-3. Code Interpreter is used through one request/response operation that returns a stream.
-4. Browser automation uses a WebSocket that speaks the Chrome DevTools Protocol (CDP).
-5. In `SANDBOX` mode the code can reach Amazon S3 with the execution role's permissions.
-6. In VPC mode AgentCore places network interfaces in your subnets through the service-linked role `AWSServiceRoleForBedrockAgentCoreNetwork`; your security groups decide what they reach.
-7. Internet access from VPC mode needs private subnets routed to a NAT gateway; a public subnet does not provide it.
-8. A custom browser can record sessions to your S3 bucket.
-9. A person can watch, and take over, through the live view stream.
-10. Metrics go to CloudWatch and API calls to CloudTrail.
+1. The agent starts a session with SigV4.
+2. Each session gets a dedicated microVM "with isolated CPU, memory, and filesystem resources", terminated and memory-sanitised at the end.
+3. Code Interpreter takes one request per action and answers with a stream.
+4. Browser automation is a WebSocket speaking the Chrome DevTools Protocol (CDP).
+5. `SANDBOX` code reaches Amazon S3 with the execution role.
+6. VPC mode places network interfaces in your subnets (service-linked role `AWSServiceRoleForBedrockAgentCoreNetwork`); security groups decide what they reach.
+7. Internet from VPC mode needs a NAT gateway; a public subnet does not help.
+8. A custom browser records sessions to your bucket.
+9. A person watches or takes over through live view.
+10. Metrics go to CloudWatch, API calls to CloudTrail.
 11. Results return to the agent.
 
 **Legend** — solid: request · dashed: response or role assumption · thick: asynchronous data · cylinder: data store · grey dashed box: outside your account. The full runtime-and-tools picture is planned as [diagram set 13](../../diagrams/mermaid/13-agentcore-runtime-and-tool-execution.md).
@@ -317,7 +317,7 @@ Quoted from [Quotas for Amazon Bedrock AgentCore](https://docs.aws.amazon.com/be
 | Extensions | — | 10 per session; 10 MB each | Yes |
 | Proxies | — | 5 per session; 100 domain patterns in total | No |
 
-Session start is the expensive step. **Our reading:** reuse one session for a multi-step task instead of starting one per tool call, and stop it when the task ends.
+**Our reading:** the start-session rate and the boot of a fresh microVM make session start the step to economise. Reuse one session for a multi-step task instead of starting one per tool call, and stop it when the task ends.
 
 ## 12. IaC support
 

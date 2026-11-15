@@ -24,11 +24,11 @@ After this chapter you can:
 
 Think of Terraform core as a general contractor. It reads your drawings, works out what must be built first and keeps the paperwork, but it does not speak "AWS". The **provider** is the specialist it hires: it knows that "a guardrail with these filters" means a `CreateGuardrail` call with a particular request body.
 
-A **resource** is something you build and are responsible for — if you delete it from the drawings, the contractor tears it down. A **data source** is a look-up in a catalogue: "is this model offered in `us-west-2`?" Nothing is built and nothing is torn down. An **ephemeral resource** is a visitor badge: it is handed out for the duration of the job and never filed.
+A **resource** is something you build and own — delete it from the drawings and the contractor tears it down. A **data source** is a catalogue look-up: "is this model offered in `us-west-2`?" An **ephemeral resource** is a visitor badge: handed out for the job, never filed.
 
 ## How it really works
 
-**Providers are separate programs.** Terraform core reads configuration, builds the resource graph, plans and manages state; it talks to provider plugins over remote procedure calls, and each plugin runs as a separate process that authenticates to the service and maps resources and data sources to its API ([How Terraform works with plugins](https://developer.hashicorp.com/terraform/plugin/how-terraform-works)). `terraform init` selects a provider version that matches your constraints and records it in the dependency lock file `.terraform.lock.hcl`, which you commit so every run uses the same build ([`terraform init`](https://developer.hashicorp.com/terraform/cli/commands/init)).
+**Providers are separate programs.** Terraform core reads configuration, builds the graph, plans and manages state; each provider plugin runs as a separate process, called over RPC, that authenticates to the service and maps resources and data sources to its API ([How Terraform works with plugins](https://developer.hashicorp.com/terraform/plugin/how-terraform-works)). `terraform init` selects a provider version that matches your constraints and records it in the dependency lock file `.terraform.lock.hcl`, which you commit so every run uses the same build ([`terraform init`](https://developer.hashicorp.com/terraform/cli/commands/init)).
 
 Two blocks are involved, and they live in different places:
 
@@ -68,11 +68,11 @@ A data source is read during planning unless one of its arguments depends on som
 > **Documented fact** — In AWS provider 6.0 most resources, data sources and ephemeral resources gained an optional, computed `region` argument that defaults to the provider's Region. **Changing it forces replacement**; removing it does not (the value in state is kept). Per-Region provider blocks remain valid and are not deprecated. To migrate, upgrade to 6.0, run `terraform apply -refresh-only`, then replace the `provider` meta-argument with `region`.
 > Source: [Enhanced Region Support](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/enhanced-region-support)
 
-Two v6 changes touch Bedrock code directly: the nested blocks of `aws_bedrock_model_invocation_logging_configuration` became lists, so references need an index (`logging_config[0].s3_config[0]...`), and the `aws_region` data source's `name` attribute is deprecated in favour of `region`. Upgrade to the latest 5.x first and clear its deprecation warnings ([v6 upgrade guide](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/version-6-upgrade)).
+Two v6 changes touch Bedrock code: the nested blocks of `aws_bedrock_model_invocation_logging_configuration` became lists (references need `logging_config[0]`), and `aws_region.name` is deprecated in favour of `region`. Upgrade to the latest 5.x first ([v6 upgrade guide](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/version-6-upgrade)).
 
-**References build the graph.** When an argument refers to another object — `aws_bedrock_guardrail.chat.guardrail_arn` — Terraform records an edge and orders the work accordingly. Objects with no path between them are processed in parallel. `depends_on` adds an edge Terraform cannot infer; HashiCorp calls it a last resort, because it makes plans more conservative and can mark more values "known after apply" ([`depends_on`](https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on)).
+**References build the graph.** A reference such as `aws_bedrock_guardrail.chat.guardrail_arn` becomes an edge; objects with no path between them are processed in parallel. `depends_on` adds an edge Terraform cannot infer, and HashiCorp calls it a last resort because it makes plans more conservative, with more values "known after apply" ([`depends_on`](https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on)).
 
-**Ephemeral values and write-only arguments at a glance.** Ephemeral resources (Terraform 1.10) are never written to plan or state; you may reference them only in ephemeral contexts such as `locals`, provider configuration, ephemeral variables and outputs, and **write-only arguments** (Terraform 1.11). A write-only argument accepts a value during the run, passes it to the provider and discards it; a companion `*_wo_version` argument, which *is* stored, tells Terraform when to send a new value ([Ephemeral values in resources](https://developer.hashicorp.com/terraform/language/resources/ephemeral), [write-only arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only), [Terraform 1.10](https://raw.githubusercontent.com/hashicorp/terraform/v1.10/CHANGELOG.md) and [1.11](https://raw.githubusercontent.com/hashicorp/terraform/v1.11/CHANGELOG.md) changelogs). Full treatment: [Secrets management and policy as code](../maintenance/04-secrets-and-policy-as-code.md).
+**Ephemeral values and write-only arguments at a glance.** Ephemeral resources (Terraform 1.10) never reach plan or state and may only feed ephemeral contexts — `locals`, provider configuration, ephemeral variables and outputs, and **write-only arguments** (Terraform 1.11). A write-only argument passes a value to the provider and discards it; its stored companion `*_wo_version` tells Terraform when to send a new one ([Ephemeral values in resources](https://developer.hashicorp.com/terraform/language/resources/ephemeral), [write-only arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only), [Terraform 1.10](https://raw.githubusercontent.com/hashicorp/terraform/v1.10/CHANGELOG.md) and [1.11](https://raw.githubusercontent.com/hashicorp/terraform/v1.11/CHANGELOG.md) changelogs). Full treatment: [Secrets management and policy as code](../maintenance/04-secrets-and-policy-as-code.md).
 
 > [!CAUTION]
 > **Security hazard** — `aws_bedrockagentcore_api_key_credential_provider.api_key` is "stored in plain text in the Terraform state"; the provider documentation recommends `api_key_wo` instead ([resource documentation](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/v6.73.0/website/docs/r/bedrockagentcore_api_key_credential_provider.html.markdown)). The same pattern — a plain argument and a `_wo` twin — exists on 17 top-level resource arguments in the provider 6.73.0 schema (more sit inside nested blocks), including `aws_secretsmanager_secret_version.secret_string_wo` and `aws_db_instance.password_wo`.
@@ -116,20 +116,20 @@ flowchart LR
     classDef external fill:#F1F3F4,stroke:#5F6368,color:#202124,stroke-dasharray:4 3
 ```
 
-**What this shows** — Terraform core never calls AWS itself. It hands each node of the graph to the AWS provider plugin, which authenticates (optionally assuming a role), calls the Bedrock control-plane and IAM APIs, and returns the computed attributes that later nodes need. Only after a successful operation does core write the result to state.
+**What this shows** — Terraform core never calls AWS itself. It hands each graph node to the AWS provider plugin, which authenticates, calls the Bedrock and IAM APIs, and returns the attributes later nodes need. Core writes the result to state.
 
 **Walkthrough**
 
-1. `terraform init` downloads the provider version allowed by your constraint and records its checksums in the lock file.
-2. Core parses the configuration and turns references into graph edges.
-3. For each node, core asks the provider plugin to read, plan or apply it.
-4. If `assume_role` is configured, the provider first obtains temporary credentials from AWS STS.
-5. Data sources call read-only APIs. These run during `plan` unless an argument is unknown.
-6. Resources call the create, update and delete APIs during `apply`.
-7. IAM is global: the module's role has no `region` argument.
+1. `terraform init` installs the allowed provider version and records its checksums.
+2. Core turns references into graph edges.
+3. Core asks the plugin to read, plan or apply each node.
+4. With `assume_role`, the provider first gets temporary credentials from AWS STS.
+5. Data sources call read-only APIs, normally during `plan`.
+6. Resources call create, update and delete APIs during `apply`.
+7. IAM is global, so the module's role has no `region` argument.
 8. AWS returns identifiers such as the guardrail ARN.
-9. The provider passes them back so dependent nodes can be planned or applied.
-10. Core writes resources and data-source results to state; ephemeral values are dropped.
+9. Dependent nodes can now be planned or applied.
+10. Resources and data-source results go to state; ephemeral values do not.
 
 | Legend | Meaning |
 |:--|:--|
@@ -180,13 +180,13 @@ flowchart LR
 
 ## Implementation details
 
-1. **Pin in every module, configure in the root.** Each module declares `required_providers`; only the root has `provider` blocks. The academy pins `~> 6.73` ([ADR-006](../../ARCHITECTURE-DECISIONS.md#adr-006-pin-tool-versions-and-generate-iac-references-from-the-tools)). Commit `.terraform.lock.hcl`.
-2. **Supply credentials from outside the configuration** — environment, shared config or OIDC in CI — and add `assume_role` and `allowed_account_ids` in the root.
-3. **Put `default_tags` on the provider** and a `tags` variable on modules for the extras.
-4. **Resource or data source?** If Terraform should create, change and delete it, it is a resource. If AWS or another team owns it — the model catalogue, system-defined inference profiles, a shared VPC — read it with a data source.
-5. **Model IDs are variables** ([ADR-010](../../ARCHITECTURE-DECISIONS.md#adr-010-model-and-inference-profile-ids-are-always-configuration)). A data source with a `postcondition` turns "the model no longer exists or lacks a feature" into a readable plan-time error.
-6. **One provider block, `region` per object** for small cross-Region needs on provider 6. Keep aliases for whole stacks in another Region or for a different account, which needs different credentials.
-7. **Prefer references to `depends_on`.** Reach for `depends_on` only when an API behaviour links two objects that share no attribute.
+1. **Pin in every module, configure in the root**, with `~> 6.73` ([ADR-006](../../ARCHITECTURE-DECISIONS.md#adr-006-pin-tool-versions-and-generate-iac-references-from-the-tools)), and commit `.terraform.lock.hcl`.
+2. **Credentials come from outside the configuration** (environment, shared config, OIDC in CI); the root adds `assume_role` and `allowed_account_ids`.
+3. **`default_tags` on the provider**, a `tags` variable on modules for extras.
+4. **Resource or data source?** If Terraform should create and delete it, it is a resource. If AWS or another team owns it — the model catalogue, system-defined inference profiles — read it.
+5. **Model IDs are variables** ([ADR-010](../../ARCHITECTURE-DECISIONS.md#adr-010-model-and-inference-profile-ids-are-always-configuration)); a data source with a `postcondition` turns a retired or unsuitable model into a plan-time error.
+6. **One provider block and `region` per object** for small cross-Region needs; aliases for another account, which needs other credentials.
+7. **References over `depends_on`**, which is only for objects linked by API behaviour but sharing no attribute.
 
 > [!TIP]
 > **Academy recommendation** — For a Bedrock resource that callers pin by ID (a guardrail, a knowledge base, an agent runtime), treat a change to `region` like a change to its name: a planned replacement means a new ID that every caller must pick up. Review plans for `forces replacement` before approving.
@@ -488,7 +488,7 @@ resource "aws_bedrock_model_invocation_logging_configuration" "this" {
 }
 ```
 
-The bucket policy follows the S3 destination policy on [Model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html), which also says the destination must be set up before logging is enabled; the provider's own example uses the same `depends_on`. In snippet 2, an even safer choice is `api_key_secret_source = "EXTERNAL"` with `api_key_secret_config`: AgentCore reads the secret and Terraform never sees the key at all.
+Snippet 3 follows the S3 destination policy on [Model invocation logging](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html), which says the destination must exist before logging is enabled. For snippet 2, `api_key_secret_source = "EXTERNAL"` with `api_key_secret_config` is safer still: AgentCore reads the secret and Terraform never sees the key.
 
 ## Common mistakes
 
@@ -507,17 +507,17 @@ The bucket policy follows the S3 destination policy on [Model invocation logging
 
 ## Security considerations
 
-- Credentials never belong in `.tf` files. Use environment variables, the shared config, or OIDC in CI, and `assume_role` into a deployment role per account ([IAM roles, trust policies and cross-account access](../../00-foundations/security/02-iam-roles-and-trust.md)).
-- `allowed_account_ids` stops a run against the wrong account before any API call that changes something.
-- The deployment role needs read permissions for every data source as well as write permissions for resources; scope both to the services the configuration manages.
-- Everything a resource or data source returns lands in state. Treat state as sensitive, and prefer write-only arguments and ephemeral resources for secrets ([State, remote backends and state locking](04-state-backends-locking.md)).
-- Provider plugins are executables. Pin versions, commit the lock file (it records checksums), and review provider upgrades like any dependency.
+- No credentials in `.tf` files; `assume_role` into one deployment role per account ([IAM roles, trust policies and cross-account access](../../00-foundations/security/02-iam-roles-and-trust.md)).
+- `allowed_account_ids` stops a run against the wrong account before anything changes.
+- The deployment role needs read permissions for every data source as well as write permissions for resources.
+- Everything a resource or data source returns lands in state; use write-only arguments and ephemeral resources for secrets ([State, remote backends and state locking](04-state-backends-locking.md)).
+- Provider plugins are executables: pin them, commit the lock file (it records checksums), review upgrades.
 
 ## Cost considerations
 
-- Terraform CLI and the AWS provider are free to run; the cost is what the resources do. Data sources make read-only control-plane calls on every plan.
+- Terraform CLI and the AWS provider are free to run; the cost is what the resources do.
 - A guardrail is billed per policy for the text it evaluates, not for existing. On 2026-11-15 content filters and denied topics were $0.15 per 1,000 text units and sensitive-information filters $0.10; regular-expression filters and word filters were free; a text unit is up to 1,000 characters ([Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)). Charges apply only for the policies configured in the guardrail ([How Amazon Bedrock Guardrails works](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-how.html)).
-- Replacing a resource because of a `region` or name change can duplicate paid resources while both exist; check the plan.
+- A replacement can briefly duplicate paid resources; check the plan.
 
 ## Knowledge check
 

@@ -13,11 +13,11 @@ proven to deploy (see [ADR-003](../../../ARCHITECTURE-DECISIONS.md#adr-003-valid
 
 | File | Kind | Purpose | Explaining chapter | Code status |
 |:--|:--|:--|:--|:--|
-| [`01-guardrail-basic.yaml`](01-guardrail-basic.yaml) | Template | A first Bedrock template: parameters, conditions, a guardrail and its outputs | [Template anatomy](../01-template-anatomy.md) | Stated in the chapter and the file header (author of chapters 01–04) |
-| [`02-intrinsic-functions.yaml`](02-intrinsic-functions.yaml) | Template | `Ref`, `Fn::GetAtt`, `Fn::Sub`, imports and the other intrinsic functions on Bedrock resources | [Intrinsic functions](../02-intrinsic-functions.md) | Stated in the chapter and the file header |
-| [`03-nested-parent.yaml`](03-nested-parent.yaml) | Template (parent stack) | Parent stack that passes parameters to a nested stack and reads its outputs | [Nested stacks and StackSets](../03-nested-stacks-and-stacksets.md) | Stated in the chapter and the file header |
-| [`03-nested-child-iam.yaml`](03-nested-child-iam.yaml) | Template (nested stack) | Child stack with the IAM resources used by the parent | [Nested stacks and StackSets](../03-nested-stacks-and-stacksets.md) | Stated in the chapter and the file header |
-| [`04-stackset-guardrail-baseline.yaml`](04-stackset-guardrail-baseline.yaml) | Template (StackSet) | Guardrail baseline intended for deployment to many accounts with StackSets | [Nested stacks and StackSets](../03-nested-stacks-and-stacksets.md) (confirm in the file header) | Stated in the chapter and the file header |
+| [`01-guardrail-basic.yaml`](01-guardrail-basic.yaml) | Template | A first Bedrock template: a guardrail with parameters and exported outputs | [Template anatomy](../01-template-anatomy.md) | `cfn-lint`: no findings (folder check) · details in the chapter |
+| [`02-intrinsic-functions.yaml`](02-intrinsic-functions.yaml) | Template | Intrinsic functions applied to Bedrock resources, including importing values exported by `01` | [Intrinsic functions](../02-intrinsic-functions.md) | `cfn-lint`: no findings (folder check) · details in the chapter |
+| [`03-nested-parent.yaml`](03-nested-parent.yaml) | Template (parent stack) | Parent stack of a nested-stack pair | [Nested stacks and StackSets](../03-nested-stacks-and-stacksets.md) | `cfn-lint`: no findings (folder check) · details in the chapter |
+| [`03-nested-child-iam.yaml`](03-nested-child-iam.yaml) | Template (nested stack) | Child stack that holds IAM resources for the parent | [Nested stacks and StackSets](../03-nested-stacks-and-stacksets.md) | `cfn-lint`: no findings (folder check) · details in the chapter |
+| [`04-stackset-guardrail-baseline.yaml`](04-stackset-guardrail-baseline.yaml) | Template (StackSet) | Guardrail baseline intended for deployment to many accounts with StackSets | [Nested stacks and StackSets](../03-nested-stacks-and-stacksets.md) (confirm in the file header) | `cfn-lint`: no findings (folder check) · details in the chapter |
 | [`05-bedrock-guardrail-rules.guard`](05-bedrock-guardrail-rules.guard) | Guard rules | Three rules: guardrails need a customer managed KMS key; guardrails filter prompt attacks; no IAM `Allow` of Bedrock invocation on `"*"` | [Hooks and CloudFormation Guard](../05-hooks-and-guard.md) | `cfn-guard test`: 15 of 15 cases pass |
 | [`05-bedrock-guardrail-rules_tests.yaml`](05-bedrock-guardrail-rules_tests.yaml) | Guard unit tests | Expected `PASS` / `FAIL` / `SKIP` per rule for 15 small inputs | [Hooks and CloudFormation Guard](../05-hooks-and-guard.md) | Run by `cfn-guard test` (not a template) |
 | [`05-compliant.yaml`](05-compliant.yaml) | Template | Guardrail with a KMS key and prompt-attack filter, a published version and a scoped application role | [Hooks and CloudFormation Guard](../05-hooks-and-guard.md) | `cfn-lint`: no findings · `cfn-guard validate`: PASS |
@@ -25,6 +25,9 @@ proven to deploy (see [ADR-003](../../../ARCHITECTURE-DECISIONS.md#adr-003-valid
 | [`06-module-usage.yaml`](06-module-usage.yaml) | Template | Consumes the private module `Academy::Bedrock::Guardrail::MODULE` and references resources inside it | [CloudFormation modules and reuse](../06-modules-and-reuse.md) | `cfn-lint`: no findings (cfn-lint cannot see inside a registry module) |
 | [`07-knowledge-base-s3-vectors.yaml`](07-knowledge-base-s3-vectors.yaml) | Template | Customer-managed knowledge base on Amazon S3 Vectors: documents bucket, vector bucket and index, service role, knowledge base, S3 data source | [CloudFormation coverage for Amazon Bedrock](../07-cloudformation-for-bedrock.md) | `cfn-lint`: no findings · `cfn-guard validate`: PASS |
 | [`07-agentcore-runtime.yaml`](07-agentcore-runtime.yaml) | Template | AgentCore Runtime (container, microVMs, HTTP, IAM inbound auth), a pinned `prod` endpoint and the execution role | [CloudFormation coverage for Amazon Bedrock](../07-cloudformation-for-bedrock.md) | `cfn-lint`: no findings · `cfn-guard validate`: PASS |
+
+Files `01`–`04` are written and maintained with chapters 01–03 and are described there; the
+folder check on 2026-11-15 (`cfn-lint` over every template in this folder) reported no findings.
 
 > [!NOTE]
 > **Documented fact** — Guard checks rules, not template validity; AWS points to cfn-lint for

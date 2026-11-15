@@ -101,7 +101,7 @@ Agents fail quietly: a wrong tool, a skipped policy step, a polite answer that d
 | Subject | An agent's real or replayed sessions, traces and tool calls | A model, a knowledge base or an external RAG source |
 | Input | OpenTelemetry spans in CloudWatch, or spans passed inline | A prompt dataset (custom or built-in) |
 | Modes | Online (continuous), on-demand, batch | Jobs: programmatic, LLM-as-a-judge, human workers, RAG |
-| API | `Evaluate`, `CreateOnlineEvaluationConfig`, `StartBatchEvaluation` on `bedrock-agentcore` | `CreateEvaluationJob` on `bedrock` |
+| API | `CreateEvaluator` and `CreateOnlineEvaluationConfig` on `bedrock-agentcore-control`; `Evaluate` and `StartBatchEvaluation` on `bedrock-agentcore` | `CreateEvaluationJob` on `bedrock` |
 | Output | API response, CloudWatch Logs, CloudWatch metrics | Amazon S3 location in the job's output configuration |
 | Terraform | `aws_bedrockagentcore_evaluator`, `aws_bedrockagentcore_online_evaluation_config` | `aws_bedrock_evaluation_job` |
 
