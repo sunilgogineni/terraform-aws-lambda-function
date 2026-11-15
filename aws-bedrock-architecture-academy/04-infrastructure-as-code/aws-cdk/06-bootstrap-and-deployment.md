@@ -51,12 +51,12 @@ Think of an AWS environment (one account plus one Region) as a building site. Be
 
 The trust policies of the publishing roles, the deploy role and the lookup role allow the bootstrapped account itself, plus any account you list with `--trust`. `--trust-for-lookup` grants only the lookup role, and `--trust` implies it. Since template version 29, every bootstrap role rejects `AssumeRole` calls that carry an external ID, so the roles cannot be "deputized" by accident.
 
-The execution role is different: only CloudFormation can assume it. A trusted account therefore never gets the execution role's permissions directly; it gets them **through** CloudFormation. That is still a lot of power.
+The execution role is different: only CloudFormation can assume it, so a trusted account gets its permissions only **through** CloudFormation.
 
 > [!CAUTION]
-> **Cost or security hazard** — Bootstrapping with no `--trust` and no `--cloudformation-execution-policies` attaches `AdministratorAccess` to the execution role (the CLI prints a warning). Anyone who can assume the deploy role can then create any resource, including IAM roles. The CDK Pipelines documentation states it plainly: anyone with access to a trusted account effectively has all permissions of the configured execution policies. Source: [CDK Pipelines README](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.pipelines-readme.html)
+> **Cost or security hazard** — Bootstrapping with no `--trust` and no `--cloudformation-execution-policies` attaches `AdministratorAccess` to the execution role (the CLI prints a warning). Anyone with access to a trusted account effectively has all permissions of the configured execution policies. Source: [CDK Pipelines README](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.pipelines-readme.html)
 
-When you pass `--trust`, the CLI refuses to continue unless you also pass `--cloudformation-execution-policies`. Use that to attach a customer managed policy that allows only the services your stacks use (for a Bedrock workload: `bedrock`, `bedrock-agentcore`, IAM roles with a boundary, S3, Lambda, logs). Two more controls are built in:
+With `--trust`, the CLI refuses to continue unless you also pass `--cloudformation-execution-policies`: attach a customer managed policy that allows only the services your stacks use. Other built-in controls:
 
 | Control | Flag | Effect |
 |:--|:--|:--|
@@ -65,22 +65,22 @@ When you pass `--trust`, the CLI refuses to continue unless you also pass `--clo
 | Termination protection | `--termination-protection` | Protects `CDKToolkit`; AWS warns there is no general recovery if a pipeline's bootstrap stack is deleted |
 | Your own template | `--show-template`, edit, then `--template <file>` | Full control. Change the `BootstrapVariant` parameter so a plain `cdk bootstrap` will not overwrite it |
 
-Bootstrap parameters are remembered. To remove a setting, run again with `--no-previous-parameters` and resupply **all** parameters; to add a trusted account, list every account again, because the list is replaced.
+Bootstrap parameters are remembered. To remove one, rerun with `--no-previous-parameters` and resupply **all** of them; to add a trusted account, list every account again.
 
 ### The bootstrap contract inside your templates
 
-The synthesizer (by default `DefaultStackSynthesizer`) writes the bootstrap names into the cloud assembly. Every template gets a `BootstrapVersion` parameter that resolves `/cdk-bootstrap/<qualifier>/version` from SSM and a `CheckBootstrapVersion` rule that fails the deployment if the version is too old. The manifest records, per stack, the deploy role ARN, the execution role ARN, the S3 URL of the uploaded template and the minimum bootstrap version. If you bootstrap with `--qualifier acad1`, the app must be synthesized with `new DefaultStackSynthesizer({ qualifier: 'acad1' })` or the matching context value; the [example test](examples/test/delivery-pipeline.test.ts) checks exactly this.
+The synthesizer (by default `DefaultStackSynthesizer`) writes the bootstrap names into the cloud assembly. Every template gets a `BootstrapVersion` parameter that resolves `/cdk-bootstrap/<qualifier>/version` from SSM, and a `CheckBootstrapVersion` rule that fails the deployment if that version is too old. The manifest records, per stack, the deploy role ARN, the execution role ARN, the S3 URL of the uploaded template and the minimum bootstrap version. If you bootstrap with `--qualifier acad1`, synthesize with `new DefaultStackSynthesizer({ qualifier: 'acad1' })` or the context key `@aws-cdk/core:bootstrapQualifier`; the [example test](examples/test/delivery-pipeline.test.ts) checks this.
 
 ### Assets
 
-An **asset** is a local file, directory or Docker image that a stack needs at deployment time. The CDK names each asset after a hash of its content, so an unchanged asset is not uploaded again, and the template is itself published as a file asset. Assets accumulate: `cdk gc --unstable=gc` deletes objects and images that no deployed template references, optionally after a buffer of days.
+An **asset** is a local file, directory or Docker image a stack needs at deployment time. Each asset is named after a hash of its content, so an unchanged asset is not uploaded again; the template is itself a file asset. Assets accumulate, and `cdk gc --unstable=gc` deletes those no deployed template references.
 
 ### The deploy sequence
 
 1. **Synthesize.** The CLI runs the `app` command from `cdk.json`, which builds the construct tree, resolves tokens it can, runs Aspects and validation, and writes the cloud assembly to `cdk.out`.
-2. **Check bootstrap.** The CLI reads the version parameter; a missing parameter produces "Has the environment been bootstrapped?".
+2. **Check bootstrap.** The CLI reads the version parameter in the target environment; a missing parameter produces "Has the environment been bootstrapped?".
 3. **Publish assets** with the file and image publishing roles.
-4. **Assume the deploy role** and create a change set, passing the execution role. If the template and tags are identical to the deployed stack, the CLI skips this unless you pass `--force`.
+4. **Create a change set** as the deploy role, passing the execution role. If the template and tags are identical to the deployed stack, the CLI skips the deployment unless you pass `--force`.
 5. **Approve** if the change broadens IAM or security group rules (`--require-approval broadening`, the default) or, with `destructive`, replaces or deletes resources. In CI with no terminal, a required approval fails the run.
 6. **Execute the change set.** CloudFormation, acting as the execution role, calls the service APIs (for example `CreateGuardrail`) and emits stack events.
 7. **Roll back on failure.** By default, CloudFormation undoes the whole operation and the stack returns to its last stable state.
@@ -128,10 +128,10 @@ flowchart LR
         trail[("AWS CloudTrail")]:::obs
     end
     ci -- "1. assume" --> ciRole
-    ciRole -- "2. read version" --> ssm
-    ciRole -- "3. sts:AssumeRole" --> filePub
-    filePub -- "4. PutObject assets + template" --> bucket
-    ciRole -- "5. sts:AssumeRole" --> deployRole
+    ciRole -- "2. sts:AssumeRole" --> deployRole
+    deployRole -- "3. ssm:GetParameter" --> ssm
+    ciRole -- "4. sts:AssumeRole" --> filePub
+    filePub -- "5. PutObject assets + template" --> bucket
     deployRole -- "6. CreateChangeSet, iam:PassRole" --> cfn
     cfn -- "7. read template" --> bucket
     cfn -- "8. assume" --> execRole
@@ -152,11 +152,11 @@ flowchart LR
 **Walkthrough**
 
 1. The CI job obtains its own role, for example through OIDC (see [GitHub Actions for IaC](../../07-devops-and-cicd/04-github-actions.md)).
-2. The CLI checks the bootstrap version parameter in the target environment.
-3. It assumes the file publishing role in the target account.
-4. It uploads content-addressed assets and the template to the staging bucket.
-5. It assumes the deploy role.
-6. It creates a change set and passes the execution role.
+2. The CLI assumes the deploy role in the target account.
+3. With that role it reads the bootstrap version parameter (the deploy role's policy allows exactly this parameter).
+4. It assumes the file publishing role in the target account.
+5. It uploads content-addressed assets and the template to the staging bucket.
+6. With the deploy role it creates a change set and passes the execution role.
 7. CloudFormation reads the template from the staging bucket.
 8. CloudFormation assumes the execution role.
 9. Resources are created or updated with the execution role's permissions.
@@ -255,16 +255,16 @@ expect(executionRole.asString()).toBe(`:iam::${WORKLOAD}:role/cdk-hnb659fds-cfn-
 
 ## Security considerations
 
-- The execution role is the effective permission set of every deployment; treat its policy like production IAM and review changes to it.
-- Bootstrap roles reject external IDs by default; keep `--deny-external-id` on unless a third party must assume them.
-- The lookup role has read-only access to the whole account (minus `kms:Decrypt`). Trust it only for accounts that need context lookups, or avoid lookups as the academy does.
-- The staging bucket holds your Lambda code and templates. It is TLS-only and encrypted; restrict who else can read it.
-- CloudTrail in the target account records the deploy role, the execution role and every resource API call it makes; see [AWS CloudTrail for Bedrock](../../02-related-aws-services/security/05-cloudtrail-for-bedrock.md).
+- The execution role is the effective permission set of every deployment; review changes to its policy like production IAM.
+- Keep `--deny-external-id` on unless a third party must assume the bootstrap roles.
+- The lookup role can read the whole account (minus `kms:Decrypt`); trust it only where context lookups are needed.
+- The staging bucket holds your code and templates; restrict who else can read it.
+- CloudTrail in the target account records the deploy role, the execution role and every API call they make; see [AWS CloudTrail for Bedrock](../../02-related-aws-services/security/05-cloudtrail-for-bedrock.md).
 
 ## Cost considerations
 
-- The bootstrap resources themselves are inexpensive: S3 storage for assets, ECR storage for images, and a KMS key only if you choose `--bootstrap-customer-key`. AWS notes that bootstrapping may incur charges when the resources are used.
-- Assets accumulate with every change; schedule `cdk gc` (with buffer days) once you trust it.
+- You pay for S3 storage of assets, ECR storage of images, and a KMS key only with `--bootstrap-customer-key`; AWS notes that bootstrap resources may incur charges when used.
+- Assets accumulate with every change; `cdk gc` with buffer days keeps storage in check.
 - CDK Pipelines adds CodePipeline, CodeBuild minutes and, for cross-account delivery, a KMS key.
 
 ## Knowledge check

@@ -4,9 +4,8 @@
 
 Every production change to a CloudFormation stack should be previewed, validated and
 reviewed before it runs, and every stack should be checked for changes made behind its back.
-This chapter covers change sets, how to read one, pre-deployment validation, rollback and
-failure options, drift detection and its limits, drift-aware change sets, and — at a glance —
-resource import and stack refactoring.
+This chapter covers change sets, pre-deployment validation, rollback options, drift detection,
+drift-aware change sets and, briefly, import and stack refactoring.
 
 ## Learning objectives
 
@@ -26,11 +25,10 @@ After this chapter you can:
 ## Concept in plain language
 
 A **direct update** is telling a builder "make it look like this drawing" and walking away. A
-**change set** is asking for a written quote first: what will be added, changed, knocked down
-and rebuilt. **Drift** is someone moving walls without telling the builder. Classic drift
-detection is an inspection that lists the moved walls; a **drift-aware change set** is a quote
-that compares the new drawing with the building as it really stands today, and puts the
-walls back unless you change the drawing.
+**change set** is a written quote first: what will be added, changed, knocked down and
+rebuilt. **Drift** is someone moving walls without telling the builder. Drift detection is an
+inspection that lists the moved walls; a **drift-aware change set** is a quote based on the
+building as it stands today, which puts the walls back unless you change the drawing.
 
 ## How it really works
 
@@ -203,9 +201,8 @@ stateDiagram-v2
     DELETE_COMPLETE --> [*]
 ```
 
-**What this shows** — The stack statuses you meet most often and the transitions between
-them. Every `*_IN_PROGRESS` status is transient; `*_COMPLETE` and `*_FAILED` statuses are where
-a stack rests and where your next action starts. **Our reading:** the transitions are drawn from
+**What this shows** — The stack statuses you meet most often and how they connect.
+`*_IN_PROGRESS` statuses are transient; a stack rests in a `*_COMPLETE` or `*_FAILED` status. **Our reading:** the transitions are drawn from
 the status descriptions and failure-option pages; not every API path is shown (for example,
 `CREATE_COMPLETE` and `UPDATE_ROLLBACK_COMPLETE` can also be deleted).
 
@@ -262,15 +259,15 @@ execute with a different role.
 3. The actual configuration becomes the "before" value for drifted properties.
 4. Validation runs while the change set is created.
 5. The pipeline asks for validation results by change set ARN.
-6. Any FAIL result makes the change set `FAILED`; WARN results allow execution.
+6. A FAIL result makes the change set `FAILED`; WARN results allow execution.
 7. The pipeline reads the change set with property values.
 8. Each change shows action, replacement, policy action and drift status.
-9. A short summary goes to a human, not the raw JSON.
+9. A human gets a short summary, not raw JSON.
 10. The reviewer approves.
 11. A separate role executes the change set.
-12. CloudFormation applies template values, overwriting drift.
-13. On failure it restores the actual pre-deployment state.
-14. On success the stack reaches `UPDATE_COMPLETE`.
+12. Template values overwrite drift.
+13. On failure, the actual pre-deployment state is restored.
+14. On success, the stack reaches `UPDATE_COMPLETE`.
 
 **Legend** — solid arrow: request · dashed arrow: response · `alt`: alternative outcomes ·
 `Note`: security control.
@@ -366,13 +363,13 @@ aws cloudformation detect-stack-drift --stack-name academy-guardrail-dev
 
 ## Security considerations
 
-- Drift is a security signal: an IAM policy, a guardrail filter or a KMS key edited outside the
-  pipeline should page someone, not wait for the next deployment.
+- Drift is a security signal: an IAM policy or guardrail filter edited outside the pipeline
+  should page someone.
 - A change set records resolved Parameter Store values; never feed secrets through parameters.
 - Restrict `ContinueUpdateRollback` with skipped resources and `--force-rollback` to operators:
   both leave resources inconsistent with the template.
-- Termination protection and stack policies add guard rails; note that stack refactoring
-  refuses stacks with stack policies.
+- Termination protection and stack policies add guard rails (stack refactoring refuses stacks
+  with stack policies).
 
 ## Cost considerations
 

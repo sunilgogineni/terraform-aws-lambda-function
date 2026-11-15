@@ -23,10 +23,10 @@ Parameters:
       current model IDs in the Bedrock documentation.
 
 Resources:
-  # A module is declared like a resource. Its parameters become properties. When CloudFormation
+  # A module is declared like a resource; its parameters become properties. When CloudFormation
   # processes the template, this one entry expands into the module's KMS key, guardrail and
-  # guardrail version, with logical IDs BaselineGuardrailKey, BaselineGuardrailGuardrail and
-  # BaselineGuardrailVersion.
+  # guardrail version. Refer to them as BaselineGuardrail.Key (or BaselineGuardrailKey),
+  # BaselineGuardrail.Guardrail and BaselineGuardrail.Version.
   BaselineGuardrail:
     Type: Academy::Bedrock::Guardrail::MODULE
     Properties:

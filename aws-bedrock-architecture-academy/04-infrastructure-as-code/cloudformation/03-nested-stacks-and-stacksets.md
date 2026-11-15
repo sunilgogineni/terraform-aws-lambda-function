@@ -248,7 +248,7 @@ everywhere, while `UpdateReplacePolicy: Retain` keeps the previous one.
 
 **The StackSet itself**, created from the management or delegated administrator account:
 
-> **Code status:** validated with `cfn-lint` 1.60.1 as a standalone template in a scratch directory · **never deployed**
+> **Code status:** validated with `cfn-lint` 1.60.1 as a standalone template in a scratch directory; its `Parameters` section (`TargetOuId`, `TargetRegions` as a `CommaDelimitedList`, `BaselineTemplateUrl`) is omitted here · **never deployed**
 
 ```yaml
 Resources:

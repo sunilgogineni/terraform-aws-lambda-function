@@ -47,7 +47,7 @@ State is Terraform's inventory: "the thing at this address is that real object".
 > **Documented fact** — Lifecycle settings accept only literal values, because they are processed while the graph is built. Except for `create_before_destroy`, lifecycle rules are not recorded in state, so `prevent_destroy` does **not** stop a destroy if you delete the resource block itself. `create_before_destroy` propagates to the resources a resource depends on. `replace_triggered_by` accepts only references to managed resources; use `terraform_data` to trigger on a plain value.
 > Source: [lifecycle reference](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle)
 
-**Provider-level equivalents.** Several Bedrock resources carry a `skip_destroy` argument that does at resource level what `destroy = false` does in Terraform 1.16+. The provider documents what "destroy" means for each:
+**What "destroy" means for Bedrock resources.** Several carry a provider-level `skip_destroy` argument, similar to Terraform 1.16's `destroy = false`:
 
 | Resource | What destroy does | Source |
 |:--|:--|:--|
@@ -62,7 +62,7 @@ State is Terraform's inventory: "the thing at this address is that real object".
 
 ### import blocks
 
-An `import` block has `to` (the address), `id` *or* `identity`, and optionally `for_each` and `provider`. The ID must be known at plan time. Terraform 1.16 added `import` blocks inside modules. The format of `id` is per resource type — for `aws_bedrock_guardrail` it is `"<guardrail_id>,<version>"`, normally `DRAFT`; for `aws_bedrock_guardrail_version` it is `"<guardrail_arn>,<version>"`. Job-like resources (`aws_bedrock_custom_model`, `_model_invocation_job`, `_evaluation_job`, `_provisioned_model_throughput`) also accept `identity = { job_arn = ... }` (or the provisioned model ARN) from Terraform 1.12, per the provider documentation.
+An `import` block has `to` (the address), `id` *or* `identity`, and optionally `for_each` and `provider`; the ID must be known at plan time, and Terraform 1.16 allows `import` blocks inside modules. The `id` format is per resource type: `"<guardrail_id>,<version>"` (normally `DRAFT`) for `aws_bedrock_guardrail`, `"<guardrail_arn>,<version>"` for `aws_bedrock_guardrail_version`. Job-like resources (`aws_bedrock_custom_model`, `_model_invocation_job`, `_evaluation_job`) also accept `identity = { job_arn = ... }` from Terraform 1.12, per the provider documentation.
 
 `terraform plan -generate-config-out=generated.tf` writes `resource` blocks for imports that have no configuration yet. HashiCorp still labels configuration generation **experimental**, the file must not already exist, and the output is a starting point to edit, not finished code. Sources: [import block](https://developer.hashicorp.com/terraform/language/block/import), [generating configuration](https://developer.hashicorp.com/terraform/language/import/generating-configuration), [v1.16 changelog](https://raw.githubusercontent.com/hashicorp/terraform/v1.16/CHANGELOG.md).
 
@@ -134,7 +134,7 @@ flowchart TD
 1. **Address changes** — a renamed resource, a `count` index shift, a `count` → `for_each` conversion or a module extraction: write `moved` blocks and re-plan until the destroy disappears.
 2. **Intentional removal** — if the real object must outlive Terraform's management (a finished batch job, a resource another team now owns), use `removed` with `destroy = false`; otherwise the destroy is what you asked for.
 3. **Drift** — the plan's "Objects have changed outside of Terraform" section explains it; handled in [Plan, apply and drift detection](08-plan-apply-drift.md).
-4. **Forced replacement** — the plan marks the argument with `# forces replacement`. If the object is expensive (a completed fine-tuning job), stop; `prevent_destroy` should already have failed the plan. If callers hold the ID or ARN, use `create_before_destroy` when two copies can coexist, or plan a versioned cut-over.
+4. **Forced replacement** — the plan shows `-/+` for an argument that cannot be updated in place. If the object is expensive (a completed fine-tuning job), stop; `prevent_destroy` should already have failed the plan. If callers hold the ID or ARN, use `create_before_destroy` when two copies can coexist, or plan a versioned cut-over.
 
 | Legend | Meaning |
 |:--|:--|

@@ -154,7 +154,7 @@ flowchart LR
 
 ## Implementation details
 
-1. **Enable GuardDuty in every Region** — AWS recommends it — and turn on AI Protection in the Regions that run Bedrock or AgentCore.
+1. **Enable GuardDuty in every supported Region**, as AWS recommends ([GuardDuty Regions](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_regions.html)), and turn on AI Protection in the Regions that run Bedrock or AgentCore.
 2. **Enforce a prompt-attack guardrail** before expecting prompt-injection findings; an application that never attaches a guardrail produces none.
 3. **Turn on the AI Security Best Practices standard** in Security Hub CSPM and record `AWS::Bedrock::*` and `AWS::BedrockAgentCore::*` types in AWS Config (recording all types includes new ones automatically).
 4. **Point Macie at named buckets**: knowledge-base sources, batch input and output, invocation logs. Add the Macie role to their key policies.
@@ -281,6 +281,7 @@ Official sources opened while writing this chapter:
 
 - [GuardDuty AI Protection](https://docs.aws.amazon.com/guardduty/latest/ug/ai-protection.html), [AI Protection finding types](https://docs.aws.amazon.com/guardduty/latest/ug/findings-ai-protection.html), [IAM finding types](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-iam.html), [active finding types](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-active.html).
 - [Introducing Amazon GuardDuty AI Protection](https://aws.amazon.com/about-aws/whats-new/2026/07/amazon-guardduty-ai-protection-aws/) and [Security Hub adds AI workload protection](https://aws.amazon.com/blogs/security/security-hub-adds-ai-workload-protection-and-multicloud-support-for-microsoft-azure/).
+- [GuardDuty Regions and endpoints](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_regions.html) — enable in all supported Regions.
 - [Processing GuardDuty findings with EventBridge](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_findings_eventbridge.html) — event format.
 - [Security Hub CSPM controls for Amazon Bedrock](https://docs.aws.amazon.com/securityhub/latest/userguide/bedrock-controls.html), [for AgentCore](https://docs.aws.amazon.com/securityhub/latest/userguide/bedrockagentcore-controls.html), [AI Security Best Practices standard](https://docs.aws.amazon.com/securityhub/latest/userguide/standards-ai-security.html), [controls reference](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-controls-reference.html).
 - [AWS Config supported resource types](https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html), [AWS Config document history](https://docs.aws.amazon.com/config/latest/developerguide/DocumentHistory.html), [191 additional managed rules](https://aws.amazon.com/about-aws/whats-new/2026/07/aws-config-additional-managed-rules/), [77 new resource types](https://aws.amazon.com/about-aws/whats-new/2026/10/aws-config-new-resource-types/), [bedrock-agentcore-memory-event-expiry-duration](https://docs.aws.amazon.com/config/latest/developerguide/bedrock-agentcore-memory-event-expiry-duration.html), [Bedrock conformance pack](https://docs.aws.amazon.com/config/latest/developerguide/security-and-governance-best-practices-for-amazon-bedrock.html).

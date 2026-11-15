@@ -34,7 +34,7 @@ Bedrock itself opens the key safe and, for a few features, the locked cabinet. I
 
 | Resource | Request field | Terraform 6.73.0 | Documented key behaviour |
 |:--|:--|:--|:--|
-| Custom model (customization job) | `customModelKmsKeyId` | `aws_bedrock_custom_model.custom_model_kms_key_id` | Long-lived grant, retired with the model — see the [foundations chapter](../../00-foundations/security/04-kms-encryption.md) |
+| Custom model (customization job; `CreateCustomModel`) | `customModelKmsKeyId`; `modelKmsKeyArn` | `aws_bedrock_custom_model.custom_model_kms_key_id` | Long-lived grant, retired with the model — see the [foundations chapter](../../00-foundations/security/04-kms-encryption.md) |
 | Imported model, copied model | `importedModelKmsKeyId`, `modelKmsKeyId` | ❌ | Creator needs `CreateGrant`, `DescribeKey`, `GenerateDataKey`, `Decrypt` |
 | Guardrail | `kmsKeyId` (create and update) | `aws_bedrock_guardrail.kms_key_arn` | Creators: four actions above; users at inference: `kms:Decrypt` |
 | Automated Reasoning policy | `kmsKeyId` | ❌ | — |
@@ -44,7 +44,7 @@ Bedrock itself opens the key safe and, for a few features, the locked cabinet. I
 | Managed Knowledge Base | nested in the managed configuration | `…managed_knowledge_base_configuration.server_side_encryption_configuration.kms_key_arn` | One key for transient and stored data; grant retired on deletion; service role needs no key permission |
 | Customer-managed KB ingestion | `serverSideEncryptionConfiguration` on the data source | `aws_bedrockagent_data_source.server_side_encryption_configuration` | Service role needs `GenerateDataKey`, `Decrypt` |
 | Agent session | `encryptionKeyArn` on `CreateSession` | ❌ | — |
-| Data Automation project, blueprint, library | `encryptionConfiguration` | `kms_key_id`, `kms_encryption_context` | Service role needs `CreateGrant` and `DescribeKey` too |
+| Data Automation project, blueprint, library | `encryptionConfiguration` | `kms_key_id`, `kms_encryption_context` | When BDA parses encrypted files for a knowledge base, the service role also needs `CreateGrant` and `DescribeKey` |
 | AgentCore Memory | `encryptionKeyArn` | `aws_bedrockagentcore_memory.encryption_key_arn` | Caller needs `CreateGrant`, `Decrypt`, `DescribeKey`, `GenerateDataKey*`, `ReEncrypt*` via `bedrock-agentcore` |
 | AgentCore Gateway | `kmsKeyArn` (create and update) | `aws_bedrockagentcore_gateway.kms_key_arn` | Gateway service role: `CreateGrant`, `DescribeKey`, `Decrypt`, `GenerateDataKey` |
 | AgentCore Identity token vault | `kmsConfiguration` on `SetTokenVaultCMK` | `aws_bedrockagentcore_token_vault_cmk` | Single-Region symmetric key, by ARN; vault ARN in the encryption context |
@@ -85,7 +85,7 @@ Customer-managed knowledge bases can no longer add new Confluence, SharePoint, S
 
 | Interaction | Initiator | Direction of data | Identity used | Network path |
 |:--|:--|:--|:--|:--|
-| 1. Create a resource with a customer managed key; service creates a grant | You, then Bedrock or AgentCore on your behalf | Key ARN in; grant created in AWS KMS | Your role (forward access session, `kms:ViaService`) | Bedrock or AgentCore to AWS KMS inside AWS |
+| 1. Create a resource with a customer managed key; service creates a grant | You, then Bedrock or AgentCore on your behalf | Key ARN in; grant created in AWS KMS | Your role, used through the service (`kms:ViaService`; a forward access session for Policy engines) | Bedrock or AgentCore to AWS KMS inside AWS |
 | 2. Encrypt and decrypt stored data | Bedrock or AgentCore | Data keys from AWS KMS to the service; ciphertext in AWS-managed storage | Grant to the service | Inside AWS |
 | 3. Read documents encrypted with SSE-KMS | Amazon S3, for the service role | Plaintext data key to Amazon S3; documents to Bedrock | KB service role, `kms:ViaService` = S3 | Inside AWS |
 | 4. Read a vector-store or Redshift secret | Amazon Bedrock | Credential from Secrets Manager to Bedrock | KB service role | Inside AWS |
