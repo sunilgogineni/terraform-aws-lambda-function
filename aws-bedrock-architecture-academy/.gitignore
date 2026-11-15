@@ -18,8 +18,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# Node / AWS CDK
-node_modules/
+# Node / AWS CDK (no trailing slash: also ignores node_modules symlinks)
+node_modules
 cdk.out/
 cdk.context.json
 *.js.map

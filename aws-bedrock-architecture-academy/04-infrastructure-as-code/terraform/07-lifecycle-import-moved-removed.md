@@ -157,6 +157,8 @@ flowchart TD
 > [!TIP]
 > **Academy recommendation** — For guardrails, let Terraform own the DRAFT and publish a numbered version on every change (`replace_triggered_by` plus `skip_destroy`), and have applications pin the version output. Never point production at `DRAFT`. This is our design guidance, not an official AWS reference architecture.
 
+The academy's [`bedrock-guardrail` module](modules/bedrock-guardrail/README.md) uses a refinement: it triggers on a `terraform_data` fingerprint of the policy inputs rather than on the guardrail itself, so tag or description edits do not publish a new version.
+
 ## Example
 
 > **Code status:** validated with `terraform validate` and `terraform validate -query` (Terraform 1.17.2, provider 6.73.0), TFLint 0.66 · mock-tested: `terraform test`, 3 runs pass · plan outputs below come from local runs against the built-in `terraform_data` resource only · `terraform query` and `-generate-config-out` are **illustrative** (they need AWS credentials) · **never planned or applied against AWS** · never deployed

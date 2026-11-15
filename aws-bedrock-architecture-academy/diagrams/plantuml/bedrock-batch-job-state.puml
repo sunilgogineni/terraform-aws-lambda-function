@@ -1,0 +1,96 @@
+@startuml
+' =============================================================================
+' Amazon Bedrock batch inference — statuses of a model invocation job — UML state diagram
+'
+' Mermaid source set : none (no numbered set covers batch inference); this view is
+'                      drawn from the chapter 01-amazon-bedrock/inference/08-batch-inference.md
+'                      ("Job states" table and its job-lifecycle sequence diagram) and
+'                      complements diagram set 03 (model inference lifecycle).
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      Only the ten documented status values are drawn. The API reference
+'                      describes each status but publishes no transition table: solid
+'                      transitions follow a status description directly, dashed ones are
+'                      our reading. No AWS icons; nothing is included from the network.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_GetModelInvocationJob.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_CreateModelInvocationJob.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference-monitor.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference-stop.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/capacity-limits-cost-optimization.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-eventbridge.html
+'
+' What UML adds: which statuses are final, and which events move a job between them.
+' =============================================================================
+!pragma layout smetana
+title Amazon Bedrock batch inference — statuses of a model invocation job (UML state)
+
+skinparam shadowing false
+skinparam ArrowColor #333333
+skinparam stateBorderColor #555555
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+
+state "Not final — StopModelInvocationJob is accepted" as active #FFFBF5;line:D97706 {
+  state "Submitted" as Submitted #E8F1FB;line:1F6FEB : queued for validation
+  state "Validating" as Validating #E8F1FB;line:1F6FEB : role access to Amazon S3,\n.jsonl record format,\nfile-size and record quotas
+  state "Scheduled" as Scheduled #E6F4EA;line:1E8E3E : validated; waiting in a queue;\non-demand traffic takes priority
+  state "InProgress" as InProgress #E6F4EA;line:1E8E3E : results start to appear\nin the output S3 location
+}
+
+state "Stopping" as Stopping #FDECEA;line:C62828 : being stopped by a user
+state "Completed" as Completed #E6F4EA;line:1E8E3E : final · check errorRecordCount
+state "PartiallyCompleted" as PartiallyCompleted #FFF8E1;line:B28704 : final · not all records\nprocessed in time
+state "Expired" as Expired #FFF8E1;line:B28704 : final · did not begin before\nthe timeout · submit a new job
+state "Failed" as Failed #FDECEA;line:C62828 : final · see the message field
+state "Stopped" as Stopped #FDECEA;line:C62828 : final · tokens already\nprocessed are charged
+
+[*] --> Submitted : CreateModelInvocationJob\nreturns jobArn at once
+Submitted --> Validating
+Validating --> Scheduled : validation passed
+Validating -[dashed]-> Failed : validation failed\n(role or S3 permission, format)
+Scheduled --> InProgress : reaches its turn
+Scheduled --> Expired : timeoutDurationInHours elapsed\n(24 to 168; default 24)
+InProgress --> Completed : all records processed
+InProgress --> PartiallyCompleted : not all records\nprocessed in time
+InProgress -[dashed]-> Failed
+active -[dashed]-> Stopping : StopModelInvocationJob
+Stopping --> Stopped
+
+Completed --> [*]
+PartiallyCompleted --> [*]
+Expired --> [*]
+Failed --> [*]
+Stopped --> [*]
+
+note right of InProgress
+  A bad record does not fail the job: it gets an error
+  object in the output. Progress = processedRecordCount
+  / totalRecordCount (can lag by up to 1 minute)
+end note
+
+note bottom of Completed
+  Each status change can reach Amazon EventBridge as
+  "Batch Inference Job State Change" (source aws.bedrock,
+  best-effort delivery). Re-read the job with
+  GetModelInvocationJob before acting on an event
+  (academy recommendation)
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | solid transition | follows directly from the documented status description |
+  | dashed transition | our reading — not stated as a transition by AWS |
+  | composite state | any status inside it can be stopped (our reading) |
+  |<#E8F1FB> blue | accepted, not yet validated |
+  |<#E6F4EA> green | running or finished normally |
+  |<#FFF8E1> yellow | final, some or all records not processed |
+  |<#FDECEA> red | failed or stopped |
+  Statuses: Submitted · Validating · Scheduled · InProgress · Completed · PartiallyCompleted ·
+  Failed · Stopping · Stopped · Expired (GetModelInvocationJob, status field)
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

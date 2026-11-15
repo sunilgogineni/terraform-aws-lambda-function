@@ -155,7 +155,7 @@ flowchart LR
 
 ## Example
 
-One application inference profile and one invocation role per enabled application, plus a shared guardrail whose topic and word policies exist only when the caller supplies them. It uses the running example module.
+One application inference profile and one invocation role per enabled application, plus a shared guardrail whose topic and word policies exist only when the caller supplies them. It uses the running example module; the [`bedrock-guardrail` module](modules/bedrock-guardrail/README.md) applies the same `dynamic` technique to every guardrail policy.
 
 > **Code status:** validated with `terraform validate` (Terraform 1.17.2, provider 6.73.0) and TFLint 0.66 (`recommended` preset) · mock-tested: `terraform test`, 4 runs pass with a mock provider · **never planned or applied against AWS** · never deployed
 
