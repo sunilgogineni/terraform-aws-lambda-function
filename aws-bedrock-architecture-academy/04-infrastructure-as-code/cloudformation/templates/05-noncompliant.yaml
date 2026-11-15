@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Academy example (chapter 05-hooks-and-guard): a template that is VALID CloudFormation (cfn-lint
+  reports nothing) but FAILS all three rules in 05-bedrock-guardrail-rules.guard. It shows why a
+  linter and a policy engine are different tools. Code status: validated with cfn-lint 1.60.1;
+  fails cfn-guard 3.2.1 by design - never deploy it.
+
+# Deliberate violations:
+#   bedrock_guardrail_kms_key_required      -> Guardrail has no KmsKeyArn
+#   bedrock_guardrail_blocks_prompt_attacks -> PROMPT_ATTACK filter exists but InputStrength is LOW
+#   iam_no_wildcard_bedrock_invoke          -> AppRole allows bedrock:InvokeModel on "*"
+
+Parameters:
+  GuardrailName:
+    Type: String
+    Default: academy-noncompliant-guardrail
+    AllowedPattern: "^[0-9a-zA-Z-_]{1,50}$"
+    Description: Name of the guardrail.
+
+Resources:
+  Guardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Ref GuardrailName
+      Description: Guardrail without a customer managed key and with a weak prompt-attack filter
+      BlockedInputMessaging: Sorry, this request cannot be processed.
+      BlockedOutputsMessaging: Sorry, the response was blocked.
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: VIOLENCE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: PROMPT_ATTACK
+            InputStrength: LOW
+            OutputStrength: NONE
+
+  AppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Over-privileged application role (do not copy)
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: bedrock-invoke-anything
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: InvokeAnyModel
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: "*"
+
+Outputs:
+  GuardrailArn:
+    Value: !GetAtt Guardrail.GuardrailArn
+  AppRoleArn:
+    Value: !GetAtt AppRole.Arn

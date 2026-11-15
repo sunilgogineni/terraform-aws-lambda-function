@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Academy example (chapter 06-modules-and-reuse): a stack that consumes the private registry module
+  Academy::Bedrock::Guardrail::MODULE (fragment shown in the chapter) and references resources
+  inside it. Code status: validated with cfn-lint 1.60.1 - cfn-lint checks this template's
+  structure but cannot see inside a registry module - never deployed.
+
+# Prerequisite: the module is registered as a private extension in the same account and Region
+# (cfn submit, or AWS::CloudFormation::ModuleVersion). CloudFormation uses the module's DEFAULT
+# version at the time of each stack operation.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, test, prod]
+    Default: dev
+    Description: Environment name used in resource names.
+
+  InvocationResourceArns:
+    Type: CommaDelimitedList
+    Description: >-
+      ARNs of the foundation models and inference profiles the application may invoke. Confirm the
+      current model IDs in the Bedrock documentation.
+
+Resources:
+  # A module is declared like a resource. Its parameters become properties. When CloudFormation
+  # processes the template, this one entry expands into the module's KMS key, guardrail and
+  # guardrail version, with logical IDs BaselineGuardrailKey, BaselineGuardrailGuardrail and
+  # BaselineGuardrailVersion.
+  BaselineGuardrail:
+    Type: Academy::Bedrock::Guardrail::MODULE
+    Properties:
+      GuardrailName: !Sub "${Environment}-baseline-guardrail"
+      VersionDescription: Baseline policy reviewed 2026-11-15
+
+  AppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Application role that uses the module's guardrail
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: bedrock-invoke-with-guardrail
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: InvokeNamedModels
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: !Ref InvocationResourceArns
+              # Resources inside a module are referenced as <ModuleLogicalId>.<ResourceLogicalId>.
+              - Sid: ApplyModuleGuardrail
+                Effect: Allow
+                Action: bedrock:ApplyGuardrail
+                Resource: !GetAtt BaselineGuardrail.Guardrail.GuardrailArn
+              - Sid: DecryptModuleGuardrail
+                Effect: Allow
+                Action: kms:Decrypt
+                Resource: !GetAtt BaselineGuardrail.Key.Arn
+
+Outputs:
+  GuardrailArn:
+    Value: !GetAtt BaselineGuardrail.Guardrail.GuardrailArn
+  GuardrailVersion:
+    Value: !GetAtt BaselineGuardrail.Version.Version
+  AppRoleArn:
+    Value: !GetAtt AppRole.Arn

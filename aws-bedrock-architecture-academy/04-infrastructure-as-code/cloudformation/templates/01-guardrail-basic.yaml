@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  AWS Bedrock Architecture Academy - learning example, never deployed by the authors.
+  One Amazon Bedrock guardrail that shows every top-level template section:
+  Metadata, Parameters, Rules, Mappings, Conditions, Resources and Outputs.
+  Status: validated with cfn-lint only.
+
+# ---------------------------------------------------------------------------
+# Metadata: free-form information. AWS::CloudFormation::Interface only changes
+# how the console groups and orders the parameters.
+# ---------------------------------------------------------------------------
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Environment
+        Parameters:
+          - Environment
+      - Label:
+          default: Guardrail
+        Parameters:
+          - GuardrailName
+          - BlockedMessage
+          - KmsKeyArn
+
+# ---------------------------------------------------------------------------
+# Parameters: values supplied at create or update time, with constraints.
+# ---------------------------------------------------------------------------
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment. Drives the filter strengths in the mapping.
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    Default: dev
+
+  GuardrailName:
+    Type: String
+    Description: Guardrail name (letters, digits, hyphen and underscore; at most 50 characters).
+    AllowedPattern: "^[0-9a-zA-Z_-]+$"
+    MinLength: 1
+    MaxLength: 40
+    ConstraintDescription: Use letters, digits, hyphens or underscores only.
+    Default: academy-chat
+
+  BlockedMessage:
+    Type: String
+    Description: Text returned to the user when a prompt or a response is blocked.
+    MinLength: 1
+    MaxLength: 500
+    Default: Sorry, I can't help with that request.
+
+  KmsKeyArn:
+    Type: String
+    Description: Optional customer managed AWS KMS key ARN. Leave empty to use an AWS owned key.
+    AllowedPattern: "^$|^arn:aws(-[^:]+)?:kms:[a-z0-9-]+:[0-9]{12}:key/[a-zA-Z0-9-]{36}$"
+    Default: ""
+
+# ---------------------------------------------------------------------------
+# Rules: cross-parameter validation, evaluated before any resource is touched.
+# ---------------------------------------------------------------------------
+Rules:
+  ProductionNeedsCustomerManagedKey:
+    RuleCondition: !Equals [!Ref Environment, prod]
+    Assertions:
+      - Assert: !Not [!Equals [!Ref KmsKeyArn, ""]]
+        AssertDescription: A prod guardrail must be encrypted with a customer managed KMS key.
+
+# ---------------------------------------------------------------------------
+# Mappings: static lookup tables. Keys must be literal strings.
+# ---------------------------------------------------------------------------
+Mappings:
+  EnvironmentSettings:
+    dev:
+      HarmfulContentStrength: MEDIUM
+      PromptAttackStrength: MEDIUM
+    test:
+      HarmfulContentStrength: HIGH
+      PromptAttackStrength: HIGH
+    prod:
+      HarmfulContentStrength: HIGH
+      PromptAttackStrength: HIGH
+
+# ---------------------------------------------------------------------------
+# Conditions: booleans computed from parameters, used by resources and outputs.
+# ---------------------------------------------------------------------------
+Conditions:
+  IsProduction: !Equals [!Ref Environment, prod]
+  HasKmsKey: !Not [!Equals [!Ref KmsKeyArn, ""]]
+
+# ---------------------------------------------------------------------------
+# Resources: the only required section.
+# ---------------------------------------------------------------------------
+Resources:
+  Guardrail:
+    Type: AWS::Bedrock::Guardrail
+    # Keep the guardrail if the stack is deleted, but clean it up if the very
+    # first create fails and rolls back.
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !Sub "${GuardrailName}-${Environment}"
+      Description: !Sub "Academy example guardrail for ${Environment}, stack ${AWS::StackName}"
+      BlockedInputMessaging: !Ref BlockedMessage
+      BlockedOutputsMessaging: !Ref BlockedMessage
+      KmsKeyArn: !If [HasKmsKey, !Ref KmsKeyArn, !Ref AWS::NoValue]
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: HATE
+            InputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, HarmfulContentStrength]
+            OutputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, HarmfulContentStrength]
+          - Type: VIOLENCE
+            InputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, HarmfulContentStrength]
+            OutputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, HarmfulContentStrength]
+          - Type: MISCONDUCT
+            InputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, HarmfulContentStrength]
+            OutputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, HarmfulContentStrength]
+          # The prompt attack filter evaluates prompts only, so its output strength is NONE.
+          - Type: PROMPT_ATTACK
+            InputStrength: !FindInMap [EnvironmentSettings, !Ref Environment, PromptAttackStrength]
+            OutputStrength: NONE
+      SensitiveInformationPolicyConfig:
+        PiiEntitiesConfig:
+          - Type: EMAIL
+            Action: ANONYMIZE
+          - Type: AWS_SECRET_KEY
+            Action: BLOCK
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  # A numbered, immutable snapshot of the guardrail. Only created in prod.
+  GuardrailVersion:
+    Type: AWS::Bedrock::GuardrailVersion
+    Condition: IsProduction
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      GuardrailIdentifier: !GetAtt Guardrail.GuardrailId
+      Description: !Sub "Published by stack ${AWS::StackName}"
+
+# ---------------------------------------------------------------------------
+# Outputs: values shown after the operation; exports make them importable.
+# ---------------------------------------------------------------------------
+Outputs:
+  GuardrailId:
+    Description: Guardrail identifier to pass as guardrailIdentifier in Converse.
+    Value: !GetAtt Guardrail.GuardrailId
+    Export:
+      Name: !Sub "${AWS::StackName}-GuardrailId"
+
+  GuardrailArn:
+    Description: Guardrail ARN for IAM policies.
+    Value: !GetAtt Guardrail.GuardrailArn
+    Export:
+      Name: !Sub "${AWS::StackName}-GuardrailArn"
+
+  GuardrailVersionNumber:
+    Condition: IsProduction
+    Description: Numbered guardrail version (prod only). Development uses DRAFT.
+    Value: !GetAtt GuardrailVersion.Version

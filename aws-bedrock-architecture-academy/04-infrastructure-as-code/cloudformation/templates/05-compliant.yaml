@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Academy example (chapter 05-hooks-and-guard): a Bedrock guardrail and an application role that
+  PASS the rules in 05-bedrock-guardrail-rules.guard. Code status: validated with cfn-lint 1.60.1
+  and cfn-guard 3.2.1 - never deployed.
+
+# What the three Guard rules look for, and where this template satisfies them:
+#   bedrock_guardrail_kms_key_required      -> Guardrail.KmsKeyArn
+#   bedrock_guardrail_blocks_prompt_attacks -> PROMPT_ATTACK filter with InputStrength HIGH
+#   iam_no_wildcard_bedrock_invoke          -> AppRole allows InvokeModel only on named ARNs;
+#                                              its Deny statement is allowed to be broad.
+
+Parameters:
+  GuardrailName:
+    Type: String
+    Default: academy-baseline-guardrail
+    AllowedPattern: "^[0-9a-zA-Z-_]{1,50}$"
+    Description: Name of the guardrail.
+
+  InvocationResourceArns:
+    Type: CommaDelimitedList
+    Description: >-
+      ARNs of the foundation models and inference profiles the application may invoke. Confirm the
+      current model IDs in the Bedrock documentation. An inference profile also needs the foundation
+      model ARN in every Region the profile can route to.
+
+  TrustedServicePrincipal:
+    Type: String
+    Default: lambda.amazonaws.com
+    Description: Service principal allowed to assume the application role.
+
+Resources:
+  GuardrailKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Customer managed key for the academy guardrail
+      EnableKeyRotation: true
+      PendingWindowInDays: 7
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          # Delegate to IAM: identity policies in this account decide who may use the key.
+          - Sid: EnableIamPolicies
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  Guardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Ref GuardrailName
+      Description: Baseline guardrail with harmful-content and prompt-attack filters
+      BlockedInputMessaging: Sorry, this request cannot be processed.
+      BlockedOutputsMessaging: Sorry, the response was blocked.
+      KmsKeyArn: !GetAtt GuardrailKey.Arn
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: HATE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: INSULTS
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: SEXUAL
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: VIOLENCE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: PROMPT_ATTACK
+            InputStrength: HIGH
+            OutputStrength: NONE
+      Tags:
+        - Key: Project
+          Value: bedrock-academy
+
+  # A version is an immutable snapshot. Changing the guardrail does NOT create a new version;
+  # change this resource's Description (or logical ID) to publish one. See chapter 07.
+  GuardrailVersionOne:
+    Type: AWS::Bedrock::GuardrailVersion
+    Properties:
+      GuardrailIdentifier: !GetAtt Guardrail.GuardrailId
+      Description: First published version
+
+  AppRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Application role that may invoke named Bedrock models through the guardrail
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Ref TrustedServicePrincipal
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: bedrock-invoke-with-guardrail
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: InvokeNamedModels
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: !Ref InvocationResourceArns
+              - Sid: DenyInferenceWithoutThisGuardrail
+                Effect: Deny
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: "*"
+                Condition:
+                  ArnNotLike:
+                    bedrock:GuardrailIdentifier: !Sub "${Guardrail.GuardrailArn}:*"
+              - Sid: ApplyThisGuardrail
+                Effect: Allow
+                Action: bedrock:ApplyGuardrail
+                Resource: !GetAtt Guardrail.GuardrailArn
+              - Sid: DecryptGuardrail
+                Effect: Allow
+                Action: kms:Decrypt
+                Resource: !GetAtt GuardrailKey.Arn
+
+Outputs:
+  GuardrailArn:
+    Description: Guardrail ARN (pass with the version to Converse guardrailConfig).
+    Value: !GetAtt Guardrail.GuardrailArn
+  GuardrailVersion:
+    Description: Published guardrail version number.
+    Value: !GetAtt GuardrailVersionOne.Version
+  AppRoleArn:
+    Description: Role for the application.
+    Value: !GetAtt AppRole.Arn

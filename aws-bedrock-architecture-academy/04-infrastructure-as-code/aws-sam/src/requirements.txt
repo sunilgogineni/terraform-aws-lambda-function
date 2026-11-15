@@ -1,0 +1,3 @@
+# Pinned so the deployment package does not depend on the SDK bundled in the Lambda runtime.
+# The unit tests ran against this version. Update deliberately.
+boto3==1.44.3

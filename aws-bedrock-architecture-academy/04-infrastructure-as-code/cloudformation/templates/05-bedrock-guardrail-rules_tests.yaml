@@ -1,0 +1,250 @@
+# Unit tests for 05-bedrock-guardrail-rules.guard
+# Run: cfn-guard test --rules-file 05-bedrock-guardrail-rules.guard --test-data 05-bedrock-guardrail-rules_tests.yaml
+# Code status: all cases pass with cfn-guard 3.2.1 - never deployed.
+# The inputs are partial templates on purpose: they test the rules, not CloudFormation.
+---
+- name: Empty input skips every rule
+  input: {}
+  expectations:
+    rules:
+      bedrock_guardrail_kms_key_required: SKIP
+      bedrock_guardrail_blocks_prompt_attacks: SKIP
+      iam_no_wildcard_bedrock_invoke: SKIP
+
+- name: Empty Resources section skips every rule
+  input:
+    Resources: {}
+  expectations:
+    rules:
+      bedrock_guardrail_kms_key_required: SKIP
+      bedrock_guardrail_blocks_prompt_attacks: SKIP
+      iam_no_wildcard_bedrock_invoke: SKIP
+
+- name: Compliant guardrail passes both guardrail rules
+  input:
+    Resources:
+      Guardrail:
+        Type: AWS::Bedrock::Guardrail
+        Properties:
+          Name: compliant
+          KmsKeyArn: arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+          ContentPolicyConfig:
+            FiltersConfig:
+              - Type: VIOLENCE
+                InputStrength: HIGH
+                OutputStrength: HIGH
+              - Type: PROMPT_ATTACK
+                InputStrength: HIGH
+                OutputStrength: NONE
+  expectations:
+    rules:
+      bedrock_guardrail_kms_key_required: PASS
+      bedrock_guardrail_blocks_prompt_attacks: PASS
+      iam_no_wildcard_bedrock_invoke: SKIP
+
+- name: Guardrail without a KMS key fails the KMS rule
+  input:
+    Resources:
+      Guardrail:
+        Type: AWS::Bedrock::Guardrail
+        Properties:
+          Name: no-kms
+          ContentPolicyConfig:
+            FiltersConfig:
+              - Type: PROMPT_ATTACK
+                InputStrength: MEDIUM
+                OutputStrength: NONE
+  expectations:
+    rules:
+      bedrock_guardrail_kms_key_required: FAIL
+      bedrock_guardrail_blocks_prompt_attacks: PASS
+
+- name: Guardrail with prompt attack filter set to NONE fails
+  input:
+    Resources:
+      Guardrail:
+        Type: AWS::Bedrock::Guardrail
+        Properties:
+          Name: weak
+          KmsKeyArn: arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+          ContentPolicyConfig:
+            FiltersConfig:
+              - Type: PROMPT_ATTACK
+                InputStrength: NONE
+                OutputStrength: NONE
+  expectations:
+    rules:
+      bedrock_guardrail_kms_key_required: PASS
+      bedrock_guardrail_blocks_prompt_attacks: FAIL
+
+- name: Guardrail without any content policy fails the prompt attack rule
+  input:
+    Resources:
+      Guardrail:
+        Type: AWS::Bedrock::Guardrail
+        Properties:
+          Name: topics-only
+          KmsKeyArn: arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+  expectations:
+    rules:
+      bedrock_guardrail_blocks_prompt_attacks: FAIL
+
+- name: Two guardrails, one non-compliant, fail the KMS rule
+  input:
+    Resources:
+      Good:
+        Type: AWS::Bedrock::Guardrail
+        Properties:
+          KmsKeyArn: arn:aws:kms:us-east-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+      Bad:
+        Type: AWS::Bedrock::Guardrail
+        Properties:
+          Name: bad
+  expectations:
+    rules:
+      bedrock_guardrail_kms_key_required: FAIL
+
+- name: Role inline policy with InvokeModel on star fails
+  input:
+    Resources:
+      AppRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: invoke
+              PolicyDocument:
+                Statement:
+                  - Effect: Allow
+                    Action: bedrock:InvokeModel
+                    Resource: '*'
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: FAIL
+
+- name: Action list with streaming and a star among several resources fails
+  input:
+    Resources:
+      AppRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: invoke
+              PolicyDocument:
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - bedrock:InvokeModelWithResponseStream
+                    Resource:
+                      - arn:aws:bedrock:us-east-1::foundation-model/example-model-id
+                      - '*'
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: FAIL
+
+- name: Lower-case action name still fails (IAM actions are case-insensitive)
+  input:
+    Resources:
+      Policy:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: bedrock:invokemodel
+                Resource: '*'
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: FAIL
+
+- name: Service wildcard bedrock star on star fails
+  input:
+    Resources:
+      Policy:
+        Type: AWS::IAM::Policy
+        Properties:
+          PolicyName: too-broad
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 'bedrock:*'
+                Resource: '*'
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: FAIL
+
+- name: Scoped model ARNs pass
+  input:
+    Resources:
+      AppRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: invoke
+              PolicyDocument:
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - bedrock:InvokeModel
+                      - bedrock:InvokeModelWithResponseStream
+                    Resource:
+                      - arn:aws:bedrock:us-east-1::foundation-model/example-model-id
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: PASS
+
+- name: A Deny on star is allowed (it removes access)
+  input:
+    Resources:
+      AppRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: guardrail-required
+              PolicyDocument:
+                Statement:
+                  - Effect: Deny
+                    Action:
+                      - bedrock:InvokeModel
+                      - bedrock:InvokeModelWithResponseStream
+                    Resource: '*'
+                    Condition:
+                      ArnNotLike:
+                        bedrock:GuardrailIdentifier: arn:aws:bedrock:us-east-1:111122223333:guardrail/example
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: PASS
+
+- name: Other actions on star (list models, X-Ray) pass
+  input:
+    Resources:
+      KbRole:
+        Type: AWS::IAM::Role
+        Properties:
+          Policies:
+            - PolicyName: list
+              PolicyDocument:
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - bedrock:ListFoundationModels
+                      - bedrock:ListCustomModels
+                    Resource: '*'
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: PASS
+
+- name: Role without inline policies passes
+  input:
+    Resources:
+      EmptyRole:
+        Type: AWS::IAM::Role
+        Properties:
+          AssumeRolePolicyDocument:
+            Statement:
+              - Effect: Allow
+                Principal:
+                  Service: lambda.amazonaws.com
+                Action: sts:AssumeRole
+  expectations:
+    rules:
+      iam_no_wildcard_bedrock_invoke: PASS

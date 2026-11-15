@@ -1,0 +1,198 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Academy example (chapter 07-cloudformation-for-bedrock): an Amazon Bedrock AgentCore Runtime
+  (container artifact, microVM compute, public network mode, HTTP protocol, IAM inbound auth), a
+  pinned "prod" runtime endpoint and the execution role. Code status: validated with cfn-lint
+  1.60.1 and checked with cfn-guard 3.2.1 against 05-bedrock-guardrail-rules.guard - never deployed.
+
+# Same design as the Terraform example in 01-amazon-bedrock/agentcore/02-agentcore-runtime.md.
+# Deploy order for a new version: push a new ARM64 image, update ContainerImageUri (the runtime
+# gets a new version and the DEFAULT endpoint follows it), test, then set ProdRuntimeVersion.
+
+Parameters:
+  AgentRuntimeName:
+    Type: String
+    Default: academy_support_agent
+    AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]{0,47}$"
+    Description: Runtime name. Changing it REPLACES the runtime (create-only property).
+
+  ContainerImageUri:
+    Type: String
+    Description: URI of an ARM64 image in Amazon ECR, including the tag or digest.
+
+  EcrRepositoryArn:
+    Type: String
+    Description: ARN of the ECR repository that holds the image; scopes the pull permissions.
+
+  PlatformVersion:
+    Type: String
+    Default: V2
+    AllowedValues: [V1, V2]
+    Description: Runtime platform version. Set it explicitly so a changing service default cannot change behaviour.
+
+  ModelId:
+    Type: String
+    Description: Model or inference profile ID passed to the agent. Confirm the current ID before use.
+
+  IdleSessionTimeoutSeconds:
+    Type: Number
+    Default: 900
+    MinValue: 60
+    MaxValue: 28800
+    Description: Seconds a session may stay idle before its microVM is terminated.
+
+  MaxSessionLifetimeSeconds:
+    Type: Number
+    Default: 28800
+    MinValue: 60
+    MaxValue: 28800
+    Description: Maximum lifetime of the compute behind a session on microVMs.
+
+  ProdRuntimeVersion:
+    Type: String
+    Default: ""
+    AllowedPattern: "^([1-9][0-9]{0,4})?$"
+    Description: >-
+      Runtime version the prod endpoint serves. Leave empty on the first deployment (the endpoint
+      then uses the runtime's current version), then pin the version you tested.
+
+Conditions:
+  ProdVersionPinned: !Not [!Equals [!Ref ProdRuntimeVersion, ""]]
+
+Resources:
+  # Trust policy: only AgentCore, and only for resources in this account and Region.
+  RuntimeExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Execution role for the academy AgentCore runtime
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AssumeRolePolicy
+            Effect: Allow
+            Principal:
+              Service: bedrock-agentcore.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:bedrock-agentcore:${AWS::Region}:${AWS::AccountId}:*"
+      # Permissions follow the documented execution role for a container agent.
+      Policies:
+        - PolicyName: agentcore-runtime-execution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ECRImageAccess
+                Effect: Allow
+                Action:
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                Resource: !Ref EcrRepositoryArn
+              - Sid: ECRTokenAccess
+                Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: "*"
+              - Sid: LogGroups
+                Effect: Allow
+                Action:
+                  - logs:DescribeLogStreams
+                  - logs:CreateLogGroup
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/bedrock-agentcore/runtimes/*"
+              - Sid: DescribeLogGroups
+                Effect: Allow
+                Action: logs:DescribeLogGroups
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*"
+              - Sid: LogStreams
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*"
+              - Sid: Tracing
+                Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                Resource: "*"
+              - Sid: Metrics
+                Effect: Allow
+                Action: cloudwatch:PutMetricData
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    cloudwatch:namespace: bedrock-agentcore
+              - Sid: GetAgentAccessToken
+                Effect: Allow
+                Action:
+                  - bedrock-agentcore:GetWorkloadAccessToken
+                  - bedrock-agentcore:GetWorkloadAccessTokenForJWT
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:bedrock-agentcore:${AWS::Region}:${AWS::AccountId}:workload-identity-directory/default"
+                  - !Sub "arn:${AWS::Partition}:bedrock-agentcore:${AWS::Region}:${AWS::AccountId}:workload-identity-directory/default/workload-identity/${AgentRuntimeName}-*"
+              # Scoped to model and account resources - never "*" (see the Guard rule in 05).
+              - Sid: BedrockModelInvocation
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:bedrock:*::foundation-model/*"
+                  - !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:*"
+
+  AgentRuntime:
+    Type: AWS::BedrockAgentCore::Runtime
+    Properties:
+      AgentRuntimeName: !Ref AgentRuntimeName
+      Description: Support agent hosted on AgentCore Runtime (microVMs)
+      RoleArn: !GetAtt RuntimeExecutionRole.Arn
+      PlatformVersion: !Ref PlatformVersion
+      AgentRuntimeArtifact:
+        ContainerConfiguration:
+          ContainerUri: !Ref ContainerImageUri
+      # PUBLIC: no network interfaces in your VPC. For VPC mode set NetworkMode: VPC and add
+      # NetworkModeConfig with Subnets and SecurityGroups.
+      NetworkConfiguration:
+        NetworkMode: PUBLIC
+      # HTTP contract: POST /invocations and GET /ping on port 8080.
+      ProtocolConfiguration: HTTP
+      LifecycleConfiguration:
+        IdleRuntimeSessionTimeout: !Ref IdleSessionTimeoutSeconds
+        MaxLifetime: !Ref MaxSessionLifetimeSeconds
+      # No AuthorizerConfiguration: inbound authorization is IAM (SigV4), the default.
+      EnvironmentVariables:
+        MODEL_ID: !Ref ModelId
+      Tags:
+        Project: bedrock-academy
+
+  # A named endpoint. DEFAULT always follows the latest version; this one moves when you say so.
+  # Name and AgentRuntimeId are create-only; AgentRuntimeVersion updates in place.
+  ProdEndpoint:
+    Type: AWS::BedrockAgentCore::RuntimeEndpoint
+    Properties:
+      Name: prod
+      Description: Production endpoint, moved to a new version deliberately
+      AgentRuntimeId: !GetAtt AgentRuntime.AgentRuntimeId
+      AgentRuntimeVersion: !If
+        - ProdVersionPinned
+        - !Ref ProdRuntimeVersion
+        - !GetAtt AgentRuntime.AgentRuntimeVersion
+      Tags:
+        Project: bedrock-academy
+
+Outputs:
+  AgentRuntimeArn:
+    Description: ARN to pass to InvokeAgentRuntime.
+    Value: !GetAtt AgentRuntime.AgentRuntimeArn
+  AgentRuntimeVersion:
+    Description: Version created by the latest deployment.
+    Value: !GetAtt AgentRuntime.AgentRuntimeVersion
+  ProdEndpointArn:
+    Description: ARN of the prod endpoint; pass its name as the qualifier.
+    Value: !GetAtt ProdEndpoint.AgentRuntimeEndpointArn
+  ProdLiveVersion:
+    Description: Version the prod endpoint currently serves.
+    Value: !GetAtt ProdEndpoint.LiveVersion

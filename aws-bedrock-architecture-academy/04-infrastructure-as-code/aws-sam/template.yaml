@@ -1,0 +1,181 @@
+# AWS Bedrock Architecture Academy - a small AWS SAM application.
+#
+# HTTP API (IAM-authorised) -> Python Lambda function -> Amazon Bedrock Converse, through a
+# system-defined inference profile, with an Amazon Bedrock guardrail on every call.
+#
+# Code status: validated with cfn-lint 1.60.1 (which applies the SAM transform rules).
+# The handler is byte-compiled and mock-tested. NEVER DEPLOYED.
+#
+# There is no AWS::Serverless::* type for Amazon Bedrock: the guardrail below is a native
+# CloudFormation type, which a SAM template accepts alongside SAM resources.
+#
+# Deploying creates billable resources (API calls, Lambda, model tokens, guardrail text units).
+# If you deploy it in a sandbox account, run `sam delete` afterwards.
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  Academy example - HTTP API and a Python Lambda function that calls the Amazon Bedrock
+  Converse API with a guardrail and a least-privilege execution role.
+
+Parameters:
+  FoundationModelId:
+    Type: String
+    Default: amazon.nova-2-lite-v1:0
+    AllowedPattern: "^[a-z0-9-]+\\.[a-zA-Z0-9.:-]+$"
+    Description: >-
+      Foundation model behind the inference profile. Confirm the current ID in the
+      Amazon Bedrock model catalog; model IDs change as models are retired.
+  InferenceProfileId:
+    Type: String
+    Default: us.amazon.nova-2-lite-v1:0
+    AllowedPattern: "^[a-z-]+\\.[a-z0-9-]+\\.[a-zA-Z0-9.:-]+$"
+    Description: >-
+      System-defined Geo inference profile ID that the function passes to Converse as
+      modelId. It must route to FoundationModelId.
+  MaxTokens:
+    Type: Number
+    Default: 512
+    MinValue: 1
+    MaxValue: 4096
+    Description: Upper bound on generated tokens per request.
+  LogRetentionInDays:
+    Type: Number
+    Default: 30
+    AllowedValues: [7, 14, 30, 90, 365]
+    Description: Retention of the function's log group.
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+      - arm64
+    MemorySize: 256
+    Timeout: 30
+    Tracing: Active
+
+Resources:
+  # ---------------------------------------------------------------- Amazon Bedrock Guardrails
+  ChatGuardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Sub "${AWS::StackName}-chat"
+      Description: Content filters and PII masking for the academy chat example.
+      BlockedInputMessaging: Sorry, I can't help with that request.
+      BlockedOutputsMessaging: Sorry, I can't share that response.
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: HATE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: INSULTS
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: SEXUAL
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: VIOLENCE
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: MISCONDUCT
+            InputStrength: HIGH
+            OutputStrength: HIGH
+          - Type: PROMPT_ATTACK
+            InputStrength: HIGH
+            OutputStrength: NONE
+      SensitiveInformationPolicyConfig:
+        PiiEntitiesConfig:
+          - Type: EMAIL
+            Action: ANONYMIZE
+          - Type: PHONE
+            Action: ANONYMIZE
+
+  # A published, immutable snapshot of the guardrail. CloudFormation creates a new version
+  # only when this resource is replaced: change Description whenever ChatGuardrail changes.
+  ChatGuardrailVersion:
+    Type: AWS::Bedrock::GuardrailVersion
+    Properties:
+      GuardrailIdentifier: !GetAtt ChatGuardrail.GuardrailId
+      Description: "v1 - change this text to publish a new guardrail version"
+
+  # ---------------------------------------------------------------- HTTP API
+  ChatApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Description: Academy chat API. Callers sign requests with SigV4.
+      Auth:
+        EnableIamAuthorizer: true
+        DefaultAuthorizer: AWS_IAM
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 5
+
+  # ---------------------------------------------------------------- Lambda function
+  ChatFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-chat"
+      RetentionInDays: !Ref LogRetentionInDays
+
+  ChatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-chat"
+      Description: Calls Amazon Bedrock Converse with a guardrail.
+      CodeUri: src/
+      Handler: app.handler
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref ChatFunctionLogGroup
+      Environment:
+        Variables:
+          MODEL_ID: !Ref InferenceProfileId
+          GUARDRAIL_ID: !GetAtt ChatGuardrail.GuardrailArn
+          GUARDRAIL_VERSION: !GetAtt ChatGuardrailVersion.Version
+          MAX_TOKENS: !Ref MaxTokens
+      # There is no SAM policy template for Amazon Bedrock, so the statements are inline.
+      # SAM adds them to the execution role it generates (which also gets the
+      # AWSLambdaBasicExecutionRole managed policy for logging).
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: InvokeThroughTheInferenceProfile
+              Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${InferenceProfileId}"
+            - Sid: InvokeTheModelOnlyThroughThatProfile
+              Effect: Allow
+              Action: bedrock:InvokeModel
+              Resource: !Sub "arn:${AWS::Partition}:bedrock:*::foundation-model/${FoundationModelId}"
+              Condition:
+                StringEquals:
+                  bedrock:InferenceProfileArn: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/${InferenceProfileId}"
+            - Sid: UseTheGuardrail
+              Effect: Allow
+              Action:
+                - bedrock:ApplyGuardrail
+                - bedrock:GetGuardrail
+              Resource: !GetAtt ChatGuardrail.GuardrailArn
+      Events:
+        PostChat:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ChatApi
+            Method: POST
+            Path: /chat
+
+Outputs:
+  ChatEndpoint:
+    Description: POST a JSON body {"message":"..."} signed with SigV4 (execute-api:Invoke).
+    Value: !Sub "https://${ChatApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/chat"
+  GuardrailArn:
+    Description: Guardrail used on every Converse call.
+    Value: !GetAtt ChatGuardrail.GuardrailArn
+  GuardrailVersion:
+    Description: Published guardrail version the function uses.
+    Value: !GetAtt ChatGuardrailVersion.Version
+  FunctionRoleArn:
+    Description: Execution role that SAM generated for the function.
+    Value: !GetAtt ChatFunctionRole.Arn

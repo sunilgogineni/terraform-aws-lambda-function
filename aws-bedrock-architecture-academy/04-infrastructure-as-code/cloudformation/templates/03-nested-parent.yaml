@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  AWS Bedrock Architecture Academy - learning example, never deployed by the authors.
+  Parent (root) template: creates an Amazon Bedrock guardrail and nests
+  03-nested-child-iam.yaml as an AWS::CloudFormation::Stack resource to create the IAM
+  role that uses it. The child's location is a parameter, so the same parent works with
+  any copy of the child in Amazon S3. Deploy with CAPABILITY_IAM because the child
+  creates an IAM role. Status: validated with cfn-lint only.
+
+Parameters:
+  ChildTemplateUrl:
+    Type: String
+    Description: >-
+      HTTPS URL of 03-nested-child-iam.yaml in Amazon S3, for example the URL that
+      'aws cloudformation package' writes into the packaged template.
+    AllowedPattern: "^https://.+$"
+    ConstraintDescription: Must be an https:// URL to a template stored in Amazon S3.
+
+  NamePrefix:
+    Type: String
+    AllowedPattern: "^[a-z][a-z0-9-]{2,30}$"
+    Default: academy-nested
+
+  FoundationModelId:
+    Type: String
+    Description: Foundation model ID the role may invoke. Confirm the current ID in the model catalog.
+    AllowedPattern: "^[a-z0-9-]+\\.[a-z0-9.:-]+$"
+
+Resources:
+  Guardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Sub "${NamePrefix}-guardrail"
+      BlockedInputMessaging: Sorry, I can't help with that request.
+      BlockedOutputsMessaging: Sorry, I can't help with that request.
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: PROMPT_ATTACK
+            InputStrength: HIGH
+            OutputStrength: NONE
+          - Type: MISCONDUCT
+            InputStrength: HIGH
+            OutputStrength: HIGH
+
+  # The nested stack. CloudFormation creates it after Guardrail because the
+  # Parameters below reference Guardrail (an implicit dependency).
+  IamStack:
+    Type: AWS::CloudFormation::Stack
+    # Stated explicitly: deleting the parent deletes the child stack and its role.
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Ref ChildTemplateUrl
+      TimeoutInMinutes: 30
+      Parameters:
+        NamePrefix: !Ref NamePrefix
+        GuardrailArn: !GetAtt Guardrail.GuardrailArn
+        # A CommaDelimitedList parameter in the child receives a comma-separated string.
+        AllowedModelArns: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${FoundationModelId}"
+        TrustedService: lambda.amazonaws.com
+      Tags:
+        - Key: NamePrefix
+          Value: !Ref NamePrefix
+
+Outputs:
+  GuardrailId:
+    Value: !GetAtt Guardrail.GuardrailId
+
+  InvocationRoleArn:
+    Description: Read from the nested stack's outputs with Outputs.<OutputName>.
+    Value: !GetAtt IamStack.Outputs.InvocationRoleArn

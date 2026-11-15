@@ -1,0 +1,160 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  AWS Bedrock Architecture Academy - learning example, never deployed by the authors.
+  An application inference profile plus an IAM managed policy that exercise the common
+  intrinsic functions: Ref, Fn::GetAtt, Fn::Sub, Fn::Join, Fn::If, Fn::FindInMap,
+  Fn::Select, Fn::Split, Fn::ImportValue, an export and a plaintext dynamic reference.
+  Prerequisites: a stack built from 01-guardrail-basic.yaml, and the two Parameter Store
+  parameters named in TeamName and in the CostCentre tag. Status: validated with cfn-lint only.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - test
+      - prod
+    Default: dev
+
+  ApplicationName:
+    Type: String
+    Description: Short application name used in resource names and tags.
+    AllowedPattern: "^[a-z][a-z0-9]{2,20}$"
+    Default: chatbot
+
+  FoundationModelId:
+    Type: String
+    Description: >-
+      Foundation model ID to copy into the profile. Confirm the current ID in the
+      Amazon Bedrock model catalog for your Region; there is deliberately no default.
+    AllowedPattern: "^[a-z0-9-]+\\.[a-z0-9.:-]+$"
+
+  GuardrailStackName:
+    Type: String
+    Description: Name of the stack created from 01-guardrail-basic.yaml (it exports the guardrail ARN).
+    Default: academy-guardrail-dev
+
+  # A Systems Manager parameter type: you pass the parameter NAME, CloudFormation
+  # reads the latest VALUE from Parameter Store at create, update and change-set time.
+  TeamName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: Parameter Store name that holds the owning team's name.
+    Default: /academy/shared/team-name
+
+Mappings:
+  EnvironmentConfig:
+    dev:
+      CostTier: experiment
+    test:
+      CostTier: shared
+    prod:
+      CostTier: production
+
+Conditions:
+  IsProduction: !Equals [!Ref Environment, prod]
+
+Resources:
+  InferenceProfile:
+    Type: AWS::Bedrock::ApplicationInferenceProfile
+    Properties:
+      # Fn::Join: concatenate a list with a delimiter.
+      InferenceProfileName: !Join ["-", [!Ref ApplicationName, !Ref Environment, profile]]
+      # Fn::Sub with a variable map: local names that exist only inside this Sub.
+      Description: !Sub
+        - "Cost tracking for ${App} in ${Env}"
+        - App: !Ref ApplicationName
+          Env: !Ref Environment
+      ModelSource:
+        # Fn::Sub with pseudo parameters: no hard-coded partition or Region.
+        CopyFrom: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${FoundationModelId}"
+      Tags:
+        - Key: Application
+          Value: !Ref ApplicationName
+        - Key: Team
+          Value: !Ref TeamName
+        # Fn::Select + Fn::Split: "provider.model-name" -> "provider".
+        - Key: ModelProvider
+          Value: !Select [0, !Split [".", !Ref FoundationModelId]]
+        # Fn::FindInMap: two-level lookup keyed by a parameter.
+        - Key: CostTier
+          Value: !FindInMap [EnvironmentConfig, !Ref Environment, CostTier]
+        # Dynamic reference to a PLAINTEXT Parameter Store value. Never use this
+        # pattern (or ssm-secure / secretsmanager) to put a secret into a tag,
+        # a description or an output: those are readable by anyone with Describe access.
+        - Key: CostCentre
+          Value: "{{resolve:ssm:/academy/shared/cost-centre}}"
+        # Fn::If returning AWS::NoValue drops the whole list element outside prod.
+        - !If
+          - IsProduction
+          - Key: DataClassification
+            Value: confidential
+          - !Ref AWS::NoValue
+
+  InvokePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: !Sub "Invoke ${ApplicationName}-${Environment} through its inference profile and guardrail"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: InvokeThroughProfile
+            Effect: Allow
+            Action:
+              - bedrock:InvokeModel
+              - bedrock:InvokeModelWithResponseStream
+            # Fn::GetAtt: an attribute other than the one Ref returns.
+            Resource: !GetAtt InferenceProfile.InferenceProfileArn
+          - Sid: UnderlyingModelOnlyViaProfile
+            Effect: Allow
+            Action:
+              - bedrock:InvokeModel
+              - bedrock:InvokeModelWithResponseStream
+            Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${FoundationModelId}"
+            Condition:
+              StringEquals:
+                bedrock:InferenceProfileArn: !GetAtt InferenceProfile.InferenceProfileArn
+          - Sid: UseSharedGuardrail
+            Effect: Allow
+            Action:
+              - bedrock:ApplyGuardrail
+              - bedrock:GetGuardrail
+            # Fn::ImportValue: read an export from another stack in the same account
+            # and Region. The short form !ImportValue cannot wrap a short-form !Sub.
+            Resource:
+              Fn::ImportValue: !Sub "${GuardrailStackName}-GuardrailArn"
+
+  # Secrets Manager dynamic reference, shown but NOT used: no property in this
+  # template needs a secret. The pattern is
+  #   '{{resolve:secretsmanager:my-secret:SecretString:api-key}}'
+  # and belongs only in properties that are designed to receive secrets.
+
+Outputs:
+  InferenceProfileId:
+    Description: Ref on AWS::Bedrock::ApplicationInferenceProfile returns the profile ID.
+    Value: !Ref InferenceProfile
+
+  InferenceProfileArn:
+    Description: Pass this ARN as modelId in Converse or InvokeModel.
+    Value: !GetAtt InferenceProfile.InferenceProfileArn
+    Export:
+      Name: !Sub "${AWS::StackName}-InferenceProfileArn"
+
+  FoundationModelArn:
+    Description: The same ARN as CopyFrom, built with Fn::Join instead of Fn::Sub.
+    # The empty element produces the "::" where a model ARN has no account ID.
+    Value: !Join
+      - ":"
+      - - arn
+        - !Ref AWS::Partition
+        - bedrock
+        - !Ref AWS::Region
+        - ""
+        - !Sub "foundation-model/${FoundationModelId}"
+
+  InferenceProfileIdFromArn:
+    Description: The part of the profile ARN after the slash, extracted with Fn::Select and Fn::Split.
+    Value: !Select [1, !Split ["/", !GetAtt InferenceProfile.InferenceProfileArn]]
+
+  InvokePolicyArn:
+    Description: Ref on AWS::IAM::ManagedPolicy returns the policy ARN.
+    Value: !Ref InvokePolicy

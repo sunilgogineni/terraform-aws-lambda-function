@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Academy example (chapter 07-cloudformation-for-bedrock): a customer-managed Amazon Bedrock
+  knowledge base on Amazon S3 Vectors - documents bucket, vector bucket and index, service role,
+  knowledge base and S3 data source. Code status: validated with cfn-lint 1.60.1 and checked with
+  cfn-guard 3.2.1 against 05-bedrock-guardrail-rules.guard - never deployed.
+
+# Same design as the Terraform example in
+# 01-amazon-bedrock/knowledge-bases/03-customer-managed-knowledge-bases.md, written as CloudFormation.
+# CloudFormation creates the knowledge base and data source but does NOT ingest documents:
+# call StartIngestionJob from a pipeline step or a schedule after the stack is complete.
+
+Parameters:
+  NamePrefix:
+    Type: String
+    Default: academy-kb
+    AllowedPattern: "^[a-z0-9][a-z0-9-]{1,30}$"
+    Description: Lowercase prefix for resource names (used in bucket names).
+
+  EmbeddingModelId:
+    Type: String
+    Default: amazon.titan-embed-text-v2:0
+    Description: >-
+      Embedding model ID. Confirm the current ID and its Region support in the Bedrock documentation
+      before you deploy.
+
+  EmbeddingDimensions:
+    Type: Number
+    Default: 1024
+    MinValue: 1
+    MaxValue: 4096
+    Description: >-
+      Vector dimensions. Must be a value the embedding model supports and must equal the index
+      dimension. Changing it replaces the vector index and the knowledge base.
+
+  DocumentPrefix:
+    Type: String
+    Default: documents/
+    Description: S3 prefix that holds the source documents. Only this prefix is ingested.
+
+Resources:
+  # 1. Source documents. Retained on stack deletion because they are the system of record.
+  DocumentsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "${NamePrefix}-documents-${AWS::AccountId}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # 2. Vector store. Both resources are create-only almost everywhere: a change to the name,
+  #    encryption, dimension, distance metric or metadata configuration REPLACES them.
+  VectorBucket:
+    Type: AWS::S3Vectors::VectorBucket
+    Properties:
+      VectorBucketName: !Sub "${NamePrefix}-vectors-${AWS::AccountId}"
+      EncryptionConfiguration:
+        SseType: AES256
+
+  VectorIndex:
+    Type: AWS::S3Vectors::Index
+    Properties:
+      VectorBucketArn: !Ref VectorBucket # Ref returns the vector bucket ARN
+      IndexName: !Sub "${NamePrefix}-index"
+      DataType: float32 # S3 Vectors stores 32-bit floating-point vectors only
+      Dimension: !Ref EmbeddingDimensions
+      DistanceMetric: cosine
+      MetadataConfiguration:
+        # Keys Bedrock writes for chunk text and its own metadata; documented as non-filterable.
+        NonFilterableMetadataKeys:
+          - AMAZON_BEDROCK_TEXT
+          - AMAZON_BEDROCK_METADATA
+
+  # 3. Service role. Amazon Bedrock assumes it to read documents, call the embedding model and
+  #    write vectors. The trust policy accepts only knowledge bases in this account and Region.
+  KnowledgeBaseRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Service role for the academy knowledge base
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AmazonBedrockKnowledgeBaseTrust
+            Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:knowledge-base/*"
+      Policies:
+        - PolicyName: knowledge-base-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ListModels
+                Effect: Allow
+                Action:
+                  - bedrock:ListFoundationModels
+                  - bedrock:ListCustomModels
+                Resource: "*"
+              - Sid: InvokeEmbeddingModel
+                Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${EmbeddingModelId}"
+              - Sid: ListDocumentsBucket
+                Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt DocumentsBucket.Arn
+                Condition:
+                  StringEquals:
+                    aws:ResourceAccount: !Ref AWS::AccountId
+              - Sid: ReadDocuments
+                Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "${DocumentsBucket.Arn}/${DocumentPrefix}*"
+                Condition:
+                  StringEquals:
+                    aws:ResourceAccount: !Ref AWS::AccountId
+              - Sid: ReadAndWriteVectorIndex
+                Effect: Allow
+                Action:
+                  - s3vectors:PutVectors
+                  - s3vectors:GetVectors
+                  - s3vectors:DeleteVectors
+                  - s3vectors:QueryVectors
+                  - s3vectors:GetIndex
+                Resource: !GetAtt VectorIndex.IndexArn
+
+  # 4. The knowledge base: type VECTOR, storage S3_VECTORS. StorageConfiguration and the vector
+  #    configuration are create-only - changing them replaces the knowledge base.
+  KnowledgeBase:
+    Type: AWS::Bedrock::KnowledgeBase
+    Properties:
+      Name: !Sub "${NamePrefix}-customer-managed"
+      Description: Customer-managed knowledge base backed by Amazon S3 Vectors
+      RoleArn: !GetAtt KnowledgeBaseRole.Arn
+      KnowledgeBaseConfiguration:
+        Type: VECTOR
+        VectorKnowledgeBaseConfiguration:
+          EmbeddingModelArn: !Sub "arn:${AWS::Partition}:bedrock:${AWS::Region}::foundation-model/${EmbeddingModelId}"
+          EmbeddingModelConfiguration:
+            BedrockEmbeddingModelConfiguration:
+              Dimensions: !Ref EmbeddingDimensions
+              EmbeddingDataType: FLOAT32
+      StorageConfiguration:
+        Type: S3_VECTORS
+        S3VectorsConfiguration:
+          IndexArn: !GetAtt VectorIndex.IndexArn # IndexArn OR VectorBucketArn + IndexName, not both
+      Tags:
+        Project: bedrock-academy
+
+  # 5. The data source: one S3 prefix, fixed-size chunking. Chunking and parsing settings are
+  #    create-only; DELETE removes this data source's vectors when the data source is deleted.
+  DocumentsDataSource:
+    Type: AWS::Bedrock::DataSource
+    Properties:
+      KnowledgeBaseId: !Ref KnowledgeBase # Ref returns the knowledge base ID
+      Name: !Sub "${NamePrefix}-s3-documents"
+      DataDeletionPolicy: DELETE
+      DataSourceConfiguration:
+        Type: S3
+        S3Configuration:
+          BucketArn: !GetAtt DocumentsBucket.Arn
+          BucketOwnerAccountId: !Ref AWS::AccountId
+          InclusionPrefixes:
+            - !Ref DocumentPrefix
+      VectorIngestionConfiguration:
+        ChunkingConfiguration:
+          ChunkingStrategy: FIXED_SIZE
+          FixedSizeChunkingConfiguration:
+            MaxTokens: 300
+            OverlapPercentage: 20
+
+Outputs:
+  KnowledgeBaseId:
+    Description: Pass to Retrieve, RetrieveAndGenerate and StartIngestionJob.
+    Value: !Ref KnowledgeBase
+  DataSourceId:
+    Description: Pass to StartIngestionJob with the knowledge base ID.
+    Value: !GetAtt DocumentsDataSource.DataSourceId
+  DocumentsBucketName:
+    Description: Upload documents under the DocumentPrefix in this bucket.
+    Value: !Ref DocumentsBucket
+  VectorIndexArn:
+    Value: !GetAtt VectorIndex.IndexArn

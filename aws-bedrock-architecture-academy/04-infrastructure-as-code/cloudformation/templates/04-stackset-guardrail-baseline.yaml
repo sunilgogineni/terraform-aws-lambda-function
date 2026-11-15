@@ -1,0 +1,164 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  AWS Bedrock Architecture Academy - learning example, never deployed by the authors.
+  Per-account Amazon Bedrock guardrail baseline, written for a SERVICE_MANAGED StackSet
+  that targets every account in an organizational unit (OU) and every Region you list.
+  It creates a guardrail, a numbered version, a same-account resource-based policy,
+  optional account-level enforcement and two Parameter Store entries that applications
+  read. No transforms, macros or nested stacks (service-managed StackSets do not support
+  them) and no account IDs or Regions in the template: pseudo parameters only.
+  Status: validated with cfn-lint only.
+
+Parameters:
+  BaselineName:
+    Type: String
+    Description: Guardrail name, identical in every account and Region.
+    AllowedPattern: "^[0-9a-zA-Z_-]+$"
+    MaxLength: 50
+    Default: org-genai-baseline
+
+  BaselineRevision:
+    Type: String
+    Description: >-
+      Increase this number to publish a new numbered guardrail version after you
+      change the guardrail settings. A changed description replaces the version resource.
+    AllowedPattern: "^[0-9]{1,6}$"
+    Default: "1"
+
+  BlockedMessage:
+    Type: String
+    MinLength: 1
+    MaxLength: 500
+    Default: This request was blocked by your organization's generative AI policy.
+
+  HarmfulContentStrength:
+    Type: String
+    AllowedValues:
+      - LOW
+      - MEDIUM
+      - HIGH
+    Default: HIGH
+
+  EnforceInAccount:
+    Type: String
+    Description: >-
+      'true' applies the guardrail version to every Bedrock model invocation in the
+      account and Region. Test ApplyGuardrail from every calling role first: callers
+      without permission on the guardrail start receiving AccessDenied errors.
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+
+  ParameterPrefix:
+    Type: String
+    Description: Parameter Store path under which the guardrail ID and version are published.
+    AllowedPattern: "^/[a-zA-Z0-9_.-]+(/[a-zA-Z0-9_.-]+)*$"
+    Default: /org/bedrock/baseline-guardrail
+
+Conditions:
+  EnforceGuardrail: !Equals [!Ref EnforceInAccount, "true"]
+
+Resources:
+  BaselineGuardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Ref BaselineName
+      Description: Organization baseline guardrail deployed by CloudFormation StackSets
+      BlockedInputMessaging: !Ref BlockedMessage
+      BlockedOutputsMessaging: !Ref BlockedMessage
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: HATE
+            InputStrength: !Ref HarmfulContentStrength
+            OutputStrength: !Ref HarmfulContentStrength
+          - Type: INSULTS
+            InputStrength: !Ref HarmfulContentStrength
+            OutputStrength: !Ref HarmfulContentStrength
+          - Type: SEXUAL
+            InputStrength: !Ref HarmfulContentStrength
+            OutputStrength: !Ref HarmfulContentStrength
+          - Type: VIOLENCE
+            InputStrength: !Ref HarmfulContentStrength
+            OutputStrength: !Ref HarmfulContentStrength
+          - Type: MISCONDUCT
+            InputStrength: !Ref HarmfulContentStrength
+            OutputStrength: !Ref HarmfulContentStrength
+          - Type: PROMPT_ATTACK
+            InputStrength: HIGH
+            OutputStrength: NONE
+      SensitiveInformationPolicyConfig:
+        PiiEntitiesConfig:
+          - Type: AWS_ACCESS_KEY
+            Action: BLOCK
+          - Type: AWS_SECRET_KEY
+            Action: BLOCK
+      # No Automated Reasoning policy: guardrail enforcement does not support it.
+      Tags:
+        - Key: ManagedBy
+          Value: CloudFormation-StackSets
+        - Key: BaselineRevision
+          Value: !Ref BaselineRevision
+
+  BaselineGuardrailVersion:
+    Type: AWS::Bedrock::GuardrailVersion
+    DeletionPolicy: Delete
+    # Keep superseded versions so applications pinned to an older number keep working.
+    UpdateReplacePolicy: Retain
+    Properties:
+      GuardrailIdentifier: !GetAtt BaselineGuardrail.GuardrailId
+      Description: !Sub "Baseline revision ${BaselineRevision}"
+
+  # Same-account sharing pattern from the Bedrock documentation: principals in this
+  # account may apply and read the guardrail.
+  GuardrailResourcePolicy:
+    Type: AWS::Bedrock::ResourcePolicy
+    Properties:
+      ResourceArn: !GetAtt BaselineGuardrail.GuardrailArn
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action:
+              - bedrock:ApplyGuardrail
+              - bedrock:GetGuardrail
+            Resource: !GetAtt BaselineGuardrail.GuardrailArn
+
+  AccountEnforcement:
+    Type: AWS::Bedrock::EnforcedGuardrailConfiguration
+    Condition: EnforceGuardrail
+    DependsOn: GuardrailResourcePolicy
+    Properties:
+      GuardrailIdentifier: !GetAtt BaselineGuardrail.GuardrailId
+      # Enforcement needs a numbered version, never DRAFT.
+      GuardrailVersion: !GetAtt BaselineGuardrailVersion.Version
+
+  # Applications discover the baseline by a well-known name instead of hard-coding IDs.
+  GuardrailIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "${ParameterPrefix}/id"
+      Type: String
+      Value: !GetAtt BaselineGuardrail.GuardrailId
+      Description: Baseline guardrail ID in this account and Region
+
+  GuardrailVersionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "${ParameterPrefix}/version"
+      Type: String
+      Value: !GetAtt BaselineGuardrailVersion.Version
+      Description: Current numbered version of the baseline guardrail
+
+Outputs:
+  GuardrailArn:
+    Value: !GetAtt BaselineGuardrail.GuardrailArn
+
+  GuardrailVersion:
+    Value: !GetAtt BaselineGuardrailVersion.Version
+
+  EnforcementConfigId:
+    Condition: EnforceGuardrail
+    Value: !GetAtt AccountEnforcement.ConfigId

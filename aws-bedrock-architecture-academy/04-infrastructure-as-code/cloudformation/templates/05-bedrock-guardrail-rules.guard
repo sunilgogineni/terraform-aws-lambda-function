@@ -1,0 +1,114 @@
+#
+# AWS CloudFormation Guard 3.x rules for Amazon Bedrock templates.
+#
+# Code status: tested with `cfn-guard test` and run with `cfn-guard validate` (cfn-guard 3.2.1)
+#              against 05-compliant.yaml and 05-noncompliant.yaml - never deployed.
+# Explained in: ../05-hooks-and-guard.md
+#
+# These rules are academy guidance, not an official AWS rule set. They read a CloudFormation
+# template (cfn-guard validate in CI, or a Guard Hook with the STACK target) and also the
+# resource input of a Guard Hook with the RESOURCE target, because both put resources under
+# Resources.<LogicalId>.Type / .Properties.
+#
+# Rule intent and expected outcome
+#   bedrock_guardrail_kms_key_required
+#       SKIP when there is no AWS::Bedrock::Guardrail.
+#       PASS when every guardrail sets KmsKeyArn (a customer managed key).
+#       FAIL otherwise.
+#   bedrock_guardrail_blocks_prompt_attacks
+#       SKIP when there is no AWS::Bedrock::Guardrail.
+#       PASS when every guardrail has a PROMPT_ATTACK content filter with InputStrength
+#            MEDIUM or HIGH.
+#       FAIL otherwise.
+#   iam_no_wildcard_bedrock_invoke
+#       SKIP when there is no IAM role or policy resource.
+#       PASS when no Allow statement grants a Bedrock invoke action on Resource "*".
+#       FAIL otherwise. Deny statements on "*" are allowed (they only take access away).
+#
+# Known limits (say so in reviews): the IAM rule does not interpret NotAction or NotResource,
+# does not resolve intrinsic functions when run in CI (a Guard Hook sees resolved values),
+# and does not look at policies attached outside the template.
+
+#
+# Selections
+#
+let bedrock_guardrails = Resources.*[ Type == 'AWS::Bedrock::Guardrail' ]
+
+let iam_resources = Resources.*[
+    Type in [ 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::IAM::ManagedPolicy', 'AWS::IAM::RolePolicy' ]
+]
+
+# Inline policies of roles. The filter keeps only roles that have Policies, so a role
+# without inline policies is not a retrieval error.
+let role_inline_statements = Resources.*[
+    Type == 'AWS::IAM::Role'
+    Properties.Policies exists
+].Properties.Policies[*].PolicyDocument.Statement[*]
+
+# Stand-alone policies.
+let policy_statements = Resources.*[
+    Type in [ 'AWS::IAM::Policy', 'AWS::IAM::ManagedPolicy', 'AWS::IAM::RolePolicy' ]
+    Properties.PolicyDocument exists
+].Properties.PolicyDocument.Statement[*]
+
+# Allow statements that grant a Bedrock invoke action on the bare wildcard Resource "*".
+# The expression matches "*", "bedrock:*", "bedrock:Invoke*" and every action that starts
+# with "bedrock:InvokeModel" (InvokeModel, InvokeModelWithResponseStream, ...). IAM action
+# names are case-insensitive, so the expression is too.
+let role_wildcard_invoke = %role_inline_statements[
+    Effect == 'Allow'
+    some Resource[*] == '*'
+    some Action[*] == /(?i)^(\*|bedrock:\*|bedrock:invoke\*|bedrock:invokemodel.*)$/
+]
+
+let policy_wildcard_invoke = %policy_statements[
+    Effect == 'Allow'
+    some Resource[*] == '*'
+    some Action[*] == /(?i)^(\*|bedrock:\*|bedrock:invoke\*|bedrock:invokemodel.*)$/
+]
+
+#
+# Rule 1 - guardrails are encrypted with a customer managed AWS KMS key
+#
+rule bedrock_guardrail_kms_key_required when %bedrock_guardrails !empty {
+    %bedrock_guardrails {
+        Properties.KmsKeyArn exists
+        <<
+            Violation: AWS::Bedrock::Guardrail has no KmsKeyArn, so it is encrypted with an AWS owned key.
+            Fix: Create an AWS::KMS::Key (with rotation) and set KmsKeyArn on the guardrail.
+        >>
+    }
+}
+
+#
+# Rule 2 - guardrails filter prompt attacks on input
+#
+rule bedrock_guardrail_blocks_prompt_attacks when %bedrock_guardrails !empty {
+    %bedrock_guardrails {
+        # "some": at least one entry of FiltersConfig must satisfy both clauses.
+        some Properties.ContentPolicyConfig.FiltersConfig[*] {
+            Type == 'PROMPT_ATTACK'
+            InputStrength in [ 'MEDIUM', 'HIGH' ]
+            <<
+                Violation: AWS::Bedrock::Guardrail has no PROMPT_ATTACK content filter with InputStrength MEDIUM or HIGH.
+                Fix: Add a FiltersConfig entry with Type PROMPT_ATTACK and InputStrength HIGH (or MEDIUM).
+            >>
+        }
+    }
+}
+
+#
+# Rule 3 - no IAM Allow statement grants Bedrock invocation on every resource
+#
+rule iam_no_wildcard_bedrock_invoke when %iam_resources !empty {
+    %role_wildcard_invoke empty
+    <<
+        Violation: An IAM role inline policy allows Bedrock model invocation on Resource "*".
+        Fix: Name the foundation model, inference profile or provisioned model ARNs in Resource.
+    >>
+    %policy_wildcard_invoke empty
+    <<
+        Violation: An IAM policy allows Bedrock model invocation on Resource "*".
+        Fix: Name the foundation model, inference profile or provisioned model ARNs in Resource.
+    >>
+}
