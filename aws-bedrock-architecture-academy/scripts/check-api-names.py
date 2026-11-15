@@ -61,7 +61,7 @@ ALLOW = {
     # Name used in AgentCore release notes; the chapter explains that the API is CreateGatewayRateLimit.
     "CreateRateLimit",
     # CloudFormation vocabulary that looks like an operation: a request parameter and a resource attribute.
-    "DisableValidation", "UpdateReplacePolicy",
+    "DisableValidation", "UpdateReplacePolicy", "UpdateCleanup", "EncryptionConfiguration", "EncryptionKeyArn",
 }
 
 

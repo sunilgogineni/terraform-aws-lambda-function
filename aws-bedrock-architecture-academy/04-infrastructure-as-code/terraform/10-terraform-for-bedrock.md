@@ -25,14 +25,14 @@ A Terraform provider is a phrase book. If the book has a phrase for what you wan
 
 ## How it really works
 
-In provider 6.73.0 the Bedrock family (`aws_bedrock*`) has **45 resources, 9 data sources, 15 list resources, 1 ephemeral resource and 0 actions**; 27 of the resources support import by `identity`. The [generated Terraform reference](../../references/terraform-aws-provider-bedrock.md) adds S3 Vectors and OpenSearch Serverless, which knowledge bases use. Every resource accepts a `region` argument, so one provider configuration can manage several Regions.
+In provider 6.73.0 the Bedrock family (`aws_bedrock*`) has **45 resources, 9 data sources, 15 list resources, 1 ephemeral resource and 0 actions**; 27 of the resources support import by `identity`. The [generated Terraform reference](../../references/terraform-aws-provider-bedrock.md) adds S3 Vectors and OpenSearch Serverless, which knowledge bases use. All but one of the 45 resources (`aws_bedrock_use_case_for_model_access`) accept a `region` argument, so one provider configuration can manage several Regions.
 
 ### Coverage map — Amazon Bedrock
 
 | Feature | Resources | Data sources | List (`terraform query`) | Notes |
 |:--|:--|:--|:--|:--|
 | Model catalog and access | `aws_bedrock_foundation_model_agreement`, `aws_bedrock_use_case_for_model_access` | `aws_bedrock_foundation_model(s)`, `aws_bedrock_foundation_model_agreement_offers`, `aws_bedrock_use_case_for_model_access` | — | — |
-| Inference profiles | `aws_bedrock_inference_profile` (application) | `aws_bedrock_inference_profile(s)` (also system-defined) | — | No update API: changes replace the profile and its ARN |
+| Inference profiles | `aws_bedrock_inference_profile` (application) | `aws_bedrock_inference_profile(s)` (also system-defined) | — | The API has no update operation, so changes other than tags replace the profile and its ARN |
 | Provisioned Throughput | `aws_bedrock_provisioned_model_throughput` | — | — | Commitment term; protect with `prevent_destroy` |
 | Batch inference | `aws_bedrock_model_invocation_job` | — | ✅ | Job; no `tags`; `model_invocation_type` read-only |
 | Customization (fine-tuning, RFT, distillation) | `aws_bedrock_custom_model` | `aws_bedrock_custom_model(s)` | — | Job; destroy deletes the resulting model |
@@ -72,7 +72,7 @@ AgentCore has no data sources in 6.73.0. Source for both maps: the provider sche
 | Intelligent prompt routers | `AWS::Bedrock::IntelligentPromptRouter` | `awscc_bedrock_intelligent_prompt_router` | Stack or Cloud Control (example below) |
 | Automated Reasoning policies | `AWS::Bedrock::AutomatedReasoningPolicy`, `...PolicyVersion` | `awscc_bedrock_automated_reasoning_policy`, `..._version` | Stack or Cloud Control |
 | Prompt versions; flow versions and aliases | `AWS::Bedrock::PromptVersion`, `FlowVersion`, `FlowAlias` | `awscc_bedrock_prompt_version`, `_flow_version`, `_flow_alias` | Stack or Cloud Control |
-| Knowledge base resource policy; retrieval instructions | `AWS::Bedrock::KnowledgeBasePolicy`, `RetrievalInstruction` | `awscc_bedrock_knowledge_base_policy`, `_retrieval_instruction` | Stack or Cloud Control |
+| Knowledge base resource policy; retrieval instructions | `AWS::Bedrock::KnowledgeBasePolicy`, `RetrievalInstruction` | `awscc_bedrock_knowledge_base_policy`, `_retrieval_instruction` | Stack or `awscc` |
 | Projects (`bedrock-mantle`) | `AWS::BedrockMantle::Project` | `awscc_bedrockmantle_project` | Stack or `awscc` |
 | AgentCore Payments (preview) | `AWS::BedrockAgentCore::PaymentManager`, `PaymentConnector`, `PaymentCredentialProvider` | `awscc_bedrockagentcore_payment_*` | Stack or `awscc` |
 | AgentCore Optimization | `AWS::BedrockAgentCore::ConfigurationBundle` | `awscc_bedrockagentcore_configuration_bundle` | Stack or `awscc` |
@@ -91,7 +91,7 @@ Cloud Control only works for types that support it. On the verification date, th
 
 ### Job-like resources and read-only arguments
 
-Three resources start a job rather than create a lasting object: `aws_bedrock_custom_model`, `aws_bedrock_model_invocation_job` and `aws_bedrock_evaluation_job`. Create starts the job; destroy stops it if it is still running (for a completed customization job, destroy **deletes the custom model**); updates change only tags. Use `skip_destroy`, `prevent_destroy` and `removed` blocks as in [chapter 7](07-lifecycle-import-moved-removed.md). Sources: provider docs for [custom models](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_custom_model.html.markdown), [batch jobs](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_model_invocation_job.html.markdown), [evaluation jobs](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_evaluation_job.html.markdown).
+Three resources start a job rather than create a lasting object: `aws_bedrock_custom_model`, `aws_bedrock_model_invocation_job` and `aws_bedrock_evaluation_job`. Create starts the job; destroy stops it if it is still running (for a completed customization job, destroy **deletes the custom model**); for customization jobs, update changes only tags. Use `skip_destroy`, `prevent_destroy` and `removed` blocks as in [chapter 7](07-lifecycle-import-moved-removed.md). Sources: provider docs for [custom models](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_custom_model.html.markdown), [batch jobs](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_model_invocation_job.html.markdown), [evaluation jobs](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/bedrock_evaluation_job.html.markdown).
 
 A **read-only argument** is an attribute you can read but not set. On `aws_bedrock_model_invocation_job`, `model_invocation_type` is computed-only, so a batch job that uses the Converse input format cannot be requested from Terraform 6.73.0, and the resource has no `tags` — the provider explains that Bedrock cannot return tags for finished jobs ([Batch inference](../../01-amazon-bedrock/inference/08-batch-inference.md)).
 
@@ -435,7 +435,7 @@ The block name `mock_ephemeral` was established by running Terraform 1.17.2 (`mo
 ## Cost considerations
 
 - Native resources, stacks and Cloud Control add no Terraform-side charge; you pay for the Bedrock resources they create.
-- The ephemeral guardrail check calls `ApplyGuardrail` on every plan and apply, and each call is billed by the guardrail's pricing dimensions ([Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)); keep the test texts short.
+- The ephemeral guardrail check calls `ApplyGuardrail` on every plan and apply, and each call is charged separately, by text units per configured safeguard ([AWS guardrails best practices](https://aws.amazon.com/blogs/machine-learning/build-safe-generative-ai-applications-like-a-pro-best-practices-with-amazon-bedrock-guardrails/)); keep the test texts short.
 - Job-like resources bill per run; replacing one by accident buys the run again.
 
 ## Knowledge check
@@ -464,4 +464,5 @@ Official sources opened while writing this chapter:
 - `awscc`: [README](https://raw.githubusercontent.com/hashicorp/terraform-provider-awscc/main/README.md), [provider documentation](https://raw.githubusercontent.com/hashicorp/terraform-provider-awscc/main/docs/index.md), [changelog](https://raw.githubusercontent.com/hashicorp/terraform-provider-awscc/main/CHANGELOG.md), [`awscc_bedrock_intelligent_prompt_router`](https://raw.githubusercontent.com/hashicorp/terraform-provider-awscc/main/docs/resources/bedrock_intelligent_prompt_router.md).
 - [AWS::Bedrock::IntelligentPromptRouter](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-bedrock-intelligentpromptrouter.html) and [Understanding intelligent prompt routing](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-routing.html).
 - [Cloud Control API supported resources](https://docs.aws.amazon.com/cloudcontrolapi/latest/userguide/supported-resources.html).
+- [Best practices with Amazon Bedrock Guardrails](https://aws.amazon.com/blogs/machine-learning/build-safe-generative-ai-applications-like-a-pro-best-practices-with-amazon-bedrock-guardrails/) — `ApplyGuardrail` charges.
 - [terraform test — provider mocking](https://developer.hashicorp.com/terraform/language/tests/mocking) and the [Terraform v1.17 changelog](https://raw.githubusercontent.com/hashicorp/terraform/v1.17/CHANGELOG.md) (mock providers for ephemeral resources).

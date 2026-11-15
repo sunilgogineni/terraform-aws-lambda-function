@@ -1,0 +1,100 @@
+@startuml
+' =============================================================================
+' Converse tool-use loop — UML sequence diagram
+'
+' Mermaid source set : diagrams/mermaid/04-converse-api-application.md (view C)
+' Chapter            : 01-amazon-bedrock/inference/01-converse-api.md
+' Verified           : 2026-11-15
+' Status             : academy design, not an official AWS reference architecture.
+'                      No AWS icons; nothing is included from the network.
+'
+' Official sources this view relies on:
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ConverseStream.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/tool-use-client-side.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ToolUseBlockStart.html
+'   https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ToolResultBlock.html
+'   https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html
+'
+' What UML adds over the Mermaid view: the tool rounds are an explicit loop
+' fragment with its exit condition, and the stop reasons are alternatives.
+' =============================================================================
+!pragma layout smetana
+title Converse tool-use loop — one user turn with ConverseStream (UML sequence)
+
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+skinparam responseMessageBelowArrow true
+skinparam ArrowColor #333333
+skinparam sequenceLifeLineBorderColor #888888
+skinparam sequenceGroupBorderColor #666666
+skinparam noteBackgroundColor #FFFFFF
+skinparam noteBorderColor #888888
+skinparam legendBackgroundColor #FFFFFF
+skinparam legendBorderColor #888888
+
+autonumber
+box "Internet — untrusted" #F1F3F4
+  actor "Client" as U #E8F1FB
+end box
+box "Your AWS account · one Region" #FFFBF5
+  participant "Chat service\nexecution role · tool loop" as A #FDEBD0
+  database "Amazon DynamoDB\nconversation history" as H #EDE7F6
+  participant "Tool implementation\nleast-privilege role per tool" as T #FDEBD0
+end box
+box "AWS-managed service boundary · Amazon Bedrock" #F5FBF6
+  participant "Amazon Bedrock Runtime\nConverseStream" as B #E6F4EA
+end box
+
+U -> A : User message for a session
+note over U, A : User authenticated at the entry point
+A -> H : Load the messages of the session
+H --> A : Message list
+
+loop Tool rounds — until stopReason is not tool_use; cap the number of rounds per turn
+  A -> B : ConverseStream with system, full history, toolConfig\n(after round 1: plus the assistant toolUse and user toolResult messages)
+  note over A, B : SigV4 with the execution role · IAM bedrock:InvokeModelWithResponseStream\nBedrock stores nothing between calls: every call carries the whole history
+  opt Throttled before the stream starts
+    B --> A : 429 ThrottlingException
+    A -> B : Retry with backoff · bounded attempts
+  end
+  B --> A : messageStart, then contentBlockDelta text events
+  A --> U : Forward text deltas as they arrive
+  alt stopReason tool_use
+    B --> A : toolUse block events, then messageStop with stopReason tool_use
+    note right of A : Assemble the toolUse block from contentBlockStart\n(toolUseId, name) and the partial JSON in the deltas.\nSeveral toolUse blocks: one toolResult per toolUseId,\nall in a single user message
+    A -> T : Run the tool with the parsed input
+    T --> A : Result or error
+    note right of A : On a tool error, return a toolResult with\nstatus error and a short message — never drop it
+  else stopReason end_turn
+    B --> A : Text deltas, then messageStop with stopReason end_turn, then metadata with usage
+    A --> U : Forward the rest of the answer
+  end
+end
+
+A -> H : Append the user, assistant and tool messages
+opt Error event after partial output
+  B --> A : modelStreamErrorException in the stream
+  A --> U : Mark the answer incomplete and offer a retry
+  note right of A : Do not restart silently and duplicate output.\nDo not save a half-finished assistant message as complete
+end
+
+note across
+  Other stop reasons — max_tokens: the answer is truncated · guardrail_intervened: show the guardrail's message ·
+  model_context_window_exceeded: trim or summarize the history before retrying (the exact semantics of this value are our reading).
+  The model never runs a tool itself: it returns a toolUse request and your code runs the tool.
+end note
+
+legend right
+  |= Notation |= Meaning |
+  | solid arrow | request or call |
+  | dashed arrow | response, or an event on the open stream |
+  | loop / alt / opt | repetition, alternatives, optional step |
+  |<#F1F3F4> grey box | outside your AWS account |
+  |<#FDEBD0> orange | your compute |
+  |<#EDE7F6> purple | data at rest |
+  |<#E6F4EA> green | Amazon Bedrock |
+  Academy design · not an official AWS diagram · Verified 2026-11-15
+endlegend
+@enduml

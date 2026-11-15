@@ -14,7 +14,7 @@ variable "description" {
   default     = null
 
   validation {
-    condition     = try(length(var.description) >= 1 && length(var.description) <= 4096, var.description == null)
+    condition     = var.description == null ? true : (length(var.description) >= 1 && length(var.description) <= 4096)
     error_message = "description must be 1-4096 characters."
   }
 }

@@ -30,7 +30,7 @@ variable "kms_alias_name" {
   default     = null
 
   validation {
-    condition     = var.kms_alias_name == null || can(regex("^alias/[a-zA-Z0-9/_-]+$", var.kms_alias_name)) && !startswith(coalesce(var.kms_alias_name, "alias/x"), "alias/aws/")
+    condition     = var.kms_alias_name == null ? true : (can(regex("^alias/[a-zA-Z0-9/_-]+$", var.kms_alias_name)) && !startswith(var.kms_alias_name, "alias/aws/"))
     error_message = "kms_alias_name must start with alias/, use letters, digits, /, _ or -, and not start with alias/aws/."
   }
 }
@@ -69,7 +69,7 @@ variable "noncurrent_version_expiration_days" {
   default     = 90
 
   validation {
-    condition     = var.noncurrent_version_expiration_days == null || try(var.noncurrent_version_expiration_days >= 1, false)
+    condition     = var.noncurrent_version_expiration_days == null ? true : var.noncurrent_version_expiration_days >= 1
     error_message = "noncurrent_version_expiration_days must be at least 1, or null."
   }
 }
@@ -80,7 +80,7 @@ variable "noncurrent_versions_to_keep" {
   default     = 10
 
   validation {
-    condition     = var.noncurrent_versions_to_keep == null || try(var.noncurrent_versions_to_keep >= 1, false)
+    condition     = var.noncurrent_versions_to_keep == null ? true : var.noncurrent_versions_to_keep >= 1
     error_message = "noncurrent_versions_to_keep must be at least 1, or null."
   }
 }

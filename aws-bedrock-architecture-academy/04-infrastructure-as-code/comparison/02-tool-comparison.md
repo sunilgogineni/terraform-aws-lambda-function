@@ -111,10 +111,10 @@ A ❌ in the Pulumi `aws` column means the resource is not on the `aws.bedrock` 
 | Unit | Tool | What it packages | Shared and versioned through | Worth knowing |
 |:--|:--|:--|:--|:--|
 | Module | Terraform | Any set of resources, variables and outputs | Registry or Git, with version constraints | The academy's [modules](../terraform/modules/README.md) |
-| CloudFormation module | CloudFormation (and CDK, SAM) | Resources resolved into your stack | CloudFormation registry, versioned per account and Region | No extra charge; outputs propagate, parameters do not |
+| CloudFormation module | CloudFormation | Resources resolved into your stack | CloudFormation registry, versioned per account and Region | No extra charge; outputs propagate, parameters do not |
 | Nested stack | CloudFormation | A whole template as one resource | S3 template URL | Drift detection does not recurse into nested stacks |
-| Construct (L1, L2, L3) | AWS CDK | Classes that emit CloudFormation resources | npm, PyPI, Maven, NuGet | The academy's [construct library](../aws-cdk/construct-library/README.md) |
-| Nested application | AWS SAM | `AWS::Serverless::Application` generates an `AWS::CloudFormation::Stack` | Serverless Application Repository or S3 | Policy templates and `Globals` also cut repetition |
+| Construct (L1, L2, L3) | AWS CDK | Classes that emit CloudFormation resources | Language package managers | The academy's [construct library](../aws-cdk/construct-library/README.md) |
+| Nested application | AWS SAM | `AWS::Serverless::Application` generates an `AWS::CloudFormation::Stack` | Its template location, like a nested stack | Policy templates and `Globals` also cut repetition |
 | Component resource, Pulumi package | Pulumi | Child resources behind one typed resource | Language package managers; Pulumi Registry | A component written in one language can be used from another |
 
 ### Academy assessments

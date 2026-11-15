@@ -91,21 +91,19 @@ locals {
   })
 
   service_role_statements = concat(
-    local.is_custom_embedding ? [
-      {
-        # Documented on the managed KB service role page; read-only list calls.
-        Sid      = "ListEmbeddingModels"
-        Effect   = "Allow"
-        Action   = ["bedrock:ListFoundationModels", "bedrock:ListCustomModels"]
-        Resource = "*"
-      },
-      {
-        Sid      = "InvokeCustomEmbeddingModel"
-        Effect   = "Allow"
-        Action   = "bedrock:InvokeModel"
-        Resource = var.custom_embedding_model_arn
-      },
-    ] : [],
+    local.is_custom_embedding ? [{
+      # Documented on the managed KB service role page; read-only list calls.
+      Sid      = "ListEmbeddingModels"
+      Effect   = "Allow"
+      Action   = ["bedrock:ListFoundationModels", "bedrock:ListCustomModels"]
+      Resource = "*"
+    }] : [],
+    local.is_custom_embedding ? [{
+      Sid      = "InvokeCustomEmbeddingModel"
+      Effect   = "Allow"
+      Action   = "bedrock:InvokeModel"
+      Resource = var.custom_embedding_model_arn
+    }] : [],
     [
       {
         Sid       = "S3ListBucketStatement"
