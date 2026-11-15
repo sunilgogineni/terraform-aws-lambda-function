@@ -101,8 +101,10 @@ module "handbook_kb" {
 }
 ```
 
-After `apply`, run the first sync (for example from a pipeline step):
-`aws bedrock-agent start-ingestion-job --knowledge-base-id <knowledge_base_id> --data-source-id <data_source_id>`.
+After `apply`, nothing is searchable until the first sync: call `StartIngestionJob` with the
+`knowledge_base_id` and `data_source_id` outputs, for example from a pipeline step. Every sync
+and every query is billed for embedding tokens, and S3 Vectors bills storage and requests;
+`terraform destroy` removes the module's resources (the documents bucket is yours).
 
 ## Inputs
 
@@ -145,7 +147,9 @@ The chunking defaults are this module's choices, not service defaults.
 ## Design notes
 
 - **One store per knowledge base.** The vector bucket and index are named after the knowledge
-  base and created with it; AWS's best practice is a separate vector store per knowledge base.
+  base and created with it, following the documented best practice of a separate vector store
+  for each knowledge base
+  ([Using S3 Vectors with Bedrock Knowledge Bases](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors-bedrock-kb.html)).
 - **The role's ARNs are built from names**, not from resource attributes, so the policy is known
   at plan time, has no dependency cycle, and can be asserted on in tests.
 - **The only `"*"` resource** is the documented `ListFoundationModels`/`ListCustomModels`

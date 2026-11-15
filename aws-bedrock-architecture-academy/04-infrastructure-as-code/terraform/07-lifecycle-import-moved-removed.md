@@ -150,9 +150,9 @@ flowchart TD
 
 1. **Adopting console-built resources:** find IDs (console, `terraform query` where listable), write `import` blocks — with `for_each` for several — then run `terraform plan`. Iterate until the plan shows only `import` actions and no changes; then apply. **Our reading:** once the address is in state an `import` block has nothing left to do, so delete it or keep it as a record.
 2. **Refactoring:** add `moved` blocks in the same change as the refactor, run `terraform plan`, and confirm every line reads "has moved to". Because removing a `moved` block is a breaking change, the academy keeps them for at least one major version of a shared module.
-3. **Retiring:** prefer a reviewed `removed` block over `terraform state rm` so the hand-off is visible in code review and history.
-4. **Guarding:** put `prevent_destroy` on objects whose loss is expensive, and pair it with policy checks in CI ([Policy validation, cost estimation and human approval](../../07-devops-and-cicd/06-policy-cost-and-approvals.md)), because deleting the block bypasses it.
-5. **Running `terraform query`** needs credentials; `terraform validate -query` checks query files offline.
+3. **Retiring:** a reviewed `removed` block, not `terraform state rm`, so the hand-off shows in code review.
+4. **Guarding:** `prevent_destroy` on expensive objects, backed by CI policy checks ([Policy validation, cost estimation and human approval](../../07-devops-and-cicd/06-policy-cost-and-approvals.md)), because deleting the block bypasses it.
+5. **`terraform query`** needs credentials; `terraform validate -query` checks query files offline.
 
 > [!TIP]
 > **Academy recommendation** — For guardrails, let Terraform own the DRAFT and publish a numbered version on every change (`replace_triggered_by` plus `skip_destroy`), and have applications pin the version output. Never point production at `DRAFT`. This is our design guidance, not an official AWS reference architecture.
@@ -429,10 +429,10 @@ the plan calls for this resource to be destroyed.
 
 ## Security considerations
 
-- `import` makes Terraform the owner of an object: the next apply enforces the configuration, including IAM-relevant settings. Review the first plan after import line by line.
-- `ignore_changes` is a hole in your desired state. Never ignore security-relevant attributes such as guardrail policies, KMS keys or IAM policies.
-- Running `terraform query` requires read access across the account; give the role list and read permissions only.
-- A `removed` block leaves a live object without an owner. Record who owns it next, and tag it.
+- After `import`, the next apply enforces your configuration on the object. Review that first plan line by line.
+- `ignore_changes` is a hole in your desired state: never ignore guardrail policies, KMS keys or IAM policies.
+- Give the role that runs `terraform query` list and read permissions only.
+- A `removed` block leaves a live object without an owner: record and tag who owns it next.
 
 ## Cost considerations
 
@@ -451,9 +451,9 @@ the plan calls for this resource to be destroyed.
 <details>
 <summary>Answers</summary>
 
-1. Destroy the old guardrail and create a new one, so its ID and versions change and every application configured with the old ID breaks. Add `moved { from = aws_bedrock_guardrail.chat  to = aws_bedrock_guardrail.customer_chat }`.
-2. No. The rule lived in the deleted block and is not stored in state, so Terraform plans the destroy — which deletes the trained model. Catch it with a CI policy or use a `removed` block with `destroy = false`.
-3. The version resource's own arguments (guardrail ARN, description) do not change when the DRAFT's policies change, so Terraform would never publish a new snapshot. `replace_triggered_by` ties the version's lifecycle to updates of the guardrail.
+1. Destroy and recreate it: new ID, new versions, and every application holding the old ID breaks. Add `moved { from = aws_bedrock_guardrail.chat  to = aws_bedrock_guardrail.customer_chat }`.
+2. No. The rule lived in the deleted block and is not in state, so Terraform plans the destroy, deleting the trained model. Catch it with a CI policy, or use `removed` with `destroy = false`.
+3. The version's own arguments (guardrail ARN, description) do not change when the DRAFT's policies do, so no new snapshot would ever be published. `replace_triggered_by` ties it to updates of the guardrail.
 4. No — `aws_bedrock_guardrail` has no list resource in 6.73.0. Collect the IDs (console or `ListGuardrails`), then write one `import` block with `for_each` over a map of name → ID, using the `"<id>,DRAFT"` import format.
 5. `removed { from = ... lifecycle { destroy = false } }`. A destroy would have called `StopModelInvocationJob` and stopped the running job.
 

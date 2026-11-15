@@ -467,9 +467,9 @@ Success! 4 passed, 0 failed.
 
 ## Security considerations
 
-- Keys appear in plan output, logs and state addresses. Never key by a secret, an e-mail address or a customer identifier.
-- `for_each` makes per-application least privilege cheap: one role per application, each scoped to its own inference profile, as in the example. A single shared role for every application is the pattern to avoid.
-- Validate keys and inputs (`validation` blocks) so a typo cannot create an unexpected role or profile.
+- Keys appear in plan output, logs and state addresses: never key by a secret, an e-mail address or a customer identifier.
+- `for_each` makes per-application least privilege cheap — one role per application, scoped to its own inference profile — instead of one shared role.
+- Validate keys so a typo cannot create an unexpected role or profile.
 
 ## Cost considerations
 

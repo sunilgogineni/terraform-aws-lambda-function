@@ -133,8 +133,8 @@ sequenceDiagram
 2. **Gate on the JSON.** `terraform show -json tfplan` gives `resource_changes[].change.actions`; a replacement contains both `delete` and `create`. A small gate (below) blocks unreviewed deletions.
 3. **Separate roles.** The plan role reads; the apply role writes. The drift job uses the plan role.
 4. **Drift job.** Schedule `plan -refresh-only -detailed-exitcode`; exit 2 means drift. A normal `plan -detailed-exitcode` also reports unapplied code changes — useful, but a different question.
-5. **Respond to drift deliberately:** either change the code to match and apply, or apply the existing code to revert. Accepting a refresh-only plan only updates state.
-6. **Avoid `-target` and `-minimal-refresh` in routine pipelines.** Both leave parts of the configuration unchecked.
+5. **Respond to drift deliberately:** change the code to match, or apply the code to revert. Accepting a refresh-only plan only updates state.
+6. **Keep `-target` and `-minimal-refresh` out of routine pipelines;** both leave parts of the configuration unchecked.
 
 > [!TIP]
 > **Academy recommendation** — Run the drift job daily for production and route exit code 2 to the team that owns the workspace, not to a shared channel. Treat any guardrail drift as a security event until explained. This is our design guidance, not an official AWS reference architecture.

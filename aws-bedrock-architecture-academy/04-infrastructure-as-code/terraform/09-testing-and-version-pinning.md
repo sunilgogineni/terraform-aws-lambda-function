@@ -40,7 +40,7 @@ Think of a theatre production. A spell-check of the script costs nothing and cat
 > **Documented fact** — `terraform validate` checks only the configuration, without remote services. In a test file, `run` blocks default to `command = apply`, which creates real infrastructure unless the provider is mocked; `command = plan` turns a run into a unit test. Each test file keeps its own state in memory, starting empty, and Terraform tries to destroy what a file created when it finishes.
 > Source: [Tests](https://developer.hashicorp.com/terraform/language/tests), [terraform test command](https://developer.hashicorp.com/terraform/cli/commands/test)
 
-Layer 1 found real issues in this course: TFLint flags an untyped variable and an unused one that `terraform validate` accepts (example below). Layer 2 found that `aws_bedrock_custom_model.base_model_identifier` must be an ARN — the mock provider still runs the provider's own validation ([chapter 7](07-lifecycle-import-moved-removed.md)). Layer 4 is the only layer that proves a configuration deploys; nothing in this academy has reached it ([ADR-003](../../ARCHITECTURE-DECISIONS.md#adr-003-validate-offline-never-deploy)).
+Each layer catches something the one below cannot: TFLint flags untyped and unused variables that `validate` accepts (example below); a mock-provider test caught a bare model ID where `aws_bedrock_custom_model` needs an ARN ([chapter 7](07-lifecycle-import-moved-removed.md)). Only layer 4 proves a configuration deploys, and nothing in this academy has reached it ([ADR-003](../../ARCHITECTURE-DECISIONS.md#adr-003-validate-offline-never-deploy)).
 
 ### Test file anatomy
 
@@ -159,9 +159,9 @@ flowchart TB
 
 1. **Order in CI:** `fmt -check` → `init -lockfile=readonly` → `validate` → TFLint → `terraform test` (mocks) → plan and gates → apply. Fail fast at the first layer.
 2. **Default to `command = plan`** in unit tests. A forgotten `command` with a real provider creates resources.
-3. **Mock data sources you depend on** (`aws_partition`, `aws_region`, `aws_caller_identity`) with realistic values; generated random strings break ARN logic.
-4. **Use `override_during = plan`** when an assertion needs a computed value (an ARN) at plan time — chapter 6's test does this for inference profile and guardrail ARNs.
-5. **Share mocks** in `.tfmock.hcl` files and switch with aliased `mock_provider` blocks and `providers = {...}` per run — chapter 8's check test does this.
+3. **Mock the data sources you depend on** (`aws_partition`, `aws_region`) with realistic values; random strings break ARN logic.
+4. **`override_during = plan`** when an assertion needs an ARN at plan time (chapter 6's test).
+5. **Share mocks** in `.tfmock.hcl` files and switch with aliased `mock_provider` blocks per run (chapter 8's test).
 6. **Report:** `terraform test -junit-xml=results.xml` produces a file CI systems can display.
 7. **Upgrades:** change the constraint, run `terraform init -upgrade`, read the provider changelog for every Bedrock resource you use, run all layers, and expect a plan with no changes. Commit constraint and lock file together.
 
@@ -319,8 +319,8 @@ terraform plan -detailed-exitcode
 
 ## Security considerations
 
-- Unit tests with mocks need no credentials — keep it that way, so test jobs cannot be abused to reach AWS.
-- Integration tests belong in a dedicated sandbox account with a write role scoped to the services under test, and a cleanup routine for what a failed test leaves behind.
+- Unit-test jobs need no credentials; keep it that way so they cannot be abused to reach AWS.
+- Integration tests belong in a sandbox account with a scoped write role and a cleanup routine for what failed tests leave behind.
 - The lock file's checksums are a supply-chain control (trust on first use). Review lock-file changes, including the signing key reported by `terraform init`.
 - Plan JSON used by policy checks contains configuration values; protect it like the plan file.
 
