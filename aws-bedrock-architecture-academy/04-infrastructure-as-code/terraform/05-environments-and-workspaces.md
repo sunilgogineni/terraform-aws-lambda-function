@@ -58,7 +58,7 @@ HCP Terraform also uses the word "workspace", for something different: each HCP 
 | HCP Terraform workspaces | Yes | Yes, per workspace | Depends on VCS settings | One workspace | Teams already on HCP Terraform |
 | Stacks (HCP Terraform) | Yes, per deployment | Yes, per deployment | Yes | One deployment | Many deployments orchestrated together |
 
-Why accounts matter for Bedrock in particular: quotas are per account and Region, so a load test in a shared account can throttle production; model access, invocation logging and service control policies are also configured per account ([ADR-013](../../ARCHITECTURE-DECISIONS.md#adr-013-one-aws-account-per-environment), [Quotas, rate limits and throttling](../../08-cost-performance-and-reliability/05-quotas-rate-limits-and-throttling.md)).
+Why accounts matter for Bedrock in particular: quotas are per account and Region, so a load test in a shared account can throttle production; invocation logging is configured per account and Region, and service control policies attach to accounts ([ADR-013](../../ARCHITECTURE-DECISIONS.md#adr-013-one-aws-account-per-environment), [Quotas, rate limits and throttling](../../08-cost-performance-and-reliability/05-quotas-rate-limits-and-throttling.md)).
 
 ## Architecture diagram
 
@@ -293,7 +293,7 @@ run "role_in_another_account_is_rejected" {
 }
 ```
 
-What the pipeline runs per environment, in your own sandbox accounts (creating the guardrail and role costs nothing until the guardrail evaluates requests; destroy with `terraform destroy -var-file=envs/dev.tfvars` when done):
+What the pipeline runs per environment, in your own sandbox accounts. Guardrails are billed per text unit they evaluate ([Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)); tear down with `terraform destroy -var-file=envs/dev.tfvars` when done:
 
 ```bash
 terraform init -reconfigure -backend-config=backend/dev.s3.tfbackend
@@ -444,7 +444,7 @@ deployment "prod" {
 1. No separate credentials or access control between environments, and one backend shared by all of them. Bedrock-specific: both share the account's quotas, so development traffic can throttle production.
 2. The validation fails at plan time if the files are mixed up, before any credentials are used; `allowed_account_ids` protects at run time if the credentials resolve to a different account than expected. They catch different errors.
 3. When environments genuinely differ in shape (for example, production has components that development does not) or when you want each environment's module versions pinned and promoted explicitly.
-4. Terraform would offer to copy the dev state into the prod key, overwriting or merging environments. For switching environments use `-reconfigure`, which does not copy state.
+4. Terraform would try to copy the dev state into the prod key (prompting when both hold state) — mixing environments. To switch environments use `-reconfigure`, which copies nothing.
 
 </details>
 
