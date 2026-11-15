@@ -8,11 +8,10 @@ Every Bedrock-backed web application needs an HTTP front door. The choice decide
 
 After this chapter you can:
 
-- Compare REST, HTTP and WebSocket APIs, Lambda function URLs, Application Load Balancers and CloudFront on timeout, streaming, authentication and AWS WAF support.
-- Configure a REST API that streams a Lambda function's response for up to 15 minutes.
-- Explain why usage plans are not a cost control, and build a cost guard that is.
+- Compare REST, HTTP and WebSocket APIs, function URLs, ALBs and CloudFront on timeouts, streaming, authentication and AWS WAF.
+- Configure a REST API that streams a Lambda response for up to 15 minutes.
+- Explain why usage plans are not a cost control, and build one that is.
 - Set CloudFront and ALB timeouts that survive long generations.
-- Choose a front door with a decision flowchart.
 
 ## Prerequisites
 
@@ -22,9 +21,9 @@ After this chapter you can:
 
 ## Concept in plain language
 
-A model answer is like a long phone dictation. A **buffered** front door waits until the whole letter is written and then hands it over — if writing takes longer than the receptionist's patience (the **integration timeout**), the visitor is sent away with nothing. A **streaming** front door passes each sentence on as it is spoken; the visitor starts reading at once, and the receptionist only needs patience between sentences (an **idle timeout**).
+A model answer is like a long dictation. A **buffered** front door waits for the whole letter; if writing outlasts the receptionist's patience (the **integration timeout**), the visitor leaves with nothing. A **streaming** front door passes on each sentence as it is spoken, and patience is only needed between sentences (an **idle timeout**).
 
-The front door is also the security desk. It checks badges (authorizers), limits how many visitors enter per second (throttling) and can turn away known troublemakers (AWS WAF). It does not, however, know what a token costs.
+The front door is also the security desk: it checks badges (authorizers), limits arrivals per second (throttling) and turns away known troublemakers (AWS WAF). It does not know what a token costs.
 
 ## How it really works
 
@@ -39,7 +38,7 @@ The front door is also the security desk. It checks badges (authorizers), limits
 | **Application Load Balancer** | Idle timeout 60 s default, 1–4,000 s — measured between bytes, not end to end | Yes for HTTP targets; Lambda targets limited to 1 MB and no WebSockets | OIDC or Amazon Cognito authenticate action on HTTPS listeners | Yes | Through AWS WAF rules |
 | **CloudFront** (in front of any of these) | Origin response timeout 30 s default, 1–120 s, applied per packet; optional response-completion timeout | Passes chunks as they arrive (**our reading** of the per-packet timeout); WebSocket over HTTP/1.1 | At the origin; OAC signs requests to function URL origins | Yes | Through AWS WAF rules |
 
-Sources: [REST API quotas](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-execution-service-limits-table.html), [HTTP API quotas](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-quotas.html), [WebSocket API quotas](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-execution-service-websocket-limits-table.html), [REST versus HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html), [Response streaming](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html), [Lambda HTTP invoke options](https://docs.aws.amazon.com/lambda/latest/dg/furls-http-invoke-decision.html), [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html), [ALB attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-load-balancer-attributes.html), [ALB Lambda targets](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html), [ALB authentication](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html), [CloudFront origin settings](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesOrigin.html), [CloudFront WebSockets](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-working-with.websockets.html), [AWS WAF resource types](https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html).
+Sources: [REST](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-execution-service-limits-table.html), [HTTP](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-quotas.html) and [WebSocket](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-execution-service-websocket-limits-table.html) quotas, [REST versus HTTP](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html), [streaming](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html), [function URLs](https://docs.aws.amazon.com/lambda/latest/dg/furls-http-invoke-decision.html), [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html), [ALB attributes](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-load-balancer-attributes.html), [Lambda targets](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/lambda-functions.html), [ALB authentication](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html), [CloudFront origins](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesOrigin.html), [WebSockets](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-working-with.websockets.html), [AWS WAF](https://docs.aws.amazon.com/waf/latest/developerguide/waf-chapter.html).
 
 > [!NOTE]
 > **Documented fact** — REST API response streaming lists "Lower the time-to-first-byte (TTFB) for generative AI applications like chatbots" as its first use case. In `STREAM` mode endpoint caching, content encoding and VTL response transformation are unavailable; the first 10 MB are not bandwidth-restricted, then 2 MB/s; and the Lambda function may keep running after a timeout closes the connection.
@@ -47,7 +46,7 @@ Sources: [REST API quotas](https://docs.aws.amazon.com/apigateway/latest/develop
 
 ### Authorizers
 
-Authenticate before any paid model call. REST APIs offer Cognito user pool authorizers, Lambda authorizers and IAM; HTTP APIs add native JWT authorizers (1.5-second timeouts for the JWKS and discovery endpoints; 10 seconds for a Lambda authorizer response). WebSocket APIs authorise once, on `$connect`. ALBs authenticate users themselves through an OIDC identity provider or Cognito and pass the user's claims to the target; the IdP's endpoints must be publicly resolvable.
+Authenticate before any paid model call. REST APIs offer Cognito, Lambda and IAM authorizers; HTTP APIs add JWT authorizers (1.5-second JWKS and discovery timeouts). WebSocket APIs authorise once, on `$connect`. ALBs authenticate users through an OIDC provider or Cognito and pass the claims to the target; the provider's endpoints must be publicly resolvable.
 
 ### Throttling is not a budget
 
@@ -60,9 +59,9 @@ A real cost guard is layered: an authorizer decides **who**; stage throttling an
 
 ### CloudFront and ALB timeouts for long answers
 
-- **CloudFront** waits up to the origin response timeout for the first byte **and between packets**, so a stream that keeps sending is not cut off; a response-completion timeout, if you set one, caps the total. A Regional REST API behind your own distribution can exceed the 30-second edge idle timeout by raising the distribution's response timeout.
-- **ALB** closes a connection that is idle longer than its idle timeout; AWS advises sending at least one byte per period, and HTTP/2 PING frames do not count. Set the application's keep-alive longer than the ALB's.
-- **Function URLs behind CloudFront** use origin access control; for `POST` and `PUT`, clients must send the body's SHA-256 in `x-amz-content-sha256`.
+- **CloudFront** applies the origin response timeout to the first byte **and between packets**, so a flowing stream is not cut; an optional response-completion timeout caps the total. A Regional REST API behind your own distribution can stream past 30 idle seconds this way.
+- **ALB** closes connections idle longer than its idle timeout; send at least one byte per period (HTTP/2 PINGs do not count) and keep the application's keep-alive longer than the ALB's.
+- **Function URLs behind CloudFront** use origin access control; `POST` and `PUT` clients must send the body's SHA-256 in `x-amz-content-sha256`.
 
 ### Integration with Amazon Bedrock
 
@@ -448,10 +447,10 @@ The integration's `uri` uses the function's response-streaming invoke ARN, as in
 
 ## Knowledge check
 
-1. A chatbot's answers take up to 3 minutes. Which documented front doors can deliver them without an asynchronous pattern?
-2. Why does a usage plan with a quota of 10,000 requests per month not cap your Bedrock bill?
-3. Your REST API streams fine when called directly, but streams die after 30 seconds of silence through CloudFront. What do you check?
-4. You need AWS WAF and JWT validation for a simple JSON backend. Why is an HTTP API alone not enough?
+1. Answers take up to 3 minutes. Which front doors deliver them without an asynchronous pattern?
+2. Why does a usage plan quota of 10,000 requests a month not cap your Bedrock bill?
+3. Streams work directly but die after 30 silent seconds through CloudFront. What do you check?
+4. Why is an HTTP API alone not enough when you need AWS WAF and JWT validation?
 
 <details>
 <summary>Answers</summary>

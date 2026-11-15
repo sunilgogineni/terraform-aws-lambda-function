@@ -58,7 +58,7 @@ Two scope rules are enforced when a policy is created: naming specific actions r
 | API field | `definition.cedar.statement` | `definition.policy.statement` |
 | AWS guidance | Existing Cedar policies "continue to be supported" | "Write Dogwood" |
 
-Sources: [Core concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-core-concepts.html), [Guardrails in policies](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-guardrails-in-policies.html), [Temporal policies](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-temporal.html). This resolves pending correction P1 in the register.
+Sources: [Core concepts](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-core-concepts.html), [Guardrails in policies](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-guardrails-in-policies.html), [Temporal policies](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/policy-temporal.html).
 
 ### Policy, Guardrails and IAM
 

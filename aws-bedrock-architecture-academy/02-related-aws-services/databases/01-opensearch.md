@@ -94,8 +94,8 @@ Sources: [Create a service role for Knowledge Bases](https://docs.aws.amazon.com
 > [!IMPORTANT]
 > **Status** — On **2026-05-28** AWS launched **NextGen** OpenSearch Serverless: collections live
 > in **collection groups**, compute scales to zero after 10 idle minutes, and NextGen is the
-> console default; existing collections are now called **Classic**. NextGen vector indexes do not
-> take the `engine` parameter, while the Bedrock prerequisites still ask for `faiss`. Whether a
+> console default; existing collections are now called **Classic**. NextGen vector indexes "do not
+> require the `engine` and `mode` parameters", while the Bedrock prerequisites still ask for `faiss`. Whether a
 > knowledge base accepts a NextGen collection, and which generation Bedrock's quick create builds,
 > is **UNVERIFIED — REQUIRES DOCUMENTATION REVIEW** (no statement in the Bedrock user guide or its
 > document history). The example below uses a Classic collection.
@@ -107,7 +107,7 @@ Sources: [Create a service role for Knowledge Bases](https://docs.aws.amazon.com
 
 ```mermaid
 ---
-title: A knowledge base on a private OpenSearch Serverless collection, and the managed-cluster variant
+title: A knowledge base on a private OpenSearch Serverless collection (policy gates conceptual)
 ---
 flowchart LR
     subgraph account["Your AWS account · one Region"]
@@ -468,7 +468,7 @@ always a source service, and that the knowledge base appears only when `index_cr
 | Index created with `nmslib` or the wrong dimension | Knowledge base creation or filtering fails | Recreate the index with `faiss` and the model's dimension |
 | Managed cluster inside a VPC | Knowledge base cannot connect | Public domain with FGAC, or use Serverless |
 | Filter attribute mapped as plain `text` on a managed cluster | "Rewrite first" errors | `keyword` or a `keyword` sub-field |
-| NextGen collection with an `engine` field in the mapping | `400`: field parameter not supported | See the status note; test before relying on NextGen |
+| Assuming a NextGen collection behaves like Classic | Index mapping and Bedrock's `faiss` check can disagree | See the status note; test before relying on NextGen |
 
 ## Security considerations
 
@@ -531,5 +531,5 @@ Official sources opened while writing this chapter:
 - [Introducing the next generation of Amazon OpenSearch Serverless](https://aws.amazon.com/blogs/aws/introducing-the-next-generation-of-amazon-opensearch-serverless-for-building-your-agentic-ai-applications/) and [Built from the ground up for agents](https://aws.amazon.com/blogs/big-data/the-next-generation-of-amazon-opensearch-serverless-built-from-the-ground-up-for-agents/).
 - [OpenSearch Service ML connectors for AWS services](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/ml-amazon-connector.html).
 - [Amazon OpenSearch Service pricing](https://aws.amazon.com/opensearch-service/pricing/).
-- Terraform: [`aws_opensearchserverless_collection`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/opensearchserverless_collection) and the [generated provider reference](../../references/terraform-aws-provider-bedrock.md).
+- Terraform: [`aws_opensearchserverless_collection`](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/main/website/docs/r/opensearchserverless_collection.html.markdown) (encryption and network policies are prerequisites) and the [generated provider reference](../../references/terraform-aws-provider-bedrock.md).
 - [Feature verification matrix](../../FEATURE-VERIFICATION.md).
