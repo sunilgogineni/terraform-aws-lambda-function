@@ -6,7 +6,8 @@
 #  * Private DNS needs enableDnsSupport and enableDnsHostnames on the VPC.
 #  * The endpoint security group must allow inbound HTTPS from the callers.
 #  * Without a policy, an endpoint allows full access. An endpoint policy never grants access
-#    on its own; it is one more filter next to identity-based policies.
+#    on its own; it is one more filter next to identity-based policies. It needs a Principal
+#    element and cannot exceed 20,480 characters.
 #  * Endpoint policies can restrict IAM principals only: OAuth callers of AgentCore Runtime and
 #    Gateway need Principal "*" with no principal-based condition.
 # Sources are listed in README.md.
@@ -162,6 +163,10 @@ resource "aws_vpc_endpoint" "this" {
     precondition {
       condition     = !var.private_dns_enabled || (data.aws_vpc.this.enable_dns_support && data.aws_vpc.this.enable_dns_hostnames)
       error_message = "Private DNS needs enableDnsSupport and enableDnsHostnames on the VPC. Turn both on, or set private_dns_enabled = false and give clients the endpoint-specific DNS name."
+    }
+    precondition {
+      condition     = local.endpoint_policies[each.key] == null ? true : length(local.endpoint_policies[each.key]) <= 20480
+      error_message = "An endpoint policy cannot exceed 20,480 characters; shorten invoke_resource_arns or guardrail_arns."
     }
   }
 }

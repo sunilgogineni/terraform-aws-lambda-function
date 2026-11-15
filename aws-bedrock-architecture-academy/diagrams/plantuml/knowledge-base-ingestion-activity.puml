@@ -40,20 +40,20 @@ skinparam swimlaneWidth same
 |#E8F1FB|Scheduler or pipeline step\nIAM role|
 start
 :StartIngestionJob (knowledgeBaseId, dataSourceId)
-HTTPS · SigV4 · bedrock:StartIngestionJob;
+HTTPS · SigV4 · bedrock:StartIngestionJob; <<#E8F1FB>>
 
 |#E6F4EA|Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
-#E6F4EA:Return HTTP 202 · ingestionJobId · status STARTING;
+:Return HTTP 202 · ingestionJobId · status STARTING; <<#E6F4EA>>
 note right
   Only one job runs per data source
   and per knowledge base at a time
 end note
-#FDECEA:sts:AssumeRole on the knowledge base service role
-trust: bedrock.amazonaws.com · aws:SourceAccount · aws:SourceArn;
-#E6F4EA:Job IN_PROGRESS
-log StatusChanged · INGESTION_JOB_STARTED;
-#E6F4EA:List the bucket prefix; read documents and .metadata.json files
-s3:ListBucket · s3:GetObject;
+:sts:AssumeRole on the knowledge base service role
+trust: bedrock.amazonaws.com · aws:SourceAccount · aws:SourceArn; <<#FDECEA>>
+:Job IN_PROGRESS
+log StatusChanged · INGESTION_JOB_STARTED; <<#E6F4EA>>
+:List the bucket prefix; read documents and .metadata.json files
+s3:ListBucket · s3:GetObject; <<#E6F4EA>>
 note right
   Transient data is encrypted with your key
   (kms:GenerateDataKey, kms:Decrypt) when the data source
@@ -63,66 +63,60 @@ end note
 while (Next document in the bucket?) is (yes)
   switch (What changed for this document since the last sync?)
   case (new, or content changed)
-    #E6F4EA:Parse the whole file
+    :Parse the whole file
     default parser (text only) · BEDROCK_DATA_AUTOMATION
-    · BEDROCK_FOUNDATION_MODEL (InvokeModel);
-    #E6F4EA:Chunk the text
-    default · fixed · hierarchical · semantic · none;
+    · BEDROCK_FOUNDATION_MODEL (InvokeModel); <<#E6F4EA>>
+    :Chunk the text
+    default · fixed · hierarchical · semantic · none; <<#E6F4EA>>
     if (Transformation function configured?\nPOST_CHUNKING) then (yes)
-      #EDE7F6:Write chunk files to your intermediate S3 location;
-      #FDEBD0:Invoke your AWS Lambda function with file references;
-      #EDE7F6:Read back rewritten chunks or chunk-level metadata;
+      :Write chunk files to your intermediate S3 location; <<#EDE7F6>>
+      :Invoke your AWS Lambda function with file references; <<#FDEBD0>>
+      :Read back rewritten chunks or chunk-level metadata; <<#EDE7F6>>
     else (no)
     endif
-    #E6F4EA:bedrock:InvokeModel on the embedding model for every chunk;
+    :bedrock:InvokeModel on the embedding model for every chunk; <<#E6F4EA>>
     if (Embedding failed?) then (yes)
-      #FFF8E1:Log ResourceStatusChanged · EMBEDDING_FAILED
-      with status_reasons;
+      :Log ResourceStatusChanged · EMBEDDING_FAILED
+      with status_reasons; <<#FFF8E1>>
       note right
         Counted in statistics.numberOfDocumentsFailed;
         the job does not fail. Our reading: the document
         is not in the index and is processed again next sync
       end note
     else (no)
-      |#EDE7F6|Your vector store\nstore's own access policy|
-      #EDE7F6:Write vectors, chunk text and metadata
-      a changed document is re-indexed in full;
-      |Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
-      #FFF8E1:Log ResourceStatusChanged · INDEXED;
+      :Write vectors, chunk text and metadata to your vector store
+      a changed document is re-indexed in full; <<#EDE7F6>>
+      :Log ResourceStatusChanged · INDEXED; <<#FFF8E1>>
     endif
   case (only its metadata file changed\nnot CSV · no transformation function)
-    |Your vector store\nstore's own access policy|
-    #EDE7F6:Read vectors, merge the new metadata, write back
-    no embedding model call;
-    |Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
-    #FFF8E1:Log METADATA_UPDATE_COMPLETED;
+    :Read its vectors, merge the new metadata, write back
+    no embedding model call; <<#EDE7F6>>
+    :Log METADATA_UPDATE_COMPLETED; <<#FFF8E1>>
   case (deleted from the bucket)
-    |Your vector store\nstore's own access policy|
-    #EDE7F6:Delete its vectors;
-    |Amazon Bedrock ingestion job\nevery call uses the knowledge base service role|
-    #FFF8E1:Log DELETED;
+    :Delete its vectors from your vector store; <<#EDE7F6>>
+    :Log DELETED; <<#FFF8E1>>
   case (unchanged)
-    #E6F4EA:Skip;
+    :Skip; <<#E6F4EA>>
   endswitch
 endwhile (no more documents)
 
 if (Job-level error?\nfor example the role cannot reach the store) then (yes)
-  #FDECEA:Job FAILED with failureReasons;
+  :Job FAILED with failureReasons; <<#FDECEA>>
 else (no)
-  #E6F4EA:Job COMPLETE
-  statistics include numberOfDocumentsFailed;
+  :Job COMPLETE
+  statistics include numberOfDocumentsFailed; <<#E6F4EA>>
 endif
 
 |Scheduler or pipeline step\nIAM role|
 :GetIngestionJob until COMPLETE, FAILED or STOPPED
-bedrock:GetIngestionJob;
+bedrock:GetIngestionJob; <<#E8F1FB>>
 if (FAILED, or numberOfDocumentsFailed > 0?) then (yes)
-  #FDECEA:Treat the run as failed
-  read failureReasons and the EMBEDDING_FAILED log entries;
+  :Treat the run as failed
+  read failureReasons and the EMBEDDING_FAILED log entries; <<#FDECEA>>
   note right: Academy recommendation
 else (no)
   :Wait before querying: new vectors can take a few minutes
-  to become searchable in stores other than Amazon Aurora;
+  to become searchable in stores other than Amazon Aurora; <<#E8F1FB>>
 endif
 stop
 
@@ -144,7 +138,7 @@ legend right
   |<#E8F1FB> blue | caller |
   |<#E6F4EA> green | Amazon Bedrock (managed) |
   |<#FDEBD0> orange | your compute |
-  |<#EDE7F6> purple | data at rest |
+  |<#EDE7F6> purple | read or write of data at rest (bucket, vector store) |
   |<#FDECEA> red | security control or failure |
   |<#FFF8E1> yellow | log record — only with APPLICATION_LOGS delivery enabled |
   Academy design · not an official AWS diagram · Verified 2026-11-15
