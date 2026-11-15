@@ -34,15 +34,14 @@ After this chapter you can:
 
 ## Concept in plain language
 
-A model writing about your company is like a new hire answering customer letters: capable, but it
-only knows what you hand it. RAG hands it the right pages from the company library for each
-letter. In an enterprise the library has locked rooms (permissions), several clients' archives
-(tenants), new editions every day (freshness), and an auditor who wants every claim footnoted
-(citations) and spot-checked (evaluation).
+A model writing about your company is a capable new hire who knows only what you hand it. RAG
+hands it the right pages from the company library for each question. An enterprise library has
+locked rooms (permissions), several clients' archives (tenants), new editions daily (freshness),
+and an auditor who wants every claim footnoted (citations) and spot-checked (evaluation).
 
 **The problem.** "Chat with our documents" demos retrieve from everything, answer fluently and
 cite nothing. In production that leaks restricted documents, mixes up customers, repeats last
-year's policy and states things no document says — and nobody notices until a user complains.
+year's policy and invents facts — unnoticed until a user complains.
 
 ### Conceptual view
 
@@ -94,21 +93,18 @@ chunking, model or prompt is measured before users see it.
 
 ### The solution
 
-**Ingestion path.** Sources are connected as data sources; ingestion parses, chunks and embeds
-each document and stores vectors with **metadata** (tenant, classification, department) and, on a
-Managed Knowledge Base, **ACLs** crawled from the source. Freshness comes from sync schedules
-(managed), event- or schedule-triggered `StartIngestionJob`, or `IngestKnowledgeBaseDocuments`
-for a document that must be searchable now ([ingestion chapter](../../01-amazon-bedrock/knowledge-bases/04-ingestion-parsing-chunking.md)).
+**Ingestion path.** Data sources are parsed, chunked and embedded; vectors are stored with
+**metadata** (tenant, classification) and, on a Managed Knowledge Base, **ACLs** crawled from the
+source. Freshness comes from sync schedules, a scheduled `StartIngestionJob`, or
+`IngestKnowledgeBaseDocuments` for one urgent document ([ingestion chapter](../../01-amazon-bedrock/knowledge-bases/04-ingestion-parsing-chunking.md)).
 
 **Query path.** The RAG service authenticates the user, builds the access filter **on the
-server** from verified claims, retrieves, and then generates — either with its own `Converse` call
-carrying a guardrail with contextual grounding (shown in the [Example](#example)), or with a
-one-call API: `AgenticRetrieveStream` with `maxAgentIteration` 1 on a Managed Knowledge Base, or
-`RetrieveAndGenerate` on a customer-managed one. It returns the answer with citations that point
-at the source documents.
+server**, retrieves, and generates — with its own `Converse` call and a contextual grounding
+guardrail ([Example](#example)), or with one call: `AgenticRetrieveStream` (`maxAgentIteration` 1,
+managed) or `RetrieveAndGenerate` (customer-managed). Answers carry citations to source documents.
 
-**Evaluation loop.** A curated question set, with reference answers where you have them, is
-replayed through Amazon Bedrock RAG evaluation before every change and on a schedule.
+**Evaluation loop.** A curated question set is replayed through Amazon Bedrock RAG evaluation
+before every change and on a schedule.
 
 ### The two variants (ADR-009)
 
@@ -219,18 +215,14 @@ RAG service talks to the runtime endpoints, and only with a filter it built itse
 
 **Walkthrough**
 
-1. –4. Ingestion reads S3 objects and their metadata files, or crawls a SaaS source with
-   credentials from Secrets Manager (managed variant), then writes vectors to your S3 vector
-   index (customer-managed) or to managed storage.
-5. –6. The user's question arrives with a token; the front door verifies it.
-7. The RAG service calls `Retrieve` with the tenant filter and, on the managed variant, the
-   user's e-mail in `userContext`.
-8. –9. Search runs against the right store; passages return with their source locations.
-10. –12. `Converse` receives the passages marked as the grounding source; the guardrail screens
-    them and scores the answer.
-13. The answer goes back with citations for the passages it actually used.
-14. An evaluation job replays the test set (see [Implementation details](#implementation-details)).
-15. Invocation logs and CloudTrail record every call.
+1. –4. Ingestion reads S3 objects and metadata files, or crawls a SaaS source with credentials
+   from Secrets Manager (managed only), and writes to your S3 vector index or managed storage.
+5. –6. The question arrives with a token; the front door verifies it.
+7. `Retrieve` carries the tenant filter and, on the managed variant, the user's e-mail.
+8. –9. Passages return with their source locations.
+10. –12. `Converse` gets the passages as the grounding source; the guardrail screens and scores.
+13. The answer returns with citations for the passages it used.
+14. –15. An evaluation job replays the test set; logs and CloudTrail record every call.
 
 **Legend** — solid: request or write · dashed: response · thick: asynchronous record · dashed
 grey box: outside your account. Pipeline detail: [diagram sets 6](../../diagrams/mermaid/06-knowledge-base-ingestion-pipeline.md),
